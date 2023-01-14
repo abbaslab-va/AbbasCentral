@@ -19,11 +19,18 @@ classdef BehDat
                 obj.timestamps = ts;
             end
         end
-
+        
         function import_behavior(obj, bpodSession)
             if nargin == 2
                 obj.bpod = bpodSession;
             end
+        end
+        %Requires bpod_performance from Abbas-WM repository
+        function [numTT, numCorrect] = outcomes(obj, val)
+            if ~exist('val', 'var')
+                val = 1;
+            end
+            [numTT, numCorrect] = bpod_performance(obj.bpod, val);
         end
     end
 end

@@ -1,11 +1,10 @@
 behDir = dir('*.mat');
 
 numSessions = size(behDir, 1);
-behSessions = cell(1, numSessions);
 for s = 1:numSessions
     sessionName = behDir(s).name;
     session = load(sessionName);
-    behSessions{s} = load(sessionName);
+    behObj(s) = BehDat(30000, 0, session.SessionData, rand(1, 10));
 end
 
-behObj = BehDat(obj, 30000, 0, behSessions{1}, 0);
+behObj(4).bpod.bpod_performance
