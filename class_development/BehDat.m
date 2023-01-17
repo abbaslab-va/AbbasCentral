@@ -32,5 +32,15 @@ classdef BehDat
             end
             [numTT, numCorrect] = bpod_performance(obj.bpod, val);
         end
+
+        function plot_outcome(obj, val)
+
+            if ~exist('val', 'var')
+                val = 1;
+            end
+            [numTT, numCorrect] = bpod_performance(obj.bpod, val);
+
+            bar_and_error(numCorrect./numTT)
+        end
     end
 end

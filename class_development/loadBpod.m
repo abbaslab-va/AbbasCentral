@@ -7,4 +7,4 @@ for s = 1:numSessions
     behObj(s) = BehDat(30000, 0, session.SessionData, rand(1, 10));
 end
 
-behObj(4).bpod.bpod_performance
+behObj(4).outcomes
