@@ -1,13 +1,285 @@
-%This script runs a chosen script (or scripts) on all subfolder of a chosen folder
-%Choose your main directory folder where the other subfolders (usually containing data from individual sessions) are located
-%% This IS BATCH SCRIPT 1- it will create Z-Scored firing rates for all neurons, One alignment structure for each laser On Laser off, incorrect, correct 
-% this script is currently set up only for session of opto and recording
-% female and male (there are extra female session that are only recording
-% you could add) 
+%{
+Updated:12/30/2022
+This is the main script for CLA_EX1 
+%}
 
 
 
-%Once you run this use Plot_cell_heatmaps.m to plot these data 
+%% Z-Scored Heat maps 
+%{ 
+this will create Z-Scored firing rates for all neurons, One alignment structure for each laser On Laser off, incorrect, correct 
+this script is currently set up only for sessions with  opto + recording, there are extra female sessions that are only recording
+I could add),Once you run this use Plot_cell_heatmaps.m to plot these data 
+%}
+
+
+%addpath(genpath('D:\CLAS_EX1')) % change to current directory 
+mainDir = uigetdir('D:\','Choose a Folder');
+
+%Get a list of content
+Subfolders = dir(mainDir);
+
+%Remove content that isn't a subdirectory
+
+subDirs = {Subfolders.name}';
+Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
+
+%Loop through each subdirectory and run a script on all of your
+%subfolders(aka sessions). Can run as many scripts as you need
+
+for subfolder = 1:numel(Subfolders)
+    if subfolder<6 % if males 
+        sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+        sDirs = {sessionDir.name}';
+        sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I')) = []; % Remove DOI sessions and weird ". ." cells 
+    else 
+        sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+        sDirs = {sessionDir.name}';
+        sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I') | ~contains(sDirs,'opto')) = [];% Remove DOI sessions,  weird ". ." cells, and non-opto recordingd for females 
+    end 
+
+    for session=1:numel(sessionDir)
+        Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
+        FiringRateStruct_ALL.(Subfolders(subfolder).name).(sessionDir(session).name)=DF_create_CLA_neurons(Fullpath)
+        disp(num2str(session))
+    end 
+end
+
+
+%% New modular script 
+mainDir = uigetdir('D:\','Choose a Folder');
+
+%Get a list of content
+Subfolders = dir(mainDir);
+
+%Remove content that isn't a subdirectory
+
+subDirs = {Subfolders.name}';
+Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
+
+%Loop through each subdirectory and run a script on all of your
+%subfolders(aka sessions). Can run as many scripts as you need
+
+for subfolder = 1:numel(Subfolders)
+    if subfolder<6 % if males 
+        sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+        sDirs = {sessionDir.name}';
+        sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I')) = []; % Remove DOI sessions and weird ". ." cells 
+    else 
+        sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+        sDirs = {sessionDir.name}';
+        sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I') | ~contains(sDirs,'opto')) = [];% Remove DOI sessions,  weird ". ." cells, and non-opto recordingd for females 
+    end 
+
+    for session=1:numel(sessionDir)
+        Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
+        [spikes_struct_ALL.(sessionDir(session).name) ts_struct_trial_ALL.(sessionDir(session).name), ts_struct_ALL.(sessionDir(session).name)]=spikes_lfp_events_trialTypes(Fullpath)
+        disp(num2str(session))
+    end 
+end
+%% Generate Z_scores
+sessions=fieldnames(spikes_struct_ALL);
+alignments=fieldnames(ts_struct_trial_ALL.CLAS_009_D1_opto);
+trialTypes=fieldnames(ts_struct_trial_ALL.CLAS_009_D1_opto.TrialStart);
+for sess=1:length(sessions)
+    for align=1:length(alignments)
+        for ttype=1:length(trialTypes)
+            for n=1:length(spikes_struct_ALL.(sessions{sess}))
+                spike_times=spikes_struct_ALL.(sessions{sess})(n).SpikeTimes;
+                ts=ts_struct_trial_ALL.(sessions{sess}).(alignments{align}).(trialTypes{ttype});
+               [z_score_struct.(sessions{sess}).(trialTypes{ttype})(n).(alignments{align}), raw_FR_struct.(sessions{sess}).(trialTypes{ttype})(n).(alignments{align})]=z_scoreFUN(spike_times,ts,ts_struct_ALL.(sessions{sess}).Trialstart);
+            end
+        end
+    end
+    disp(sessions{sess})
+end
+
+
+%%  LFP 
+filterbank= cwtfilterbank('SignalLength', 8000, 'SamplingFrequency',2000, 'TimeBandwidth',60, 'FrequencyLimits',[1 120], 'VoicesPerOctave', 10);   
+PFC_ch=[1,3,5,7,9,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
+CLA_ch=[17,19,21,23,25,27,29,31];
+ENTI_ch=15;
+AUD_ch=13;
+MD_ch=11;
+
+sessions=fieldnames(spikes_struct_ALL);
+alignments=fieldnames(ts_struct_trial_ALL.CLAS_009_D1_opto);
+trialTypes=fieldnames(ts_struct_trial_ALL.CLAS_009_D1_opto.TrialStart);
+for sess=2:length(sessions)
+    Fullpath=strcat('D:\CLAS_EX1\Data\',sessions{sess}(1:8),'\',sessions{sess});
+   
+    NEV_file = strcat(Fullpath,'\',sessions{sess}, '.nev');
+    NEV=openNEV(NEV_file);
+    NS_6 = strcat(Fullpath,'\',sessions{sess}, '.ns6');
+    openNSx(NS_6);
+    NS6_Length = length(NS6.Data);
+
+
+    Raw_Data =double(NS6.Data);
+    PFC_lfp=Raw_Data(PFC_ch,:);
+    %CLA_lfp=Raw_Data(CLA_ch,:);
+ for pfc_ch=1:size(PFC_lfp,1) 
+     lfp=PFC_lfp(pfc_ch,:);
+    for align= 2 %1:length(alignments) % just look at Chirp
+        for ttype=1:length(trialTypes)
+             ts=ts_struct_trial_ALL.(sessions{sess}).(alignments{align}).(trialTypes{ttype});
+             LFP_struct.(sessions{sess}).(trialTypes{ttype})(pfc_ch).(alignments{align})=PWR_FUN(lfp,ts,filterbank);
+             % surf(Power)
+                % view(2)
+            % shading interp
+        end
+    end
+   disp(num2str(pfc_ch))  
+ end 
+    disp(sessions{sess})
+end
+% 
+
+%% 
+
+sessions=fieldnames(LFP_struct);
+for ttype=1:length(trialTypes)
+LFP_combined.(trialTypes{ttype})=[{LFP_struct.(sessions{1}).(trialTypes{ttype}).Chirp}... 
+ {LFP_struct.(sessions{2}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{3}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{4}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{5}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{6}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{7}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{8}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{9}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{10}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{13}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{14}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{15}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{18}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{19}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{20}).(trialTypes{ttype}).Chirp}...
+ {LFP_struct.(sessions{21}).(trialTypes{ttype}).Chirp}]
+
+end 
+for ttype=[1,2,5,6] %length(trialTypes)
+    for c=1:336 %length(LFP_combined.(trialTypes{ttype}))
+        LFP_all.(trialTypes{ttype})(:,:,c)=LFP_combined.(trialTypes{ttype}){c};
+    end 
+end 
+%%
+    figure()    
+    surf(mean(LFP_all.LOFF_Correct,3));
+    view(2)
+    shading interp
+    colorbar
+    caxis([0 .25])
+
+    figure()    
+    surf(mean(LFP_all.LOFF_Incorrect,3));
+    view(2)
+    shading interp
+    colorbar
+caxis([0 .25])
+
+    figure()    
+    surf(mean(LFP_all.LOFF,3));
+    view(2)
+    shading interp
+    colorbar
+    caxis([0 .25])
+
+    figure()    
+    surf(mean(LFP_all.LON,3));
+    view(2)
+    shading interp
+    colorbar
+caxis([0 .25])
+
+
+%% Concatentate structures 
+sessions=fieldnames(z_score_struct);
+for ttype=1:length(trialTypes)
+FR_combined.(trialTypes{ttype})=[z_score_struct.(sessions{1}).(trialTypes{ttype})... 
+ z_score_struct.(sessions{2}).(trialTypes{ttype})...
+ z_score_struct.(sessions{3}).(trialTypes{ttype})...
+ z_score_struct.(sessions{4}).(trialTypes{ttype})...
+ z_score_struct.(sessions{5}).(trialTypes{ttype})...
+ z_score_struct.(sessions{6}).(trialTypes{ttype})...
+ z_score_struct.(sessions{7}).(trialTypes{ttype})...
+ z_score_struct.(sessions{8}).(trialTypes{ttype})...
+ z_score_struct.(sessions{9}).(trialTypes{ttype})...
+ z_score_struct.(sessions{10}).(trialTypes{ttype})...
+ z_score_struct.(sessions{13}).(trialTypes{ttype})...
+ z_score_struct.(sessions{14}).(trialTypes{ttype})...
+ z_score_struct.(sessions{15}).(trialTypes{ttype})...
+ z_score_struct.(sessions{18}).(trialTypes{ttype})...
+ z_score_struct.(sessions{19}).(trialTypes{ttype})...
+ z_score_struct.(sessions{20}).(trialTypes{ttype})...
+ z_score_struct.(sessions{21}).(trialTypes{ttype})]
+
+end 
+
+
+%z_score_struct.(sessions{11}).(trialTypes{ttype})...
+ %z_score_struct.(sessions{12}).(trialTypes{ttype})...
+ %z_score_struct.(sessions{16}).(trialTypes{ttype})...
+ %z_score_struct.(sessions{17}).(trialTypes{ttype})...
+%%
+spike_struct_combined=vertcat(spikes_struct_ALL.(sessions{1}),...
+    spikes_struct_ALL.(sessions{2}),...
+    spikes_struct_ALL.(sessions{3}),...
+    spikes_struct_ALL.(sessions{4}),...
+    spikes_struct_ALL.(sessions{5}),...
+    spikes_struct_ALL.(sessions{6}),...
+    spikes_struct_ALL.(sessions{7}),...
+    spikes_struct_ALL.(sessions{8}),...
+    spikes_struct_ALL.(sessions{9}),...
+    spikes_struct_ALL.(sessions{10}),...
+    spikes_struct_ALL.(sessions{11}),...
+    spikes_struct_ALL.(sessions{12}),...
+    spikes_struct_ALL.(sessions{13}),...
+    spikes_struct_ALL.(sessions{14}),...
+    spikes_struct_ALL.(sessions{15}),...
+    spikes_struct_ALL.(sessions{16}),...
+    spikes_struct_ALL.(sessions{17}),...
+    spikes_struct_ALL.(sessions{18}),...
+    spikes_struct_ALL.(sessions{19}),...
+    spikes_struct_ALL.(sessions{20}),...
+    spikes_struct_ALL.(sessions{21}))
+%% 
+
+sessions=fieldnames(raw_FR_struct);
+for ttype=1:length(trialTypes)
+FR_combined_raw.(trialTypes{ttype})=[raw_FR_struct.(sessions{1}).(trialTypes{ttype})... 
+  raw_FR_struct.(sessions{2}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{3}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{4}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{5}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{6}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{7}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{8}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{9}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{10}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{11}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{12}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{13}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{14}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{15}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{16}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{17}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{18}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{19}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{20}).(trialTypes{ttype})...
+ raw_FR_struct.(sessions{21}).(trialTypes{ttype})]
+
+end 
+
+
+
+%% ZETA TEST 
+
+
+
+
+%% spike heatmaps DOI 
 addpath(genpath('D:\CLAS_EX1'))
 mainDir = uigetdir('D:\','Choose a Folder');
 
@@ -23,43 +295,65 @@ Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
 %Loop through each subdirectory and runs a script on all of your
 %subfolders(aka sessions). Can run as many scripts as you need
 
-   FiringRateArray = cell(1,6);
-   FiringRateStruct_Placeholder_ON = cell2struct(FiringRateArray, {'TrialStart', 'Chirp','Reward' ,'Laser','Forage','Region'}, 2);
-
-   FiringRateArray = cell(1,6);
-   FiringRateStruct_Placeholder_OFF = cell2struct(FiringRateArray, {'TrialStart', 'Chirp','Reward' ,'Laser','Forage','Region'}, 2);
-
-   FiringRateArray = cell(1,6);
-   FiringRateStruct_Placeholder_corr = cell2struct(FiringRateArray, {'TrialStart', 'Chirp','Reward' ,'Laser','Forage','Region'}, 2);
-
-   FiringRateArray = cell(1,6);
-   FiringRateStruct_Placeholder_incorr = cell2struct(FiringRateArray, {'TrialStart', 'Chirp','Reward' ,'Laser','Forage','Region'}, 2);
-
-for subfolder = 1:numel(Subfolders)
-    if subfolder<6
+for subfolder = 1:3 %numel(Subfolders)
     sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
     sDirs = {sessionDir.name}';
-    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I')) = [];
-    else 
-    sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
-    sDirs = {sessionDir.name}';
-    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I') | ~contains(sDirs,'opto')) = [];
-    end 
+    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'o')) = [];
+    
+    Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir.name);
+    FR_all_struct.(Subfolders(subfolder).name).(sessionDir.name)=DF_create_CLA_neurons_DOI(Fullpath)
 
-    for session=1:numel(sessionDir)
-            Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
-            %[FiringRateStruct_ON, FiringRateStruct_OFF,FiringRateStruct_corr, FiringRateStruct_incorr,num_trials]=DF_create_CLA_neurons(Fullpath)
-           % FiringRateStruct_Placeholder_ON=vertcat(FiringRateStruct_Placeholder_ON,FiringRateStruct_ON);
-           % FiringRateStruct_Placeholder_OFF=vertcat(FiringRateStruct_Placeholder_OFF,FiringRateStruct_OFF);
-           % FiringRateStruct_Placeholder_corr=vertcat(FiringRateStruct_Placeholder_corr,FiringRateStruct_corr);
-           % FiringRateStruct_Placeholder_incorr=vertcat(FiringRateStruct_Placeholder_incorr,FiringRateStruct_incorr);
-         DF_create_CLA_neurons_forDEC(Fullpath); 
-        disp(num2str(session))
-    end 
+    disp(num2str(subfolder))
 end
+
+
+
+
 
 %% Batch Script LFP
 clear all
+tic 
+%addpath(genpath('D:\CLAS_EX1'))
+mainDir = uigetdir('D:\','Choose a Folder');
+
+%Get a list of content
+
+Subfolders = dir(mainDir);
+
+%Remove content that isn't a subdirectory
+
+subDirs = {Subfolders.name}';
+Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
+
+%Loop through each subdirectory and runs a script on all of your
+%subfolders(aka sessions). Can run as many scripts as you need
+
+for subfolder = 1:numel(Subfolders)
+    if subfolder<6
+    sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+    sDirs = {sessionDir.name}';
+    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I')) = [];
+    else 
+    sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+    sDirs = {sessionDir.name}';
+    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I') | ~contains(sDirs,'opto')) = [];
+    end 
+
+    for session=1:numel(sessionDir)
+            Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
+            LFP_all_struct.(Subfolders(subfolder).name).(sessionDir(session).name)=LFP_analysis_07062022(Fullpath);
+        disp(num2str(session))
+    end 
+     %save(fullfile('D:\CLAS_EX1\Analysis_Structs',[Subfolders(subfolder).name '.mat']),'LFP_all_struct','-v7.3')
+     %clearvars LFP_all_struct
+end     
+toc
+
+
+
+
+%% BAtch Script for Classifier 
+
 addpath(genpath('D:\CLAS_EX1'))
 mainDir = uigetdir('D:\','Choose a Folder');
 
@@ -74,7 +368,7 @@ Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
 
 %Loop through each subdirectory and runs a script on all of your
 %subfolders(aka sessions). Can run as many scripts as you need
-count=1
+
 for subfolder = 1:numel(Subfolders)
     if subfolder<6
     sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
@@ -88,13 +382,16 @@ for subfolder = 1:numel(Subfolders)
 
     for session=1:numel(sessionDir)
             Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
-           % LFP_all_struct.(Subfolders(subfolder).name).(sessionDir(session).name)=LFP_analysis_07062022(Fullpath)
-           [sess_lon(count),sess_loff(count)]=LFP_analysis_07062022(Fullpath);
-           count=count+1;
+               FR_all_struct.(Subfolders(subfolder).name).(sessionDir(session).name)=DF_create_CLA_neurons(Fullpath)
 
         disp(num2str(session))
     end 
 end
+
+
+
+
+
 
 %% Batch for ISPC Will be deprecated soon 
 
@@ -178,329 +475,44 @@ wcoh_ON_sub_avg=squeeze(mean(wcoh_ON_sub));
  %xticks([0 1000 2000 3000 4000 5000])
  %xticklabels([{'-1'} {'-1'}  {'ChirpON'} 2000 3000 4000 5000])
 
-%%
+%%  BAtch script for pfc synchrony 
 
-Animal='CLAS_012';
-Session='CLAS_012_D3_opto';
-Region='PFC';
-TrialType='LOFF'
+clear all
+tic 
+addpath(genpath('D:\CLAS_EX1'))
+mainDir = uigetdir('D:\','Choose a Folder');
 
+%Get a list of content
 
-checkmax(1)=max(max(LFP_all_struct.(Animal).(Session).LOFF.(Region)(1).Chirp));
-checkmax(2)=max(max(LFP_all_struct.(Animal).(Session).LON.(Region)(1).Chirp));
-checkmax(3)=max(max(LFP_all_struct.(Animal).(Session).Correct.(Region)(1).Chirp));
-checkmax(4)=max(max(LFP_all_struct.(Animal).(Session).Incorrect.(Region)(1).Chirp));
-cmax=max(checkmax);
-cmax=max(checkmax)-.7*cmax;
+Subfolders = dir(mainDir);
 
-tiledlayout(6,2)
+%Remove content that isn't a subdirectory
 
-ax1=nexttile([2,1]);
-surf(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(1).TrialStart)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Trialstart'])
-caxis([0 cmax])
-xline(4000)
+subDirs = {Subfolders.name}';
+Subfolders(~[Subfolders.isdir]' | startsWith(subDirs, '.')) = [];
 
-ax2=nexttile([2,1]);
-surf(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(1).Chirp)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Chirp'])
-caxis([0 cmax])
-xline(4000)
+%Loop through each subdirectory and runs a script on all of your
+%subfolders(aka sessions). Can run as many scripts as you need
 
-ax3=nexttile;
-plot(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(2).TrialStart)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Trialstart'])
-xline(4000)
-
-ax4=nexttile;
-plot(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(2).Chirp)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Chirp'])
-xline(4000)
-
-
-ax5=nexttile([2,1]);
-surf(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(1).Reward)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Reward'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax6=nexttile([2,1]);
-surf(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(1).Forage)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Forage'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax7=nexttile;
-plot(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(2).Reward)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Reward'])
-xline(4000)
-
-ax8=nexttile;
-plot(LFP_all_struct.(Animal).(Session).(TrialType).(Region)(2).Forage)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Forage'])
-xline(4000)
-
-
-cb = colorbar;
-cb.Layout.Tile = 'east';
-
-%% Now average everthing: 
-
-TrialTypes=fields(LFP_all_struct.CLAS_009.CLAS_009_D1_opto);
-Regions=fields(LFP_all_struct.CLAS_009.CLAS_009_D1_opto.LON);
-alignments=fields(LFP_all_struct.CLAS_009.CLAS_009_D1_opto.LON.PFC);
-subjects=fields(LFP_all_struct);
-
-% Somthing is wrong with CLAS_009 Day 2 and CLAS_017 Day 3, CLAS_015 Day 3 so I manually
-% deleted them 
-temp1=zeros(70,8000,3);
-temp2=zeros(8000,3);
-for tt=1:length(TrialTypes)
-    for r=1:length(Regions)
-        for a=1:length(alignments)
-            for s=1:length(subjects)
-                sessions=fields(LFP_all_struct.(subjects{s})) ;
-                for sess=1:length(sessions)
-                    temp1(:,:,sess)=LFP_all_struct.(subjects{s}).(sessions{sess}).(TrialTypes{tt}).(Regions{r})(1).(alignments{a});
-                    temp2(:,sess)=LFP_all_struct.(subjects{s}).(sessions{sess}).(TrialTypes{tt}).(Regions{r})(2).(alignments{a});
-                end
-                LFP_mean_struct.(subjects{s}).(TrialTypes{tt}).(Regions{r})(1).(alignments{a})=mean(temp1,3);
-                LFP_mean_struct.(subjects{s}).(TrialTypes{tt}).(Regions{r})(2).(alignments{a})=mean(temp2,2);
-            end 
-        end 
+for subfolder = 1:numel(Subfolders)
+    if subfolder<6
+    sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+    sDirs = {sessionDir.name}';
+    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I')) = [];
+    else 
+    sessionDir=dir(fullfile(Subfolders(subfolder).folder,Subfolders(subfolder).name))
+    sDirs = {sessionDir.name}';
+    sessionDir(~[sessionDir.isdir]' | startsWith(sDirs, '.') | endsWith(sDirs, 'I') | ~contains(sDirs,'opto')) = [];
     end 
-end 
-   
 
-%% Now plot sessions averaged 
-
-
-Animal='CLAS_012';
-Region='PFC';
-TrialType='LOFF_Correct'
-
-
-checkmax(1)=max(max(LFP_mean_struct.(Animal).LOFF.(Region)(1).Chirp));
-checkmax(2)=max(max(LFP_mean_struct.(Animal).LON.(Region)(1).Chirp));
-checkmax(3)=max(max(LFP_mean_struct.(Animal).Correct.(Region)(1).Chirp));
-checkmax(4)=max(max(LFP_mean_struct.(Animal).Incorrect.(Region)(1).Chirp));
-cmax=max(checkmax);
-cmax=max(checkmax)-.3*cmax;
-
-tiledlayout(6,2)
-
-ax1=nexttile([2,1]);
-surf(LFP_mean_struct.(Animal).(TrialType).(Region)(1).TrialStart)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Trialstart'])
-caxis([0 cmax])
-xline(4000)
-
-ax2=nexttile([2,1]);
-surf(LFP_mean_struct.(Animal).(TrialType).(Region)(1).Chirp)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Chirp'])
-caxis([0 cmax])
-xline(4000)
-
-ax3=nexttile;
-plot(LFP_mean_struct.(Animal).(TrialType).(Region)(2).TrialStart)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Trialstart'])
-xline(4000)
-
-ax4=nexttile;
-plot(LFP_mean_struct.(Animal).(TrialType).(Region)(2).Chirp)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Chirp'])
-xline(4000)
-
-
-ax5=nexttile([2,1]);
-surf(LFP_mean_struct.(Animal).(TrialType).(Region)(1).Reward)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Reward'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax6=nexttile([2,1]);
-surf(LFP_mean_struct.(Animal).(TrialType).(Region)(1).Forage)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Forage'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax7=nexttile;
-plot(LFP_mean_struct.(Animal).(TrialType).(Region)(2).Reward)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Reward'])
-xline(4000)
-
-ax8=nexttile;
-plot(LFP_mean_struct.(Animal).(TrialType).(Region)(2).Forage)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Forage'])
-xline(4000)
-
-
-cb = colorbar;
-cb.Layout.Tile = 'east';
-
-%% Now FULL average 
-
- temp1=zeros(70,8000,3);
- temp2=zeros(8000,3);
- temp3=zeros(70,8000,9);
- temp4=zeros(8000,9);
-
-for tt=1:length(TrialTypes)
-    for r=1:length(Regions)
-        for a=1:length(alignments)
-            for s=1:length(subjects)
-                sessions=fields(LFP_all_struct.(subjects{s})) ;
-                for sess=1:length(sessions)
-                    temp1(:,:,sess)=LFP_all_struct.(subjects{s}).(sessions{sess}).(TrialTypes{tt}).(Regions{r})(1).(alignments{a});
-                    temp2(:,sess)=LFP_all_struct.(subjects{s}).(sessions{sess}).(TrialTypes{tt}).(Regions{r})(2).(alignments{a});
-                end
-             
-                temp3(:,:,s)=mean(temp1,3);
-                temp4(:,s)=mean(temp2,2);
-            end 
-            LFP_full_struct.(TrialTypes{tt}).(Regions{r})(1).(alignments{a})=mean(temp3,3);
-            LFP_full_struct.(TrialTypes{tt}).(Regions{r})(2).(alignments{a})=mean(temp4,2);
-        end 
+    for session=1:numel(sessionDir)
+            Fullpath = fullfile(Subfolders(subfolder).folder, Subfolders(subfolder).name,sessionDir(session).name);
+            ppc_all_struct.(Subfolders(subfolder).name).(sessionDir(session).name)=PV_gamma_synchrony(Fullpath);
+        disp(num2str(session))
     end 
-end 
-%% NOW PLOT Full average 
-figure()
-Region='PFC';
-TrialType='LON_Incorrect'
+     %save(fullfile('D:\CLAS_EX1\Analysis_Structs',[Subfolders(subfolder).name '.mat']),'LFP_all_struct','-v7.3')
+     %clearvars LFP_all_struct
+end     
+toc
 
 
-checkmax(1)=max(max(LFP_full_struct.LOFF.(Region)(1).Chirp));
-checkmax(2)=max(max(LFP_full_struct.LON.(Region)(1).Chirp));
-checkmax(3)=max(max(LFP_full_struct.Correct.(Region)(1).Chirp));
-checkmax(4)=max(max(LFP_full_struct.Incorrect.(Region)(1).Chirp));
-cmax=max(checkmax);
-cmax=max(checkmax)-.1*cmax;
-
-tiledlayout(6,2)
-
-ax1=nexttile([2,1]);
-surf(LFP_full_struct.(TrialType).(Region)(1).TrialStart)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Trialstart'])
-caxis([0 cmax])
-xline(4000)
-
-ax2=nexttile([2,1]);
-surf(LFP_full_struct.(TrialType).(Region)(1).Chirp)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Chirp'])
-caxis([0 cmax])
-xline(4000)
-
-ax3=nexttile;
-plot(LFP_full_struct.(TrialType).(Region)(2).TrialStart)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Trialstart'])
-xline(4000)
-
-ax4=nexttile;
-plot(LFP_full_struct.(TrialType).(Region)(2).Chirp)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Chirp'])
-xline(4000)
-
-
-ax5=nexttile([2,1]);
-surf(LFP_full_struct.(TrialType).(Region)(1).Reward)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Reward'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax6=nexttile([2,1]);
-surf(LFP_full_struct.(TrialType).(Region)(1).Forage)
-view(2)
-shading interp
-yticks([1,21,35,52,63,70])
-yticklabels([{'1'},{'4'},{'10'},{'35'},{'75'},{'120'}])
-ylabel('Power')
-title( [TrialType ' ' Region ' Forage'])
-caxis([0 cmax])
-xline(4000)
-
-
-ax7=nexttile;
-plot(LFP_full_struct.(TrialType).(Region)(2).Reward)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Reward'])
-xline(4000)
-
-ax8=nexttile;
-plot(LFP_full_struct.(TrialType).(Region)(2).Forage)
-ylabel('ERP')
-title( [TrialType ' ' Region ' Forage'])
-xline(4000)
-
-
-cb = colorbar;
-cb.Layout.Tile = 'east';
