@@ -3,28 +3,30 @@
 
 classdef BehDat
     properties
+        name
         baud
         frames
-        bpod
+        spikes
+        lfp
+        waveforms
         timestamps
+        bpod
     end
 
     methods
-        %Constructor with two mandatory inputs
-        function obj = BehDat(b, f, beh, ts)
-            if nargin == 4
+        function obj = BehDat(n, b, f, s, l, w, ts, beh)
+            if nargin == 8
+                obj.name = n;
                 obj.baud = b;
                 obj.frames = f;
-                obj.bpod = beh;
+                obj.spikes = s;
+                obj.lfp = l;
+                obj.waveforms = w;
                 obj.timestamps = ts;
+                obj.bpod = beh;
             end
         end
         
-        function import_behavior(obj, bpodSession)
-            if nargin == 2
-                obj.bpod = bpodSession;
-            end
-        end
         %Requires bpod_performance from Abbas-WM repository
         function [numTT, numCorrect] = outcomes(obj, val)
             if ~exist('val', 'var')
@@ -32,15 +34,22 @@ classdef BehDat
             end
             [numTT, numCorrect] = bpod_performance(obj.bpod, val);
         end
+        %bins spikes into trialized cell arrays
+        function spikes = trialize_spikes(event, duration)
+            
+        end
 
-        function plot_outcome(obj, val)
+        function h = plot_outcome(obj, val)
 
             if ~exist('val', 'var')
                 val = 1;
             end
             [numTT, numCorrect] = bpod_performance(obj.bpod, val);
-
-            bar_and_error(numCorrect./numTT)
+            h = figure;
+            bar(h, numCorrect./numTT)
+%             bar_and_error(numCorrect./numTT)      Bar and error fcn not
+%             currently working for this type of data. Cannot calculate SEM
+%             using one dimensional data
         end
     end
 end
