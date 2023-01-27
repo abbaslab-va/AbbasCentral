@@ -20,7 +20,7 @@ if nargin == 1
     bar(meanResult)
     x = 1:length(meanResult);
     hold on
-    h = errorbar(x, meanResult, SEM, 'LineStyle', 'none', 'Color', 'k', 'LineWidth', 1.5);
+    errorbar(x, meanResult, SEM, 'LineStyle', 'none', 'Color', 'k', 'LineWidth', 1.5);
 
 elseif nargin == 2
     nVars = size(data, 2);

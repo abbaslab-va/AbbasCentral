@@ -1,11 +1,12 @@
-function expSessions = select_experiment(parentFolder)
-
+function [expSessions, metadata] = select_experiment(parentFolder)
+metaData = struct();
 %Loads data into a class array from the main experimental directory.
 %Metadata is stored in a separate variable not yet written
-if ~exist('mainDir', 'var')
+if ~exist('parentFolder', 'var')
     parentFolder = uigetdir('Choose a Folder');
 end
-
+a = inputdlg('Please enter the name of the experimenter: ');
+experimenter = a{1};
 %Get a list of content
 subFolders = dir(parentFolder);
 
@@ -13,7 +14,7 @@ subFolders = dir(parentFolder);
 
 subDirs = {subFolders.name}';
 subFolders(~[subFolders.isdir]' | startsWith(subDirs, '.')) = [];
-
+subNames = extractfield(subFolders, 'name');
 %concatenate session behavioral and neural data into an array of BehDat
 %objects
 ctr = 1;
@@ -30,3 +31,7 @@ for sub = 1:3           %Temporary solution while lacking write access
         ctr = ctr + 1;
     end 
 end
+
+metadata.subjects = subNames;
+metadata.path = parentFolder;
+metadata.experimenter = experimenter;
