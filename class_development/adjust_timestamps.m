@@ -1,4 +1,4 @@
-function adjustedTimestamps = adjust_timestamps(nev, numTrials)
+function tsStruct = adjust_timestamps(nev, numTrials)
 
 %Returns adjusted timestamps from the Bpod V0.7 state machine interfacing
 %with the Cereplex Direct. Wire signals sent from Bpod are routed through a
@@ -28,3 +28,5 @@ elseif length(Check_length) - numTrials ~= 0
     throw(ME)
 end 
  
+tsStruct.times = adjustedTimestamps(1, :);
+tsStruct.codes = adjustedTimestamps(2, :);

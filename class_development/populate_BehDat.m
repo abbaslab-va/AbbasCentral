@@ -1,4 +1,4 @@
-function sessObj = populate_BehDat(sessPath, n)
+function sessObj = populate_BehDat(sessPath, n, tsDict)
 %This function will create a behavioral object that contains all neural and 
 %behavioral data for the recorded behavioral sesison.
 cd(sessPath)
@@ -19,7 +19,7 @@ sf = NEV.MetaTags.SampleRes;
 numSamples = NEV.MetaTags.DataDuration;
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
-
+timestamps.keys = tsDict;
 spikeStruct = get_spike_info(sessPath);
 
 %For LFP

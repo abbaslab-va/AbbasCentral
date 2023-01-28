@@ -5,8 +5,14 @@ metaData = struct();
 if ~exist('parentFolder', 'var')
     parentFolder = uigetdir('Choose a Folder');
 end
-a = inputdlg('Please enter the name of the experimenter: ');
-experimenter = a{1};
+cd(parentFolder)
+iniDir = dir('config.ini');
+if isempty(iniDir)
+    ie = MException('BehDat:config', 'No file in experiment directory called config.ini');
+    throw(ie);
+end
+I = INI;
+I.read('config.ini');
 %Get a list of content
 subFolders = dir(parentFolder);
 
@@ -27,11 +33,15 @@ for sub = 1:3           %Temporary solution while lacking write access
     sessionFolders(~[sessionFolders.isdir]' | startsWith(sDirs, '.')) = []; 
     for sess=1:numel(sessionFolders)
         Fullpath = fullfile(parentFolder, subName, sessionFolders(sess).name);
-        expSessions(ctr) = populate_BehDat(Fullpath, subName);
+        expSessions(ctr) = populate_BehDat(Fullpath, subName, I.timestamps);
         ctr = ctr + 1;
     end 
 end
 
 metadata.subjects = subNames;
 metadata.path = parentFolder;
-metadata.experimenter = experimenter;
+try
+    metadata.experimenter = I.experimenter.x_Experimenter;
+catch
+    metadata.experimenter = "";
+end
