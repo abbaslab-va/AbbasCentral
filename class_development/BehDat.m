@@ -26,7 +26,7 @@ classdef BehDat
                 obj.bpod = beh;
             end
         end
-        
+    %% Functions for Bpod sessions
         function [numTT, numCorrect] = outcomes(obj, val)
             if ~exist('val', 'var')
                 val = 1;
@@ -45,9 +45,8 @@ classdef BehDat
             [f, b, e] = bar_and_error(numCorrect./numTT, shapeVec);
 
         end
-
-        %bins spikes into trialized cell arrays
-        function spikes = trialize_spikes(obj, event, duration)
+    %% Functions for spikes
+        function sp = trialize_spikes(obj, event, duration)
             eventString = strcat('x_', event);
             try
                 timestamp = obj.timestamps.keys.(eventString);
