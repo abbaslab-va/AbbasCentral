@@ -8,7 +8,8 @@
 > 2. ~~Parse SessionData file~~
 > 3. Manually create config file for each experiment
 - [ ] Add trialize spikes function
-- [ ] Discuss tall arrays for LFP access
-- [ ] Fix error bar for bar_and_error with bpod_performance
+- [x] Discuss tall arrays for LFP access
+- [x] Fix error bar for bar_and_error with bpod_performance
 - [ ] Implement Z-Score function
 - [ ] Implement rasterplot function
+- [ ] Sankey diagram for bpod state transitions
