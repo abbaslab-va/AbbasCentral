@@ -43,7 +43,10 @@ classdef BehDat
                 shapeVec = numel(numTT);
             end
             [f, b, e] = bar_and_error(numCorrect./numTT, shapeVec);
+        end
 
+        function sankey(obj)
+            bpod_sankey(obj.bpod)
         end
     %% Functions for spikes
         function sp = trialize_spikes(obj, event, duration)

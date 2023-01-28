@@ -12,4 +12,4 @@
 - [x] Fix error bar for bar_and_error with bpod_performance
 - [ ] Implement Z-Score function
 - [ ] Implement rasterplot function
-- [ ] Sankey diagram for bpod state transitions
+- [x] Sankey diagram for bpod state transitions
