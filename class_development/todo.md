@@ -10,6 +10,7 @@
 - [ ] Add trialize spikes function
 - [x] Discuss tall arrays for LFP access
 - [x] Fix error bar for bar_and_error with bpod_performance
-- [ ] Implement Z-Score function
+- [x] Implement Z-Score function
 - [ ] Implement rasterplot function
 - [x] Sankey diagram for bpod state transitions
+- [ ] Design user interface for GUI

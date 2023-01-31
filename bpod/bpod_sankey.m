@@ -7,6 +7,8 @@ for trial = 1:session.nTrials
     numStates = numel(trialEvents);
     for state = 1:numStates-1
 %         if any(strcmp({'ITI2', 'DelayOnHold', 'DelayWaitForReentry'}, stateNames{trialEvents(state)}))
+%         if any(strcmp({'DrinkGrace4', 'DrinkGrace5'}, stateNames{trialEvents(state)}))
+
             startState{end+1} = stateNames{trialEvents(state)};
             endState{end+1} = stateNames{trialEvents(state+1)};
 %         end

@@ -15,8 +15,8 @@ if ~isempty(dir(fullfile(sessPath , '*.nev')))
     NEV=openNEV(NEV_file);
 end
 
-sf = NEV.MetaTags.SampleRes;
-numSamples = NEV.MetaTags.DataDuration;
+sf = double(NEV.MetaTags.SampleRes);
+numSamples = double(NEV.MetaTags.DataDuration);
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = tsDict;
@@ -24,7 +24,7 @@ spikeStruct = get_spike_info(sessPath);
 
 %For LFP
 % NS_6 = strcat(sessPath,'\',FolderName, '.ns6');
-% if ~isempty(dir(fullfile(sessPath , '*.ns6')))
+% if ~isempty(dir(fullfile(sessPath, '*.ns6')))
 %     openNSx(NS_6)
 % end
 
