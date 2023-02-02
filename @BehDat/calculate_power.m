@@ -1,1 +1,1 @@
-function calculate_power(obj)
+function pwr = calculate_power(obj)

@@ -7,10 +7,11 @@
 > 1. ~~Include bpod script and parse timestamp fields~~
 > 2. ~~Parse SessionData file~~
 > 3. Manually create config file for each experiment
-- [ ] Add trialize spikes function
+- [x] Add trialize spikes function
 - [x] Discuss tall arrays for LFP access
 - [x] Fix error bar for bar_and_error with bpod_performance
 - [x] Implement Z-Score function
-- [ ] Implement rasterplot function
+- [x] Implement rasterplot function
 - [x] Sankey diagram for bpod state transitions
 - [ ] Design user interface for GUI
+- [ ] Implement lfp power function

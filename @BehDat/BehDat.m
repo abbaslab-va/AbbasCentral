@@ -4,8 +4,6 @@
 classdef BehDat
     properties
         info
-        baud
-        frames
         spikes
         lfp
         waveforms
@@ -24,6 +22,16 @@ classdef BehDat
                 obj.timestamps = ts;
                 obj.bpod = beh;
             end
+
+            if isfield(obj.spikes, 'times') && ~isfield(obj.spikes, 'trialized')
+                try
+                    spikesByTrial = trialize_spikes(obj, 'Trial_Start');
+                    [obj.spikes.trialized] = deal(spikesByTrial{:});
+                catch
+                    warning("Unable to generate trialized spike cells." + ...
+                        "Please ensure your config file has a timestamp named Trial Start")
+                end
+            end
         end
 
     %% Bpod methods
@@ -38,13 +46,19 @@ classdef BehDat
     
         timestamps = find_event(obj, event)
         
+        spikesByTrial = trialize_spikes(obj, trialStart)
+
         binnedSpikes = bin_spikes(obj, eventEdges, binSize)
+
+        binnedTrials = bin_neuron(obj, event, edges, neuron, binSize)
+
+        raster(obj, event, edges, neuron)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
     %% LFP methods
 
-        calculate_power(obj)
+        pwr = calculate_power(obj)
 
     %% Video methods
 

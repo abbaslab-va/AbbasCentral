@@ -7,7 +7,7 @@ This software package makes several fundamental assumptions about your data orga
 
 * Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
 
-* A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file can be blank, but it is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. An example layout for this file is shown below:
+* A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example layout for this file is shown below:
 
 ```
 [timestamps]
@@ -54,12 +54,22 @@ This is a structure that accompanies the BehDat object array generated from sele
     timestamps - a structure containing subfields:
         > times - a 1xT double array of timestamp times, where T is the number of timestamps
         > codes - a 1xT double array of timestamp codes (i.e. 65529)
-        > keys - a structure containing key strings that can be used by the user to reference specific timestamp codes. Set up in config.ini file
+        > keys - a structure containing key strings that can be used by the user 
+        to reference specific timestamp codes. Set up in config.ini file
     bpod - a SessionData file from a Bpod session
 
 ## BehDat Methods
 
+Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. Functions relating to bpod, spikes, and video can be run simultaneously on arrays of objects, as the overhead for storing the associated data is relatively low. Functions that require LFP analysis should be run on one subject at a time, as the cost to memory for storing raw ephys data is prohibitively large. These functions will load the LFP, manipulate and analyze the signal as needed, save the results, and delete the LFP from the workspace.
+
 ### Bpod
+
 ### Spikes
 ### LFP
 ### Video
+
+# Example workflow
+The following example demonstrates how a researcher may use this package to set up a data pipeline, from collection and spike sorting, to synchronization with parallel data streams, to data analysis, visualization and storage. 
+## A) Organize project directory
+## B) Sort spikes with kilosort
+## C) Select experiment

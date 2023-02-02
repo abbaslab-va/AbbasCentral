@@ -1,5 +1,4 @@
 function [expSessions, metadata] = select_experiment(parentFolder)
-metaData = struct();
 %Loads data into a class array from the main experimental directory.
 %Metadata is stored in a separate variable not yet written
 if ~exist('parentFolder', 'var')
