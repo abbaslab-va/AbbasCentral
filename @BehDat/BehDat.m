@@ -3,7 +3,7 @@
 
 classdef BehDat
     properties
-        name
+        info
         baud
         frames
         spikes
@@ -15,11 +15,9 @@ classdef BehDat
 
     methods
         %Constructor
-        function obj = BehDat(n, b, f, s, l, w, ts, beh)
-            if nargin == 8
-                obj.name = n;
-                obj.baud = b;
-                obj.frames = f;
+        function obj = BehDat(i, s, l, w, ts, beh)
+            if nargin == 6
+                obj.info = i;
                 obj.spikes = s;
                 obj.lfp = l;
                 obj.waveforms = w;

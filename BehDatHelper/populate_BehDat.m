@@ -1,13 +1,13 @@
 function sessObj = populate_BehDat(sessPath, n, tsDict)
 %This function will create a behavioral object that contains all neural and 
 %behavioral data for the recorded behavioral sesison.
+
 cd(sessPath)
 try
     load('SessionData.mat', 'SessionData')
 catch
     warning('No Bpod session named SessionData.mat found in %s', sessPath)
 end
-
 [~,FolderName] = fileparts(sessPath);   
 
 NEV_file = strcat(sessPath,'\',FolderName, '.nev');
@@ -17,6 +17,8 @@ end
 
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
+
+info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples);
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = tsDict;
@@ -28,5 +30,5 @@ spikeStruct = get_spike_info(sessPath);
 %     openNSx(NS_6)
 % end
 
-sessObj = BehDat(n, sf, numSamples, spikeStruct, [], [], timestamps, SessionData);
+sessObj = BehDat(info, spikeStruct, [], [], timestamps, SessionData);
 
