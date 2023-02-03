@@ -3,12 +3,12 @@ function sessObj = populate_BehDat(sessPath, n, tsDict)
 %behavioral data for the recorded behavioral sesison.
 
 cd(sessPath)
-dir = ('*.mat');
-for m = 1:length(dir)
-    fName = dir(m).name;
-    fInfo = whos('-file', 'fname');
-    if fInfo.name == 'SessionData'
-        load('fName', 'SessionData')
+matdir = dir('*.mat');
+for m = 1:length(matdir)
+    fName = matdir(m).name;
+    fInfo = whos('-file', fName);
+    if numel(fInfo) == 1 && strcmp(fInfo.name, "SessionData")
+        load(fName, 'SessionData')
     end
 end
 
