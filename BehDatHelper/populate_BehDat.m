@@ -3,8 +3,16 @@ function sessObj = populate_BehDat(sessPath, n, tsDict)
 %behavioral data for the recorded behavioral sesison.
 
 cd(sessPath)
+dir = ('*.mat');
+for m = 1:length(dir)
+    fName = dir(m).name;
+    fInfo = whos('-file', 'fname');
+    if fInfo.name == 'SessionData'
+        load('fName', 'SessionData')
+    end
+end
+
 try
-    load('SessionData.mat', 'SessionData')
 catch
     warning('No Bpod session named SessionData.mat found in %s', sessPath)
 end
