@@ -1,5 +1,5 @@
 # Welcome to AbbasCentral!
-This is the github repository for the Abbas Lab's framework for behavioral, neural, and video data processing.
+This is the Github repository for the Abbas Lab's framework for behavioral, neural, and video data processing.
 The classes and functions are designed to be as flexible as possible, allowing the user to customize the inputs according to their specific needs. 
 It contains functions for analyzing performance and positional data during behavior in freely moving mice, as well as processing and analyzing synchronous neural recordings. 
 
@@ -7,7 +7,7 @@ This software package makes several fundamental assumptions about your data orga
 
 * Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
 
-* A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example layout for this file is shown below:
+* A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. An example layout for this file is shown below:
 
 ```
 [timestamps]
@@ -21,7 +21,7 @@ This software package makes several fundamental assumptions about your data orga
 'Experimenter' = 'Your name here'
 ```
 
-* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. An example call:
+* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example call:
     
     `trializedSpikes = trialize_spikes('Laser On', 2)`
 
@@ -36,15 +36,17 @@ which brings up an interactive directory selection menu. If your data is properl
 ## Experiment metadata
 
 This is a structure that accompanies the BehDat object array generated from select_experiment. It contains fields:
+
     subjects - a 1xS cell array with names of each of the S subjects in the experiment
     path - a string to the local directory that houses the experimental data
     experimenter - The name of the experimenter (set up in config file)
 
 ## BehDat Properties
 
-    name - The subject's name. Will match one of the subjects in metadata.subjects
-    baud - Sampling rate of the neural aquisition hardware
-    frames - Number of samples captured in the neural session
+    info - a structure containing subfields:
+        > name - The subject's name. Will match one of the subjects in metadata.subjects
+        > baud - Sampling rate of the neural aquisition hardware
+        > samples - Number of samples captured in the neural session
     spikes - a structure containing subfields:
         > times - a 1xN cell array of spike times, where N is the number of neurons
         > regions - 1xN cell array of brain regions of the single units
@@ -54,8 +56,7 @@ This is a structure that accompanies the BehDat object array generated from sele
     timestamps - a structure containing subfields:
         > times - a 1xT double array of timestamp times, where T is the number of timestamps
         > codes - a 1xT double array of timestamp codes (i.e. 65529)
-        > keys - a structure containing key strings that can be used by the user 
-        to reference specific timestamp codes. Set up in config.ini file
+        > keys - a structure containing key strings that can be used by the user to reference specific timestamp codes. Set up in config.ini file
     bpod - a SessionData file from a Bpod session
 
 ## BehDat Methods
