@@ -58,7 +58,7 @@ classdef BehDat
 
     %% LFP methods
 
-        pwr = calculate_power(obj)
+        [pwr, phase, freqs] = cwt_power(obj, event, edges, freqLimits)
 
     %% Video methods
 
