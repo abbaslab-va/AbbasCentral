@@ -14,4 +14,5 @@
 - [x] Implement rasterplot function
 - [x] Sankey diagram for bpod state transitions
 - [ ] Design user interface for GUI
-- [ ] Implement lfp power function
+- [x] Implement cwt power function
+- [ ] Integrate movement analysis pipeline into BehDat
