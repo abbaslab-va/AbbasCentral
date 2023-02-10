@@ -9,18 +9,20 @@ classdef BehDat
         waveforms
         timestamps
         bpod
+        coordinates
     end
 
     methods
         %Constructor
-        function obj = BehDat(i, s, l, w, ts, beh)
-            if nargin == 6
+        function obj = BehDat(i, s, l, w, ts, beh, c)
+            if nargin == 7
                 obj.info = i;
                 obj.spikes = s;
                 obj.lfp = l;
                 obj.waveforms = w;
                 obj.timestamps = ts;
                 obj.bpod = beh;
+                obj.coordinates = c;
             end
 
             if isfield(obj.spikes, 'times') && ~isfield(obj.spikes, 'trialized')
@@ -55,6 +57,10 @@ classdef BehDat
         raster(obj, event, edges, neuron)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
+
+        corrScore = xcorr(obj, event, edges)
+
+        [maxVals, trialTypes] = mono_corr_max(obj, corrCells, region1, region2)
 
     %% LFP methods
 

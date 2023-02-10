@@ -58,6 +58,7 @@ This is a structure that accompanies the BehDat object array generated from sele
         > codes - a 1xT double array of timestamp codes (i.e. 65529)
         > keys - a structure containing key strings that can be used by the user to reference specific timestamp codes. Set up in config.ini file
     bpod - a SessionData file from a Bpod session
+    coordinates - x and y coordinates from DeepLabCut, imported from csv
 
 ## BehDat Methods
 

@@ -7,3 +7,6 @@ binnedSpikes = zeros(numNeurons, numel(binEdges)-1);
 for i = 1:numNeurons
     binnedSpikes(i, :) = histcounts(obj.spikes(i).times, 'BinEdges', binEdges);
 end
+
+
+% rewrite to bin spikes around all events in trial

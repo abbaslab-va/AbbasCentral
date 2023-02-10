@@ -32,7 +32,7 @@ for sub = 1:3           %Temporary solution while lacking write access
     sessionFolders(~[sessionFolders.isdir]' | startsWith(sDirs, '.')) = []; 
     for sess=1:numel(sessionFolders)
         Fullpath = fullfile(parentFolder, subName, sessionFolders(sess).name);
-        expSessions(ctr) = populate_BehDat(Fullpath, subName, I.timestamps);
+        expSessions(ctr) = populate_BehDat(Fullpath, subName, I);
         ctr = ctr + 1;
     end 
 end
@@ -40,7 +40,7 @@ end
 metadata.subjects = subNames;
 metadata.path = parentFolder;
 try
-    metadata.experimenter = I.experimenter.x_Experimenter;
+    metadata.experimenter = I.info.experimenter;
 catch
     metadata.experimenter = "";
 end

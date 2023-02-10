@@ -1,4 +1,4 @@
-function spikeStruct = get_spike_info(sessPath)
+function spikeStruct = get_spike_info(sessPath, regions)
     
 %Getting spike info from Kilosort3 files
 unsortedSpikeTimes = double(readNPY(strcat(sessPath, '\spike_times.npy')));
@@ -25,11 +25,22 @@ goodClusters = clusterInfo.id(ismember(clusterInfo.group(:,1),'g') == 1)+1;
 clusterInfo.ch = clusterInfo.ch + 1; 
 goodChannels = num2cell(clusterInfo.ch(ismember(clusterInfo.group(:,1),'g') == 1)); 
 numCells = length(goodClusters);
-
 spikeTimeArray = cell(numCells, 1);
+
+cellRegions = cell(numCells, 1);
+allRegions = fields(regions);
 for cluster = 1:numCells
     spikeTimeArray{cluster} = (unsortedSpikeTimes(unsortedSpikeClusters == goodClusters(cluster))');
+    for r = 1:numel(allRegions)
+        regionField = allRegions{r};
+        regionName = regionField(3:end);
+        if ismember(goodChannels{cluster}, regions.(regionField))
+            cellRegions{cluster} = regionName;
+            break
+        end
+    end
 end
 
-spikeStruct= struct('times', spikeTimeArray, 'regions', [], 'channels', goodChannels);
+
+spikeStruct= struct('times', spikeTimeArray, 'regions', cellRegions, 'channels', goodChannels);
 
