@@ -42,5 +42,5 @@ for cluster = 1:numCells
 end
 
 
-spikeStruct= struct('times', spikeTimeArray, 'regions', cellRegions, 'channels', goodChannels);
+spikeStruct= struct('times', spikeTimeArray, 'region', cellRegions, 'channel', goodChannels);
 

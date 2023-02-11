@@ -13,14 +13,18 @@ for ref = 1:numSpikes - 1
         basemean = mean(basewidevals);
         basestd = std(basewidevals);
         peakLeading = any([basecorr(48:50)] > basemean + 3*basestd);
+        peakInMonoNeg = any(ismember(find(basecorr == max(basecorr)), [48:50]));
         peakTrailing = any([basecorr(52:54)] > basemean + 3*basestd);
+        peakInMonoPos = any(ismember(find(basecorr == max(basecorr)), [52:54]));
         enoughSpikes = sum(basecorr) > 1000;
         lowJitter = basemean > 3*basestd;
-        peakInMono = any(ismember(find(basecorr == max(basecorr)), [48:50, 52:54]));
-        if peakLeading && enoughSpikes && lowJitter && peakInMono
+        if ~enoughSpikes || ~lowjitter
+            continue
+        end
+        if peakLeading && peakInMonoNeg
             isMono{ref}(end+1) = target;
             corrs{ref}(end+1, :) = basecorr;
-        elseif peakTrailing && enoughSpikes && lowJitter && peakInMono
+        elseif peakTrailing && peakInMonoPos
             isMono{target}(end+1) = ref;
             corrs{target}(end+1, :) = basecorr;
         end

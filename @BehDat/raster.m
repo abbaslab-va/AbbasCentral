@@ -11,4 +11,5 @@ spikeMat = boolean(obj.bin_neuron(event, edges, neuron, 1));
 % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
 % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
 % MATLAB Central File Exchange. Retrieved February 2, 2023. 
+figure
 plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);

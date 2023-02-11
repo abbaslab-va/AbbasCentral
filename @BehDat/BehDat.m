@@ -66,7 +66,8 @@ classdef BehDat < handle
 
         plot_mono(obj)
 
-
+        plot_digraph(obj)
+        
     %% LFP methods
 
         [pwr, phase, freqs] = cwt_power(obj, event, edges, freqLimits)

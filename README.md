@@ -49,8 +49,8 @@ This is a structure that accompanies the BehDat object array generated from sele
         > samples - Number of samples captured in the neural session
     spikes - a structure containing subfields:
         > times - a 1xN cell array of spike times, where N is the number of neurons
-        > regions - 1xN cell array of brain regions of the single units
-        > channels - 1xN double list of original channels on acquisition hardware
+        > region - 1xN cell array of brain regions of the single units
+        > channel - 1xN double list of original channels on acquisition hardware
     lfp - 
     waveforms - a 1xN cell array of average waveform shapes
     timestamps - a structure containing subfields:
