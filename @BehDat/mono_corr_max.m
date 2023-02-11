@@ -1,4 +1,4 @@
-function [maxVals, trialTypes] = mono_corr_max(obj, corrCells, region1, region2)
+function maxVals = mono_corr_max(obj, corrCells, region1, region2)
 
 % INPUT:
 %     corrCells - the output from calling obj.xcorr

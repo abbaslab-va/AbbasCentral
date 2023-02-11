@@ -1,10 +1,13 @@
-function corrScore = xcorr(obj, event, edges)
+function [corrScore, trialTypes] = xcorr(obj, event, edges)
 
 % INPUT:
 %     event - a string of an event named in config.ini
 %     edges - 1x2 vector specifying distance from the event in seconds
 
+    trialStart = obj.find_event('Trial_Start');
     timestamps = obj.find_event(event);
+    trialNo = discretize(timestamps, [trialStart obj.info.samples]);
+    trialTypes = obj.bpod.TrialTypes(trialNo);
     edges = num2cell(edges * obj.info.baud + timestamps', 2);
     binnedSpikes = cellfun(@(x) obj.bin_spikes(x, 1), edges, 'uni', 0);
     corrScore = cellfun(@corrfun, binnedSpikes, 'uni', 0);

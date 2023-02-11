@@ -1,7 +1,7 @@
 % Base class for objects storing data collected from behavioral experiments
 % in the Abbas Lab.
 
-classdef BehDat
+classdef BehDat < handle
     properties
         info
         spikes
@@ -58,9 +58,14 @@ classdef BehDat
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
-        corrScore = xcorr(obj, event, edges)
+        [corrScore, trialTypes] = xcorr(obj, event, edges)
 
-        [maxVals, trialTypes] = mono_corr_max(obj, corrCells, region1, region2)
+        maxVals = mono_corr_max(obj, corrCells, region1, region2)
+
+        find_mono(obj)
+
+        plot_mono(obj)
+
 
     %% LFP methods
 
