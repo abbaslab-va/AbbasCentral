@@ -8,7 +8,7 @@ for trial = 1:session.nTrials
     trialEvents = session.RawData.OriginalStateData{trial};
     numStates = numel(trialEvents);
     for state = 1:numStates-1
-%         if any(strcmp({'ITI2', 'DelayOnHold', 'DelayWaitForReentry'}, stateNames{trialEvents(state)}))
+%         if any(strcmp({'WaitForChirp2', 'DelayOnHold', 'DelayWaitForReentry'}, stateNames{trialEvents(state)}))
 %         if any(strcmp({'DrinkGrace4', 'DrinkGrace5'}, stateNames{trialEvents(state)}))
 
             startState{end+1} = stateNames{trialEvents(state)};

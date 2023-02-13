@@ -64,9 +64,9 @@ classdef BehDat < handle
 
         find_mono(obj)
 
-        plot_mono(obj)
+        plot_mono(obj, varargin)
 
-        plot_digraph(obj)
+        G = plot_digraph(obj)
         
     %% LFP methods
 

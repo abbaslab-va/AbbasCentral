@@ -1,5 +1,5 @@
 function timestamps = find_event(obj, event)
-
+event(event == ' ') = '_';
 eventString = strcat('x_', event);
 try
     timestamp = obj.timestamps.keys.(eventString);

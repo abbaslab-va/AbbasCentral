@@ -1,8 +1,13 @@
-function plot_mono(obj)
-
+function plot_mono(obj, varargin)
 numNeurons = numel(obj.spikes);
 animalName = obj.info.name;
-for ref = 1:numNeurons
+if nargin == 1
+    refNeurons = 1:numNeurons;
+elseif nargin == 2    
+    refNeurons = varargin{1};
+end
+
+for ref = refNeurons
     if isempty(obj.spikes(ref).exciteOutput)
         continue
     end

@@ -16,3 +16,12 @@
 - [ ] Design user interface for GUI
 - [x] Implement cwt power function
 - [ ] Integrate movement analysis pipeline into BehDat
+- [ ] Identify putative connection types
+    - [x] Monosynaptic excitatory
+    - [ ] Monosynaptic inhibatory 
+    - [ ] Polysynaptic excitatory
+    - [ ] Polysynaptic ex-inhib
+    - [ ] Polysynaptic disinhibatory
+    - [ ] Shared excitatory input
+    - [ ] Shared inhibatory input
+- [ ] Ensemble activity across trials
