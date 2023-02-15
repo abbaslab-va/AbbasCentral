@@ -23,7 +23,7 @@ subNames = extractfield(subFolders, 'name');
 %concatenate session behavioral and neural data into an array of BehDat
 %objects
 ctr = 1;
-% for sub = 1:numel(subFolders)
+for sub = 1:numel(subFolders)
 for sub = 1:3           %Temporary solution while lacking write access
     subFolder = subFolders(sub).folder;
     subName = subFolders(sub).name;
@@ -36,9 +36,11 @@ for sub = 1:3           %Temporary solution while lacking write access
         ctr = ctr + 1;
     end 
 end
-
 metadata.subjects = subNames;
 metadata.path = parentFolder;
+%This could go in each subject to avoid having to pass in the metadata
+metadata.trialTypes = I.trialTypes;
+metadata.outcomes = I.outcomes;
 try
     metadata.experimenter = I.info.experimenter;
 catch

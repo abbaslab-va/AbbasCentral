@@ -66,7 +66,11 @@ classdef BehDat < handle
 
         plot_mono(obj, varargin)
 
-        G = plot_digraph(obj)
+        G = plot_digraph(obj, trialized)
+
+        weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
+        
+        weightsIn = trialize_mono_inhibitory(obj, trialType, outcome)
         
     %% LFP methods
 

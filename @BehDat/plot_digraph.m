@@ -1,10 +1,18 @@
-function E = plot_digraph(obj)
+function E = plot_digraph(obj, trialized)
+
+% This function currently only accepts trialized weights from excitatory
+% connections, should be modified to parse name-value pair arguments and
+% accept excitatory and inhibitory weights
+if ~exist('trialized', 'var')
+    trialized = [];
+end
 
 numNeurons = numel(obj.spikes);
 animalName = obj.info.name;
 connGraphEx = {[], []};
 connGraphIn = {[], []};
 weightsEx = [];
+weightsExTrialized = [];
 weightsIn = [];
 sizes = zeros(1, numNeurons);
 labels = cell(1, numNeurons);
@@ -20,6 +28,10 @@ for ref = 1:numNeurons
             connGraphEx{1}(end+1) = ref;
             connGraphEx{2}(end+1) = target;
             weightsEx(end+1) = obj.spikes(ref).exciteWeight(t);
+            try
+                weightsExTrialized(end+1) = trialized{ref}(t);
+            catch
+            end
         end
     end
 
@@ -40,7 +52,12 @@ end
 %Excitatory
 connGraphEx = digraph(connGraphEx{1}, connGraphEx{2});
 figure
-E = plot(connGraphEx, 'LineWidth', 5*weightsEx/max(weightsEx),...
+if ~isempty(trialized)
+    weightsEx = weightsExTrialized;
+    weightsEx(weightsEx < 0) = 0.01;
+    weightsEx
+end
+E = plot(connGraphEx, 'LineWidth', weightsEx,...
     'Layout', 'layered', 'MarkerSize', 1, 'ArrowSize', 10);
 title(sprintf("Animal %s", animalName))
 labels = labels(1:numel(E.XData));
@@ -64,3 +81,9 @@ end
 % size data
 sizes = sizes(1:numel(E.XData));
 scatter(E.XData, E.YData, 100*sizes/max(sizes), 'k', 'o', 'filled')
+
+%% Trialized overlay
+
+if isempty(trialized)
+    return
+end
