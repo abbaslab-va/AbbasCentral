@@ -17,10 +17,9 @@ for ref = 1:numNeurons - 1
         tTimes = obj.spikes(target).times;
         numSpikes = numel(tTimes);
         jitterCorr = zeros(1000, 101);
-        for s = 1:1000
-            offset = randsample(-300:30:300, numSpikes, true);
-            jitteredTimes = tTimes + offset;
-            binnedJitter = histcounts(jitteredTimes, 'BinEdges', bEdges);
+        parfor s = 1:1000
+            binnedJitter = histcounts(tTimes + randsample(-300:30:300, numSpikes, true),...
+                'BinEdges', bEdges);
             jitterCorr(s, :) = xcorr(refSpikes, binnedJitter, 50);
         end
         basecorr = xcorr(refSpikes, targetSpikes, 50);
