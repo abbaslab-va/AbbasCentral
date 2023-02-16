@@ -24,7 +24,7 @@ subNames = extractfield(subFolders, 'name');
 %objects
 ctr = 1;
 for sub = 1:numel(subFolders)
-for sub = 1:3           %Temporary solution while lacking write access
+% for sub = 1:3           %Temporary solution while lacking write access
     subFolder = subFolders(sub).folder;
     subName = subFolders(sub).name;
     sessionFolders=dir(fullfile(parentFolder,subName));

@@ -55,7 +55,6 @@ figure
 if ~isempty(trialized)
     weightsEx = weightsExTrialized;
     weightsEx(weightsEx < 0) = 0.01;
-    weightsEx
 end
 E = plot(connGraphEx, 'LineWidth', weightsEx,...
     'Layout', 'layered', 'MarkerSize', 1, 'ArrowSize', 10);
