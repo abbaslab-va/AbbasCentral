@@ -23,6 +23,8 @@ if length(Check_length) - numTrials == 1
    adjustedTimestamps=adjustedTimestamps(:, 1:Check_length(end) - 2);
 
 elseif length(Check_length) - numTrials ~= 0
+    length(Check_length)
+    numTrials
      ME = MException('BehDat:BadTS', ...
     'Trial start timestamps have a length mismatch with the Bpod Session file');
     throw(ME)

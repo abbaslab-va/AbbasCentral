@@ -1,4 +1,4 @@
-function [expSessions, metadata] = select_experiment(parentFolder)
+function [expSessions, metadata] = select_experiment(parentFolder, indices)
 %Loads data into a class array from the main experimental directory.
 %Metadata is stored in a separate variable not yet written
 if ~exist('parentFolder', 'var')
@@ -23,7 +23,13 @@ subNames = extractfield(subFolders, 'name');
 %concatenate session behavioral and neural data into an array of BehDat
 %objects
 ctr = 1;
-for sub = 1:numel(subFolders)
+if ~exist('indices', 'var')
+    indices = 1:numel(subFolders);
+end
+
+% for s = 1:numel(indices)
+for s = 1:3
+    sub = indices(s);
 % for sub = 1:3           %Temporary solution while lacking write access
     subFolder = subFolders(sub).folder;
     subName = subFolders(sub).name;

@@ -7,7 +7,14 @@ clusterInfo = tdfread(strcat(sessPath, '\cluster_info.tsv'));
 
 %Combining your manually curated clusters (if any) with those that kilosort
 %automatically assigns
-for cluster = 1:length(clusterInfo.id)
+nameFields = fields(clusterInfo);
+if any(cellfun(@(x) strcmp(x, "cluster_id"), nameFields))
+    idField = "cluster_id";
+else
+    idField = "id";
+end
+
+for cluster = 1:length(clusterInfo.(idField))
     if isnan(clusterInfo.group(cluster,1))
         clusterInfo.group(cluster,1) = clusterInfo.KSLabel(cluster,1); 
     elseif regexp('   ', clusterInfo.group(cluster,:)) == 1
@@ -21,7 +28,7 @@ end
 
 %Pulling out only the clusters labeled 'good' (the ones that start with a 'g')
 %and putting them into a matrix called GoodClusters
-goodClusters = clusterInfo.id(ismember(clusterInfo.group(:,1),'g') == 1)+1;
+goodClusters = clusterInfo.(idField)(ismember(clusterInfo.group(:,1),'g') == 1)+1;
 clusterInfo.ch = clusterInfo.ch + 1; 
 goodChannels = num2cell(clusterInfo.ch(ismember(clusterInfo.group(:,1),'g') == 1)); 
 numCells = length(goodClusters);
