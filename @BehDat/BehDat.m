@@ -60,6 +60,8 @@ classdef BehDat < handle
 
         [corrScore, trialTypes] = xcorr(obj, event, edges)
 
+        plot_xcorr(obj, ref, target, window)
+
         maxVals = mono_corr_max(obj, corrCells, region1, region2)
 
         find_mono(obj)
