@@ -44,6 +44,8 @@ classdef BehDat < handle
 
         sankey(obj)
 
+        adjust_vip_trialTypes(obj)
+
     %% Spike methods
     
         timestamps = find_event(obj, event)
@@ -54,7 +56,9 @@ classdef BehDat < handle
 
         binnedTrials = bin_neuron(obj, event, edges, neuron, binSize)
 
-        raster(obj, event, edges, neuron)
+        raster(obj, event, edges, neuron, ax)
+
+        psth(obj, event, edges, neuron)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
@@ -68,7 +72,7 @@ classdef BehDat < handle
 
         plot_mono(obj, varargin)
 
-        G = plot_digraph(obj, trialized)
+        G = plot_digraph(obj, trialized, panel)
 
         weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
         

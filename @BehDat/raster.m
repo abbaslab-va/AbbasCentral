@@ -1,4 +1,4 @@
-function raster(obj, event, edges, neuron)
+function raster(obj, event, edges, neuron, ax)
 
 % INPUT:
 %     event - a string of a state named in the config file
@@ -11,5 +11,11 @@ spikeMat = boolean(obj.bin_neuron(event, edges, neuron, 1));
 % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
 % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
 % MATLAB Central File Exchange. Retrieved February 2, 2023. 
-figure
-plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+
+if exist('ax', 'var')
+    h = figure('Visible', 'off');
+    plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+    copyobj(h.Children, ax)
+else
+    plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+end

@@ -1,10 +1,16 @@
-function E = plot_digraph(obj, trialized)
+function E = plot_digraph(obj, trialized, panel)
 
 % This function currently only accepts trialized weights from excitatory
 % connections, should be modified to parse name-value pair arguments and
 % accept excitatory and inhibitory weights
 if ~exist('trialized', 'var')
     trialized = [];
+end
+
+if exist('panel', 'var')
+    h = figure('Visible', 'off');
+else
+    h = figure;
 end
 
 numNeurons = numel(obj.spikes);
@@ -48,7 +54,7 @@ for ref = 1:numNeurons
 end
 
 if (isempty(connGraphEx{1}))
-    figure
+%     figure
     E = plot(digraph(connGraphEx{1}, connGraphEx{2}));
     return
 end
@@ -56,10 +62,10 @@ end
 
 %Excitatory
 connGraphEx = digraph(connGraphEx{1}, connGraphEx{2});
-figure
+% figure
 if ~isempty(trialized)
     weightsEx = weightsExTrialized;
-    weightsEx(weightsEx < 0) = 0.01
+    weightsEx(weightsEx < 0) = 0.01;
 end
 E = plot(connGraphEx, 'LineWidth', weightsEx,...
     'Layout', 'layered', 'MarkerSize', 1, 'ArrowSize', 10);
@@ -88,6 +94,10 @@ scatter(E.XData, E.YData, 100*sizes/max(sizes), 'k', 'o', 'filled')
 
 %% Trialized overlay
 
-if isempty(trialized)
-    return
+% if isempty(trialized)
+%     return
+% end
+
+if exist('panel', 'var')
+    copyobj(h.Children, panel)
 end
