@@ -12,8 +12,7 @@ for m = 1:length(matdir)
     end
 end
 coords = [];
-try
-catch
+if ~exist('SessionData', 'var')
     warning('No Bpod session named SessionData.mat found in %s', sessPath)
 end
 [~,FolderName] = fileparts(sessPath);   
@@ -26,17 +25,11 @@ end
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
 
-info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples);
+info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, 'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes);
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 spikeStruct = get_spike_info(sessPath, ini.regions);
-
-%For LFP
-% NS_6 = strcat(sessPath,'\',FolderName, '.ns6');
-% if ~isempty(dir(fullfile(sessPath, '*.ns6')))
-%     openNSx(NS_6)
-% end
 
 sessObj = BehDat(info, spikeStruct, [], [], timestamps, SessionData, coords);
 

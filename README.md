@@ -5,11 +5,14 @@ It contains functions for analyzing performance and positional data during behav
 
 This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:
 
-* Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
+1) Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
 
-* A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. An example layout for this file is shown below:
+2) A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. An example layout for this file is shown below:
 
 ```
+[experimenter]
+'Experimenter' = 'Your name here'
+
 [timestamps]
 'Off' = 65528
 'Trial Start' = 65529
@@ -17,13 +20,31 @@ This software package makes several fundamental assumptions about your data orga
 'Forage' = 65531
 'Reward' = 65532
 'Punish' = 65533
-[experimenter]
-'Experimenter' = 'Your name here'
+
+[regions]
+'PFC' = [1:25, 27, 29, 31]
+'NACC' = 26
+'MD' = 28
+'VTA' = 30
+'VHIP' = 32
+
+[trialTypes]
+'Left' = 1
+'Right' = 2
+
+[outcomes]
+'Correct' = 1
+'Incorrect' = 0
 ```
 
+ ## config.ini   
 * The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example call:
     
     `trializedSpikes = trialize_spikes('Laser On', 2)`
+
+* The [regions] section indicates the relationship between electrode channels and implanted regions, which can be used to examine neurons from a certain region or specific relationships between one or more regions. 
+* [trialTypes] is used to indicate the type of trial you wish to investigate. The name assigned to a trial type or a collection of trial types is arbitrary and is to assist the researcher in making explicit their desired subset of data. This is extracted from the Bpod session file, in the 'TrialTypes' field.
+* [outcomes] details the meaning of the trial outcomes saved to the Bpod session file in the field 'SessionPerformance'. Again, these serve as a way to allow the researcher to subdivide the data using explicit and obvious mapping to english "macros".
 
 # BehDat Class
 

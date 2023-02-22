@@ -47,6 +47,11 @@ for ref = 1:numNeurons
     end 
 end
 
+if (isempty(connGraphEx{1}))
+    figure
+    E = plot(digraph(connGraphEx{1}, connGraphEx{2}));
+    return
+end
 %% Plots
 
 %Excitatory
@@ -54,7 +59,7 @@ connGraphEx = digraph(connGraphEx{1}, connGraphEx{2});
 figure
 if ~isempty(trialized)
     weightsEx = weightsExTrialized;
-    weightsEx(weightsEx < 0) = 0.01;
+    weightsEx(weightsEx < 0) = 0.01
 end
 E = plot(connGraphEx, 'LineWidth', weightsEx,...
     'Layout', 'layered', 'MarkerSize', 1, 'ArrowSize', 10);

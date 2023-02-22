@@ -10,8 +10,14 @@ trialStartTimes = find_event(obj, trialStart);
 for n = 1:numNeurons
     spikeTrialIdx = discretize(obj.spikes(n).times, [trialStartTimes obj.info.samples]);
     numTrials = max(spikeTrialIdx);
+    numBpod = obj.bpod.nTrials;
     for t = 1:numTrials
         spikesByTrial{n}{t} = obj.spikes(n).times(spikeTrialIdx == t);
+    end
+    if numTrials < numBpod
+        for t = numTrials+1:numBpod
+            spikesByTrial{n}{t} = [];
+        end
     end
 end
 
