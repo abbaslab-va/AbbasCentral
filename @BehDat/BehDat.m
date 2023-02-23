@@ -58,7 +58,7 @@ classdef BehDat < handle
 
         raster(obj, event, edges, neuron, ax)
 
-        psth(obj, event, edges, neuron)
+        psth(obj, event, edges, neuron, ax)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 

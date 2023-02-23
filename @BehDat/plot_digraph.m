@@ -100,4 +100,5 @@ scatter(E.XData, E.YData, 100*sizes/max(sizes), 'k', 'o', 'filled')
 
 if exist('panel', 'var')
     copyobj(h.Children, panel)
+    close(h)
 end

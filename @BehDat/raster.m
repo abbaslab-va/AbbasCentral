@@ -16,6 +16,7 @@ if exist('ax', 'var')
     h = figure('Visible', 'off');
     plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
     copyobj(h.Children, ax)
+    close(h)
 else
     plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
 end
