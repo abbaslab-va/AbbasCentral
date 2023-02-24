@@ -56,9 +56,9 @@ classdef BehDat < handle
 
         binnedTrials = bin_neuron(obj, event, edges, neuron, binSize)
 
-        raster(obj, event, edges, neuron, ax)
+        raster(obj, event, edges, neuron, panel)
 
-        psth(obj, event, edges, neuron, ax)
+        psth(obj, event, edges, neuron, panel)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
@@ -80,7 +80,7 @@ classdef BehDat < handle
         
     %% LFP methods
 
-        [pwr, phase, freqs] = cwt_power(obj, event, edges, freqLimits)
+        [pwr, freqs, phase] = cwt_power(obj, event, edges, freqLimits, averaged)
 
     %% Video methods
 
