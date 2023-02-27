@@ -54,11 +54,11 @@ classdef BehDat < handle
 
         binnedSpikes = bin_spikes(obj, eventEdges, binSize)
 
-        binnedTrials = bin_neuron(obj, event, edges, neuron, binSize)
+        binnedTrials = bin_neuron(obj, event, edges, neuron, binSize, trialTypes)
 
-        raster(obj, event, edges, neuron, panel)
+        raster(obj, event, edges, neuron, panel, trialTypes)
 
-        psth(obj, event, edges, neuron, panel)
+        psth(obj, event, edges, neuron, panel, trialTypes)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
@@ -73,7 +73,7 @@ classdef BehDat < handle
         plot_mono(obj, varargin)
 
         G = plot_digraph(obj, trialized, panel)
-
+    
         weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
         
         weightsIn = trialize_mono_inhibitory(obj, trialType, outcome)
@@ -81,6 +81,8 @@ classdef BehDat < handle
     %% LFP methods
 
         [pwr, freqs, phase] = cwt_power(obj, event, edges, freqLimits, averaged)
+
+        %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
     %% Video methods
 

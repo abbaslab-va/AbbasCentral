@@ -35,7 +35,6 @@ clear NS6
 numChan = size(lfp, 1);
 pwr = cell(1, numChan);
 phase = cell(1, numChan);
-tic
 for c = 1:numChan
     [AS,f] = cellfun(@(x) cwt(downsample(lfp(c, x(1):x(2)-1), downsampleRatio), 'FilterBank', filterbank), edgeCells, 'uni', 0);
     
@@ -50,7 +49,6 @@ for c = 1:numChan
         phase{c} = chanPhase;
     end
 end
-toc
 freqs = flip(f{c});
 
 if averaged

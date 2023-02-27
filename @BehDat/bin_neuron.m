@@ -1,4 +1,4 @@
-function binnedTrials = bin_neuron(obj, event, edges, neuron, binSize)
+function binnedTrials = bin_neuron(obj, event, edges, neuron, binSize, trialTypes)
 
 
 % INPUT:
@@ -19,3 +19,10 @@ spikeCells = obj.spikes(neuron).trialized(eventTrials)';
 binnedTrials = cellfun(@(x, y) histcounts(x, 'BinEdges', y(1):baud/1000*binSize:y(2)),...
     spikeCells, edgeCells, 'uni', 0);
 binnedTrials = cat(1, binnedTrials{:});
+
+if exist('trialTypes', 'var')
+    trials = find(ismember(obj.bpod.TrialTypes, trialTypes()));
+    numTrials = size(binnedTrials, 1);
+    trials = trials(trials < numTrials);
+    binnedTrials = binnedTrials(trials, :);
+end

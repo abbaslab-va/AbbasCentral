@@ -1,6 +1,6 @@
-function psth(obj, event, edges, neuron, panel)
+function psth(obj, event, edges, neuron, panel, trialTypes)
 
-spikeMat = obj.bin_neuron(event, edges, neuron, 1);
+spikeMat = obj.bin_neuron(event, edges, neuron, 1, trialTypes);
 meanSpikes = mean(spikeMat, 1);
 smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50);
 if exist('panel', 'var')
