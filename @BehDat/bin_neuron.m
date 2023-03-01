@@ -21,7 +21,7 @@ binnedTrials = cellfun(@(x, y) histcounts(x, 'BinEdges', y(1):baud/1000*binSize:
 binnedTrials = cat(1, binnedTrials{:});
 
 if exist('trialTypes', 'var')
-    trials = find(ismember(obj.bpod.TrialTypes, trialTypes()));
+    trials = find(ismember(obj.bpod.TrialTypes, trialTypes));
     numTrials = size(binnedTrials, 1);
     trials = trials(trials < numTrials);
     binnedTrials = binnedTrials(trials, :);

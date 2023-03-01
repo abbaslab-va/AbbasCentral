@@ -80,7 +80,7 @@ classdef BehDat < handle
         
     %% LFP methods
 
-        [pwr, freqs, phase] = cwt_power(obj, event, edges, freqLimits, averaged)
+        [pwr, freqs, phase, eventTrialTypes, eventOutcomes] = cwt_power(obj, event, varargin)
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
