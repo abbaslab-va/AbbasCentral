@@ -1,13 +1,13 @@
-
 function plot_cwt(pwr, channel, freqs, panel)
 
 % Plots a heatmap of the power spectra obtained from a cwt centered around
 % trialized alignments.
-
+% 
 % INPUT:
 %     power - a 1xC cell array obtained as the pwr output from cwt_power
 %     channel - an integer value equal to the channel to plot, <= C
 %     panel - an optional argument enabling plotting within the app
+
 numFreqs = numel(freqs);
 yTick = [1:10:numFreqs, numFreqs];
 if exist('panel', 'var')

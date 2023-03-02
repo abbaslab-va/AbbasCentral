@@ -1,5 +1,11 @@
 function spikeStruct = get_spike_info(sessPath, regions)
     
+% OUTPUT:
+%     spikeStruct - a non-scalar structure containing spike info for a BehDat class
+% INPUT:
+%     sessPath - path to the behavioral session folder
+%     regions - regions sourced from ini.regions. See docs for details
+
 %Getting spike info from Kilosort3 files
 unsortedSpikeTimes = double(readNPY(strcat(sessPath, '\spike_times.npy')));
 unsortedSpikeClusters = double(readNPY(strcat(sessPath, '\spike_clusters.npy')))+1;

@@ -1,4 +1,10 @@
 function timestamps = find_event(obj, event)
+
+% OUTPUT:
+%     timestamps - a 1xE vector of timestamps from the desired event
+% INPUT:
+%     event -  an event character vector found in the config.ini file
+
 event(event == ' ') = '_';
 eventString = strcat('x_', event);
 try

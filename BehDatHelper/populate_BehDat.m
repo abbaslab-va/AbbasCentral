@@ -1,6 +1,12 @@
 function sessObj = populate_BehDat(sessPath, n, ini)
-%This function will create a behavioral object that contains all neural and 
-%behavioral data for the recorded behavioral sesison.
+
+% This function will create a behavioral object that contains all neural and 
+% behavioral data for the recorded behavioral sesison.
+% 
+% INPUT:
+%     sessPath - path to the behavioral session folder
+%     n - session name
+%     ini - config.ini file for the experiment read in using the INI package
 
 cd(sessPath)
 matdir = dir('*.mat');

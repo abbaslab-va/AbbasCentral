@@ -13,9 +13,19 @@
 - [x] Implement Z-Score function
 - [x] Implement rasterplot function
 - [x] Sankey diagram for bpod state transitions
-- [ ] Design user interface for GUI
-- [x] Implement cwt power function
 - [ ] Integrate movement analysis pipeline into BehDat
+- [ ] Design user interface for GUI
+    - [x] Raster plot
+    - [x] PSTH
+    - [x] CWT power
+    - [x] By trial type
+    - [ ] By trial outcome
+    - [ ] Clickable scatter plot to select neuron
+    - [ ] Bpod performance plotter
+    - [ ] Sankey diagram
+    - [ ] HCTSA
+    - [ ] Rotation
+- [x] Implement cwt power function
 - [ ] Identify putative connection types
     - [x] Monosynaptic excitatory
     - [ ] Monosynaptic inhibatory 

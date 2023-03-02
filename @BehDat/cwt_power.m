@@ -52,7 +52,7 @@ edgeCells = num2cell(a.edges, 2);
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
 lfp = double(NS6.Data);
-% norm = rms(lfp, 2)
+% norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 clear NS6
 numChan = size(lfp, 1);
 pwr = cell(1, numChan);

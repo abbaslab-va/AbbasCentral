@@ -1,6 +1,8 @@
 function binnedTrials = bin_neuron(obj, event, edges, neuron, binSize, trialTypes)
 
-
+% OUTPUT:
+%     binnedTrials - an E x T binary matrix of spike times for a neuron, 
+%     where E is the number of events and T is the number of bins
 % INPUT:
 %     event - string of an event defined in the config file
 %     edges - 1x2 vector distance from event on either side in seconds

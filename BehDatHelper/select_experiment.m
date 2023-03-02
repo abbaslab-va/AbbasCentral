@@ -1,6 +1,14 @@
 function [expSessions, metadata] = select_experiment(parentFolder, indices)
-%Loads data into a class array from the main experimental directory.
-%Metadata is stored in a separate variable not yet written
+
+% Loads data into a class array from the main experimental directory.
+% Metadata is stored in a separate variable. The array and the metadata are
+% used to power AbbasCentral.mlapp
+% 
+% INPUT:
+%     parentFolder - a directory pointing to the highest organizational level 
+%     of your experiment according to the structure dictated in the docs in readme.md
+%     indices - an optional variable indicating which folders you would like to collect data from
+
 if ~exist('parentFolder', 'var')
     parentFolder = uigetdir('Choose a Folder');
 end
