@@ -47,3 +47,6 @@ for t = 1:obj.bpod.nTrials
             end
     end
 end
+ttDiff = diff(obj.bpod.TrialTypes);
+obj.bpod.TrialTypes(find(ttDiff == -1) + 1) = 3;
+obj.bpod.TrialTypes(find(ttDiff == 1) + 1) = 4;

@@ -1,3 +1,4 @@
+
 function plot_cwt(pwr, channel, freqs, panel)
 
 % Plots a heatmap of the power spectra obtained from a cwt centered around
@@ -15,6 +16,7 @@ if exist('panel', 'var')
     yticks(yTick)
     yticklabels(freqs(yTick))
     view(2)
+    colorbar
     copyobj(h.Children, panel)
     close(h)
     return
