@@ -40,11 +40,13 @@ classdef BehDat < handle
         
         [numTT, numCorrect] = outcomes(obj, val)
 
-        [f, b, e] = plot_outcome(obj, val, shapeVec)
+        plot_performance(obj, outcome, panel)
 
         sankey(obj)
 
         adjust_vip_trialTypes(obj)
+
+        graceStateTimes = add_focus_trialTypes(obj)
 
     %% Spike methods
     
