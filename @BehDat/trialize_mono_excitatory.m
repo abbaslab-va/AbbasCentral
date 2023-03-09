@@ -2,6 +2,7 @@ function weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
 
 if exist('outcome', 'var')
     outcome = append("x_", outcome);
+    outcome(outcome == ' ') = '_';
     try
         outcome = obj.info.outcomes.(outcome);
     catch
@@ -59,8 +60,17 @@ for r = 1:numel(hasExcitatoryConn)
 %                 continue
 %             end
         % Excitatory conditionals
-        peakWeight = (basecorr(latMax) - basemean)/basestd;
-        weightsEx{ref}(end+1) = peakWeight;
+        try
+            peakWeight = (basecorr(latMax) - basemean)/basestd;
+            weightsEx{ref}(end+1) = peakWeight;
+        catch
+            obj.info.path
+            peakWeight
+            latMax
+            ref
+            target
+        end
+
     end
 end
 

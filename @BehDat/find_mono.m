@@ -1,6 +1,5 @@
 function find_mono(obj)
 
-bEdges = 0:30:obj.info.samples;
 spikes = obj.bin_spikes([0 obj.info.samples], 1);
 numNeurons = size(spikes, 1);
 isMonoEx = cell(numNeurons, 1);
@@ -34,10 +33,13 @@ for ref = 1:numNeurons - 1
         end
 %         Excitatory conditionals
         peakLeading = any([basecorr(48:50)] > basemean + 3*basestd);
-        peakInMonoNeg = any(ismember(find(basecorr == max(basecorr)), 48:50));
+        negMax = ismember(find(basecorr == max(basecorr)), 48:50);
+        peakInMonoNeg = any(negMax);
         peakTrailing = any([basecorr(52:54)] > basemean + 3*basestd);
-        peakInMonoPos = any(ismember(find(basecorr == max(basecorr)), 52:54));
+        posMax = ismember(find(basecorr == max(basecorr)), 52:54);
+        peakInMonoPos = any(posMax);
         peakWeight = (max(basecorr) - basemean)/basestd;
+        onePeak = numel(find(negMax)) == 1 || numel(find(posMax)) == 1;
 %         peakLeading = any([zCorr(48:50)] > 3);
 %         peakInMonoNeg = any(ismember(find(zCorr == max(zCorr)), 48:50));
 %         peakTrailing = any([zCorr(52:54)] > 3);
@@ -54,7 +56,8 @@ for ref = 1:numNeurons - 1
 %         valleyInMonoPos = any(ismember(find(zCorr == min(zCorr)), 52:54));
 %         valleyWeight = min(basecorr);
 %         skip over pairs with shared excitatory upstream input for now
-        if find(basecorr == max(basecorr)) == 51
+        peakCentered = find(basecorr == max(basecorr)) == 51;
+        if  any(peakCentered) || ~onePeak
             continue
         end
         if peakLeading && peakInMonoNeg

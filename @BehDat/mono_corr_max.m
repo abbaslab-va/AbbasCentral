@@ -9,8 +9,8 @@ if ~exist('region2', 'var')
     region2 = region1;
 end
 
-refCells = cellfun(@(x) strcmp(x, region1), extractfield(obj.spikes, 'regions'));
-targetCells = cellfun(@(x) strcmp(x, region2), extractfield(obj.spikes, 'regions'));
+refCells = cellfun(@(x) strcmp(x, region1), extractfield(obj.spikes, 'region'));
+targetCells = cellfun(@(x) strcmp(x, region2), extractfield(obj.spikes, 'region'));
 corrSubset = cellfun(@(x) x(refCells, targetCells), corrCells, 'uni', 0);
 nonEmptyCells = cellfun(@(x) ~cellfun(@isempty, x), corrSubset, 'uni', 0);
 corrMat = cellfun(@(x, y) x(y), corrSubset, nonEmptyCells, 'uni', 0);
