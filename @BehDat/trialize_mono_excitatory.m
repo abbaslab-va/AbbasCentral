@@ -1,76 +1,72 @@
-function weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
+function weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
 
-if exist('outcome', 'var')
-    outcome = append("x_", outcome);
-    outcome(outcome == ' ') = '_';
-    try
-        outcome = obj.info.outcomes.(outcome);
-    catch
-        outcome = [];
-    end
-else
-    outcome = [];
-end
-trialType(trialType == ' ') = '_';
-eventString = strcat('x_', trialType);
-trialsOfInterest = obj.info.trialTypes.(eventString);
+% OUTPUT:
+%     weightsEx - an N x 1 cell array with connection weights for neuron
+%     pairs identified from find_mono, in the event window given by
+%     alignment and edges.
+% INPUT:
+%     trialType - a trial type char array that is in config.ini
+%     alignment - an alignment char array that is in config.ini
+%     edges - a 1x2 vector that defines the edges from an event 
+%     within which spikes will be correlated
+% optional name/value pairs:
+%     'offset' - a number that defines the offset from the alignment you wish to center around.
+%     'outcome' - an outcome character array found in config.ini
+
+validVectorSize = @(x) all(size(x) == [1, 2]);
+p = inputParser;
+addRequired(p, 'trialType', @ischar);
+addRequired(p, 'alignment', @ischar);
+addRequired(p, 'edges', validVectorSize);
+addParameter(p, 'offset', 0, @isnumeric)
+addParameter(p, 'outcome', [], @ischar);
+parse(p, trialType, alignment, edges, varargin{:});
+a = p.Results;
+
+trialType = a.trialType;
+alignment = a.alignment;
+edges = a.edges;
+outcome = a.outcome;
+offset = a.offset;
+
+eventTimes = obj.find_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+edges = (edges * obj.info.baud) + eventTimes';
+edgeCells = num2cell(edges, 2);
 exciteID = arrayfun(@(x) ~isempty(x.exciteOutput), obj.spikes);
-spikes = obj.bin_spikes([0 obj.info.samples], 1);
-trialStartTimes = find_event(obj, 'Trial Start');
-trialStartTimes = round(trialStartTimes * 1000 / obj.info.baud);
-isDesiredTT = ismember(obj.bpod.TrialTypes, trialsOfInterest);
-trials2check = find(isDesiredTT);
-if ~isempty(outcome)
-    trials2check = intersect(trials2check, find(obj.bpod.SessionPerformance == outcome));
-end
-numTrials = numel(trials2check)-1;
-numSpikes = size(spikes, 1);
+numSpikes = numel(obj.spikes);
 weightsEx = cell(numSpikes, 1);
-%     Excitatory
 hasExcitatoryConn = find(exciteID);
+numEvents = numel(edgeCells);
+
 for r = 1:numel(hasExcitatoryConn)
     ref = hasExcitatoryConn(r);
-    refSpikes = spikes(ref, :);
     eTargets = obj.spikes(ref).exciteOutput;
     for target = eTargets
-        targetSpikes = spikes(target, :);
-        corrMat = zeros(numTrials, 101);
+        corrMat = zeros(numEvents, 101);
         indEx = obj.spikes(ref).exciteOutput == target;
         sessCorr = obj.spikes(ref).exciteXcorr(indEx, :);
         latMax = find(sessCorr == max(sessCorr));
         if numel(latMax) ~= 1
             latMax = latMax(latMax > 47 & latMax < 51);
         end
-        %         for trial = trials2check
-        for t = 1:numTrials
-            trial = trials2check(t);
-            tStart = trialStartTimes(trial);
-            tEnd = trialStartTimes(trial + 1);
-            refInterval = refSpikes(tStart:tEnd);
-            targetInterval = targetSpikes(tStart:tEnd);
-            corrMat(trial, :) = xcorr(refInterval, targetInterval, 50);
+
+        for e = 1:numEvents
+            eventEdges = edgeCells{e};
+            binEdges = eventEdges(1):obj.info.baud/1000:eventEdges(2);
+            refSpikes = histcounts(obj.spikes(ref).times, 'BinEdges', binEdges);
+            targetSpikes = histcounts(obj.spikes(target).times, 'BinEdges', binEdges);
+            corrMat(e, :) = xcorr(refSpikes, targetSpikes, 50);
         end
+
         basecorr = sum(corrMat, 1);
         basewidevals = [basecorr(1:40), basecorr(end-39:end)];
         basemean = mean(basewidevals);
         basestd = std(basewidevals);        
-%             enoughSpikes = sum(basecorr) > 1000;
-%             lowJitter = basemean > 3*basestd;
-%             if ~enoughSpikes || ~lowJitter
-%                 continue
-%             end
-        % Excitatory conditionals
-        try
-            peakWeight = (basecorr(latMax) - basemean)/basestd;
-            weightsEx{ref}(end+1) = peakWeight;
-        catch
-            obj.info.path
-            peakWeight
-            latMax
-            ref
-            target
+        peakWeight = (basecorr(latMax) - basemean)/basestd;
+        if isnan(peakWeight)
+            peakWeight = 0.001;
         end
-
+        weightsEx{ref}(end+1) = peakWeight;
     end
 end
 

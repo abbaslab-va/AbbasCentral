@@ -50,7 +50,7 @@ classdef BehDat < handle
 
     %% Spike methods
     
-        timestamps = find_event(obj, event)
+        timestamps = find_event(obj, event, varargin)
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 
@@ -76,7 +76,7 @@ classdef BehDat < handle
 
         G = plot_digraph(obj, trialized, panel)
     
-        weightsEx = trialize_mono_excitatory(obj, trialType, outcome)
+        weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
         
         weightsIn = trialize_mono_inhibitory(obj, trialType, outcome)
         

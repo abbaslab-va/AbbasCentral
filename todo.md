@@ -21,8 +21,8 @@
     - [x] By trial type
     - [ ] By trial outcome
     - [ ] Clickable scatter plot to select neuron
-    - [ ] Bpod performance plotter
-    - [ ] Sankey diagram
+    - [x] Bpod performance plotter
+    - [x] Sankey diagram
     - [ ] HCTSA
     - [ ] Rotation
 - [x] Implement cwt power function
