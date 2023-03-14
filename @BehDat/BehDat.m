@@ -24,16 +24,6 @@ classdef BehDat < handle
                 obj.bpod = beh;
                 obj.coordinates = c;
             end
-
-            if isfield(obj.spikes, 'times') && ~isfield(obj.spikes, 'trialized')
-                try
-                    spikesByTrial = trialize_spikes(obj, 'Trial_Start');
-                    [obj.spikes.trialized] = deal(spikesByTrial{:});
-                catch
-                    warning("Unable to generate trialized spike cells." + ...
-                        "Please ensure your config file has a timestamp named Trial Start")
-                end
-            end
         end
 
     %% Bpod methods
@@ -56,9 +46,9 @@ classdef BehDat < handle
 
         binnedSpikes = bin_spikes(obj, eventEdges, binSize)
 
-        binnedTrials = bin_neuron(obj, event, edges, neuron, binSize, trialTypes)
+        binnedTrials = bin_neuron(obj, event, neuron, varargin)
 
-        raster(obj, event, edges, neuron, panel, trialTypes)
+        raster(obj, event, neuron, varargin)
 
         psth(obj, event, edges, neuron, panel, trialTypes)
         

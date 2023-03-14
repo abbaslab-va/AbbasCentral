@@ -1,4 +1,4 @@
-function [pwr, freqs, phase, eventTrialTypes, eventOutcomes] = cwt_power(obj, event, varargin)
+function [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 
 
 % INPUT:
@@ -15,17 +15,23 @@ defaultEdges = [-2 2];
 defaultFreqLimits = [1 120];
 defaultAveraged = false;
 defaultPhase = true;
-defaultTrialTypes = 1:max(obj.bpod.TrialTypes);
+defaultOutcome = [];            % all outcomes
+defaultTrialType = [];          % all TrialTypes
+defaultOffset = 0;              % offset from event in seconds
+
 
 % input validation scheme
 p =  inputParser;
 validVectorSize = @(x) all(size(x) == [1, 2]);
+validField = @(x) ischar(x) || isempty(x);
 addRequired(p, 'event', @ischar);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
 addParameter(p, 'freqLimits', defaultFreqLimits, validVectorSize);
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
-addParameter(p, 'trialTypes', defaultTrialTypes, @isvector);
+addParameter(p, 'trialType', defaultTrialType, @isvector);
+addParameter(p, 'outcome', defaultOutcome, validField);
+addParameter(p, 'offset', defaultOffset, @isnumeric);
 parse(p, event, varargin{:});
 a = p.Results;
 
@@ -37,14 +43,7 @@ sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
 filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times
-eventTimes = round(obj.find_event(a.event));
-eventTrials = discretize(eventTimes, [obj.timestamps.trialStart obj.info.samples]);
-eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-trials = find(ismember(eventTrialTypes, a.trialTypes));
-eventTimes = eventTimes(trials);
-eventTrialTypes = eventTrialTypes(trials);
-eventOutcomes = eventOutcomes(trials);
+eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 a.edges = (a.edges * baud) + eventTimes';
 edgeCells = num2cell(a.edges, 2);
 
@@ -70,7 +69,7 @@ for c = 1:numChan
         phase{c} = chanPhase;
     end
 end
-freqs = flip(f{c});
+freqs = flip(f{1});
 
 if a.averaged
     pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
