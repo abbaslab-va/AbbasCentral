@@ -29,6 +29,7 @@ addParameter(p, 'binSize', defaultBinSize, @isnumeric);
 addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
+parse(p, event, neuron, varargin{:});
 
 a = p.Results;
 event = a.event;
@@ -41,20 +42,10 @@ offset = a.offset;
 
 baud = obj.info.baud;
 
-timestamps = obj.find_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+timestamps = obj.find_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'offset', offset);
 
-eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
 edges = (edges * baud) + timestamps';
 edgeCells = num2cell(edges, 2);
-spikeCells = obj.spikes(neuron).trialized(eventTrials)';
-binnedTrials = cellfun(@(x, y) histcounts(x, 'BinEdges', y(1):baud/1000*binSize:y(2)),...
-    spikeCells, edgeCells, 'uni', 0);
+binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binSize:x(2)),...
+    edgeCells, 'uni', 0);
 binnedTrials = cat(1, binnedTrials{:});
-
-if exist('trialTypes', 'var')
-    eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-    trials = find(ismember(eventTrialTypes, trialTypes));
-    numTrials = size(binnedTrials, 1);
-    trials = trials(trials <= numTrials);
-    binnedTrials = binnedTrials(trials, :);
-end
