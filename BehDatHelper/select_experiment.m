@@ -53,3 +53,6 @@ try
 catch
     metadata.experimenter = "";
 end
+
+hasSpikes = arrayfun(@(x) ~isempty(x.spikes), expSessions);
+expSessions = expSessions(hasSpikes);
