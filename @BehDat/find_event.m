@@ -7,23 +7,24 @@ function timestamps = find_event(obj, event, varargin)
 % optional name/value pairs:
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
+%     'trialType' - a trial type found in config.ini
 
 defaultOffset = 0;
 defaultOutcome = [];
 defaultTrialTypes = [];
 
-validParams = @(x) ischar(x) || isempty(x);
+validField = @(x) ischar(x) || isempty(x);
 p = inputParser;
 addRequired(p, 'event', @ischar);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validParams);
-addParameter(p, 'trialTypes', defaultTrialTypes, validParams);
+addParameter(p, 'outcome', defaultOutcome, validField);
+addParameter(p, 'trialType', defaultTrialTypes, validField);
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
 offset = a.offset;
 outcomeField = a.outcome;
-trialTypeField = a.trialTypes;
+trialTypeField = a.trialType;
 offset = offset * obj.info.baud;
 event(event == ' ') = '_';
 eventString = strcat('x_', event);

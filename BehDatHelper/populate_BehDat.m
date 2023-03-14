@@ -40,7 +40,9 @@ spikeStruct = get_spike_info(sessPath, ini.regions);
 sessObj = BehDat(info, spikeStruct, [], [], timestamps, SessionData, coords);
 
 try
-    sessObj.timestamps.trialStart = sessObj.find_event('Trial_Start');
+    ts = sessObj.timestamps.keys.x_Trial_Start;
+    timestamps = sessObj.timestamps.times(sessObj.timestamps.codes == ts);
+    sessObj.timestamps.trialStart = timestamps;
 catch
     CE = MException('BehDat:config', 'Please ensure one of the timestamps in your config file is assigned to Trial Start');
     throw(CE)
