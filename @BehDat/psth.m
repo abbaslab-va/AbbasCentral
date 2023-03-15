@@ -12,6 +12,7 @@ defaultTrialType = [];          % all TrialTypes
 defaultBinSize = 1;             % ms
 defaultOffset = 0;              % offset from event in seconds
 defaultPanel = [];
+defaultBpod = false;
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
 validField = @(x) ischar(x) || isempty(x);
@@ -24,12 +25,13 @@ addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'panel', defaultPanel)
+addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
 
 spikeMat = obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binSize', a.binSize, ...
-    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset);
+    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod);
 
 meanSpikes = mean(spikeMat, 1);
 smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50);

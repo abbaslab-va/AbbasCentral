@@ -18,6 +18,7 @@ defaultOutcome = [];            % all outcomes
 defaultTrialType = [];          % all TrialTypes
 defaultBinSize = 1;             % ms
 defaultOffset = 0;              % offset from event in seconds
+defaultBpod = false;            % Dictates which find_event script is used
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
 validField = @(x) ischar(x) || isempty(x);
@@ -29,6 +30,7 @@ addParameter(p, 'binSize', defaultBinSize, @isnumeric);
 addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
+addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
@@ -39,13 +41,21 @@ binSize = a.binSize;
 trialTypeField = a.trialType;
 outcomeField = a.outcome;
 offset = a.offset;
+useBpod = a.bpod;
 
 baud = obj.info.baud;
+if useBpod
+    timestamps = obj.find_bpod_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'offset', offset);
+else
+    timestamps = obj.find_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'offset', offset);
+end
 
-timestamps = obj.find_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'offset', offset);
-
-edges = (edges * baud) + timestamps';
-edgeCells = num2cell(edges, 2);
-binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binSize:x(2)),...
-    edgeCells, 'uni', 0);
-binnedTrials = cat(1, binnedTrials{:});
+try
+    edges = (edges * baud) + timestamps';
+    edgeCells = num2cell(edges, 2);
+    binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binSize:x(2)),...
+        edgeCells, 'uni', 0);
+    binnedTrials = cat(1, binnedTrials{:});
+catch
+    binnedTrials = [];
+end

@@ -34,6 +34,8 @@ classdef BehDat < handle
 
         sankey(obj)
 
+        timestamps = find_bpod_event(obj, event, varargin)
+
         adjust_vip_trialTypes(obj)
 
         graceStateTimes = add_focus_trialTypes(obj)
