@@ -52,9 +52,8 @@ for cluster = 1:numCells
     spikeTimeArray{cluster} = (unsortedSpikeTimes(unsortedSpikeClusters == goodClusters(cluster))');
     for r = 1:numel(allRegions)
         regionField = allRegions{r};
-        regionName = regionField(3:end);
         if ismember(goodChannels{cluster}, regions.(regionField))
-            cellRegions{cluster} = regionName;
+            cellRegions{cluster} = regionField;
             break
         end
     end
@@ -110,5 +109,6 @@ halfPeakWidth=num2cell(halfPeakWidth);
 peak2valley=num2cell(peak2valley);
 %% Create structure 
 
-spikeStruct= struct('times', spikeTimeArray, 'region', cellRegions, 'channel', goodChannels, 'fr',fr,'waveform',averageWaveforms, 'halfValleyWidth',halfValleyWidth,'halfPeakWidth',halfPeakWidth,'peak2valley', peak2valley);
+spikeStruct= struct('times', spikeTimeArray, 'region', cellRegions, 'channel', goodChannels, ...
+    'fr', fr, 'waveform', averageWaveforms, 'halfValleyWidth',halfValleyWidth,'halfPeakWidth',halfPeakWidth,'peak2valley', peak2valley);
 
