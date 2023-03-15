@@ -74,6 +74,8 @@ classdef BehDat < handle
 
         [pwr, freqs, phase, eventTrialTypes, eventOutcomes] = cwt_power(obj, event, varargin)
 
+        [ppc, spikePhase] = ppc(obj, event, varargin)
+
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
     %% Video methods
