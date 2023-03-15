@@ -40,7 +40,7 @@ spikeStruct = get_spike_info(sessPath, ini.regions);
 sessObj = BehDat(info, spikeStruct, [], [], timestamps, SessionData, coords);
 
 try
-    ts = sessObj.timestamps.keys.x_Trial_Start;
+    ts = sessObj.timestamps.keys.Trial_Start;
     timestamps = sessObj.timestamps.times(sessObj.timestamps.codes == ts);
     sessObj.timestamps.trialStart = timestamps;
 catch

@@ -11,30 +11,30 @@ This software package makes several fundamental assumptions about your data orga
 
 ```
 [experimenter]
-'Experimenter' = 'Your name here'
+Experimenter = Your name here
 
 [timestamps]
-'Off' = 65528
-'Trial Start' = 65529
-'Laser On' = 65530
-'Forage' = 65531
-'Reward' = 65532
-'Punish' = 65533
+Off = 65528
+Trial Start = 65529
+Laser On = 65530
+Forage = 65531
+Reward = 65532
+Punish = 65533
 
 [regions]
-'PFC' = [1:25, 27, 29, 31]
-'NACC' = 26
-'MD' = 28
-'VTA' = 30
-'VHIP' = 32
+PFC = [1:25, 27, 29, 31]
+NACC = 26
+MD = 28
+VTA = 30
+VHIP = 32
 
 [trialTypes]
-'Left' = 1
-'Right' = 2
+Left = 1
+Right = 2
 
 [outcomes]
-'Correct' = 1
-'Incorrect' = 0
+Correct = 1
+Incorrect = 0
 ```
 
  ## config.ini   

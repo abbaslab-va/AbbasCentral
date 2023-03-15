@@ -11,7 +11,6 @@ else
     outcome = [];
 end
 trialType(trialType == ' ') = '_';
-eventString = strcat('x_', trialType);
 trialsOfInterest = obj.info.trialTypes.(eventString);
 tic
 inhibitID = arrayfun(@(x) ~isempty(x.inhibitOutput), obj.spikes);

@@ -27,9 +27,8 @@ outcomeField = a.outcome;
 trialTypeField = a.trialType;
 offset = offset * obj.info.baud;
 event(event == ' ') = '_';
-eventString = strcat('x_', event);
 try
-    timestamp = obj.timestamps.keys.(eventString);
+    timestamp = obj.timestamps.keys.(event);
 catch
     mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', event));
     throw(mv)
@@ -37,6 +36,7 @@ end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
 
 eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
+eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 isDesiredTT = ones(1, numel(eventTrials));
@@ -44,7 +44,7 @@ isDesiredOutcome = ones(1, numel(eventTrials));
 
 
 if ~isempty(trialTypeField)
-    trialTypeField = append("x_", trialTypeField);
+%     trialTypeField = append("x_", trialTypeField);
     trialTypeField = regexprep(trialTypeField, " ", "_");
     try
         trialTypes = obj.info.trialTypes.(trialTypeField);
@@ -56,7 +56,7 @@ if ~isempty(trialTypeField)
 end
 
 if ~isempty(outcomeField)
-    outcomeField = append("x_", outcomeField);
+%     outcomeField = append("x_", outcomeField);
     outcomeField(outcomeField == ' ') = '_';
     try
         outcomes = obj.info.outcomes.(outcomeField);

@@ -50,7 +50,7 @@ classdef BehDat < handle
 
         raster(obj, event, neuron, varargin)
 
-        psth(obj, event, edges, neuron, panel, trialTypes)
+        psth(obj, event, neuron, varargin)
         
         [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
 
@@ -72,7 +72,7 @@ classdef BehDat < handle
         
     %% LFP methods
 
-        [pwr, freqs, phase, eventTrialTypes, eventOutcomes] = cwt_power(obj, event, varargin)
+        [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 
         [ppc, spikePhase] = ppc(obj, event, varargin)
 
