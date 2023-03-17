@@ -55,8 +55,9 @@ spikePhase=cell(numChan,numNeurons);
 
 %check is num event is less than three, if true populate with nans 
 if numel(edgeCells)<3
-   ppc=cell(numChan,numNeurons);
-   [ppc{:}]=deal(NaN);
+   ppc=zeros(numChan,numSpikes);
+   spikePhase=cell(numChan,numSpikes);
+   ppc(:)=NaN;
    [spikePhase{:}]=deal(NaN);
    return
 end
