@@ -12,6 +12,8 @@ This software package makes several fundamental assumptions about your data orga
 ```
 [experimenter]
 Experimenter = Your name here
+StartState = Name of the bpod state that sends the Trial Start Timestamp
+
 
 [timestamps]
 Off = 65528

@@ -6,6 +6,7 @@ function plot_cwt(pwr, channel, freqs, panel)
 % INPUT:
 %     power - a 1xC cell array obtained as the pwr output from cwt_power
 %     channel - an integer value equal to the channel to plot, <= C
+%     freqs - a cell array of frequency labels output from cwt_power
 %     panel - an optional argument enabling plotting within the app
 
 numFreqs = numel(freqs);

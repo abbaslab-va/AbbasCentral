@@ -18,6 +18,7 @@ defaultPhase = true;
 defaultOutcome = [];            % all outcomes
 defaultTrialType = [];          % all TrialTypes
 defaultOffset = 0;              % offset from event in seconds
+defaultBpod = false;
 
 
 % input validation scheme
@@ -29,11 +30,14 @@ addParameter(p, 'edges', defaultEdges, validVectorSize);
 addParameter(p, 'freqLimits', defaultFreqLimits, validVectorSize);
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
-addParameter(p, 'trialType', defaultTrialType, @isvector);
+addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
+addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, varargin{:});
 a = p.Results;
+
+useBpod = a.bpod;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
@@ -43,10 +47,21 @@ sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
 filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times
-eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
-a.edges = (a.edges * baud) + eventTimes';
-edgeCells = num2cell(a.edges, 2);
+if useBpod
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+else
+    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+end
 
+try
+    a.edges = (a.edges * baud) + eventTimes';
+    edgeCells = num2cell(a.edges, 2);
+catch
+    pwr = [];
+    phase = [];
+    freqs = [];
+    return
+end
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
@@ -68,7 +83,7 @@ for c = 1:numChan
         chanPhase = cat(3, chanPhase{:});
         phase{c} = chanPhase;
     end
-end
+end 
 freqs = flip(f{1});
 
 if a.averaged
