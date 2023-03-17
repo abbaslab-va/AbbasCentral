@@ -59,9 +59,9 @@ phase = cell(1, numChan);
 %check is num event is less than three, if true populate with nans 
 numSpikes=length(obj.spikes);
 if numel(edgeCells)<3
-   ppc=cell(numChan,numSpikes);
+   ppc=zeros(numChan,numSpikes);
    spikePhase=cell(numChan,numSpikes);
-   [ppc{:}]=deal(NaN);
+   ppc(:)=NaN;
    [spikePhase{:}]=deal(NaN);
 else 
     % calculate phase
