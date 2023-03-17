@@ -31,7 +31,7 @@ end
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
 
-info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, 'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes);
+info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, 'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'startState', ini.info.StartState);
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;

@@ -1,9 +1,9 @@
-function timestamps = find_event(obj, event, varargin)
+function timestamps = find_bpod_event(obj, event, varargin)
 
 % OUTPUT:
 %     timestamps - a 1xE vector of timestamps from the desired event
 % INPUT:
-%     event -  an event character vector found in the config.ini file
+%     event -  an event character vector from the bpod SessionData
 % optional name/value pairs:
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
@@ -25,26 +25,21 @@ event = a.event;
 offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
+rawEvents = obj.bpod.RawEvents.Trial;
 
-event(event == ' ') = '_';
-try
-    timestamp = obj.timestamps.keys.(event);
-catch
-    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', event));
-    throw(mv)
-end
-timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
-
-eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
-eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
+% Find trial start times in acquisition system timestamps
+trialStartTimes = obj.find_event('Trial Start');
+% Identify trials with the event of interest
+trialHasEvent = cellfun(@(x) isfield(x.Events, event), rawEvents);
+% Identify trials with the desired performance and trial type
+numTrialStart = numel(trialStartTimes);
+eventTrials = 1:numTrialStart;
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-isDesiredTT = ones(1, numel(eventTrials));
-isDesiredOutcome = ones(1, numel(eventTrials));
-
+isDesiredTT = ones(1, numTrialStart);
+isDesiredOutcome = ones(1, numTrialStart);
 
 if ~isempty(trialTypeField)
-%     trialTypeField = append("x_", trialTypeField);
     trialTypeField = regexprep(trialTypeField, " ", "_");
     try
         trialTypes = obj.info.trialTypes.(trialTypeField);
@@ -56,7 +51,6 @@ if ~isempty(trialTypeField)
 end
 
 if ~isempty(outcomeField)
-%     outcomeField = append("x_", outcomeField);
     outcomeField(outcomeField == ' ') = '_';
     try
         outcomes = obj.info.outcomes.(outcomeField);
@@ -67,4 +61,17 @@ if ~isempty(outcomeField)
     end
 end
 
-timestamps = timestamps(isDesiredTT & isDesiredOutcome);
+% Intersect all logical matrices to index bpod trial cells with
+goodTrials = trialHasEvent & isDesiredTT & isDesiredOutcome;
+
+trialStartTimes = num2cell(trialStartTimes(goodTrials));
+rawEvents2Check = rawEvents(goodTrials);
+% Find bpod intra-trial times for Trial Start timestamp
+bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
+bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
+% Calculate differences between bpod event times and trial start times and
+% convert to sampling rate of acquisition system
+eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
+eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
+
+timestamps = cat(2, eventTimes{:}) + offset;

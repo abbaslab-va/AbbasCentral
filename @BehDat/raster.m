@@ -12,6 +12,7 @@ defaultTrialType = [];          % all TrialTypes
 defaultBinSize = 1;             % ms
 defaultOffset = 0;              % offset from event in seconds
 defaultPanel = [];
+defaultBpod = false;
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
 validField = @(x) ischar(x) || isempty(x);
@@ -24,13 +25,14 @@ addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'panel', defaultPanel)
+addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
 
 % bin spikes in 1 ms bins
 spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binSize', a.binSize, ...
-    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset));
+    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod));
 % this function included in packages directory of Abbas-WM
 % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
 % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
