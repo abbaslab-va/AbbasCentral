@@ -1,4 +1,4 @@
-function [ppc, spikePhase] = ppc(obj, event, varargin)
+function [ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)
 
 disp(obj.info.path)
 % INPUT:
@@ -55,9 +55,10 @@ spikePhase=cell(numChan,numNeurons);
 
 %check is num event is less than three, if true populate with nans 
 if numel(edgeCells)<3
-   ppc=zeros(numChan,numNeurons);
+   ppc_all=zeros(numChan,numNeurons);
    spikePhase=cell(numChan,numNeurons);
-   ppc(:)=NaN;
+   ppc_all(:)=NaN;
+   ppc_sig=ppc_all;
    [spikePhase{:}]=deal(NaN);
    return
 end
@@ -82,10 +83,14 @@ for c=1:numChan
     end 
 end 
 
-% find significant ppc 
+% find significant phase distributions 
 sigPhase= cellfun(@(x) circ_rtest(x),spikePhase);
 
-% make nonsignificant ppc NaN
-ppc=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
+%calculate ppc
+ppc_all=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
 
-ppc(sigPhase>0.05)=NaN;
+% make nonsignificant ppc NaN
+ppc_sig=ppc_all;
+ppc_sig(sigPhase>0.05)=NaN;
+
+

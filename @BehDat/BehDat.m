@@ -76,7 +76,7 @@ classdef BehDat < handle
 
         [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 
-        [ppc, spikePhase] = ppc(obj, event, varargin)
+        [ppc_all, spikePhase, ppc_sig]  = ppc(obj, event, varargin)
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
