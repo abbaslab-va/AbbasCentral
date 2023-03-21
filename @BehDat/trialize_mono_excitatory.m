@@ -1,9 +1,9 @@
 function weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
 
 % OUTPUT:
-%     weightsEx - an N x 1 cell array with connection weights for neuron
-%     pairs identified from find_mono, in the event window given by
-%     alignment and edges.
+%     weightsEx - an N x 1 cell array with excitatory connection weights 
+%     for neuron pairs identified from find_mono, in the event window 
+%     given by alignment and edges.
 % INPUT:
 %     trialType - a trial type char array that is in config.ini
 %     alignment - an alignment char array that is in config.ini

@@ -70,7 +70,7 @@ classdef BehDat < handle
     
         weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
         
-        weightsIn = trialize_mono_inhibitory(obj, trialType, outcome)
+        weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)
         
     %% LFP methods
 
