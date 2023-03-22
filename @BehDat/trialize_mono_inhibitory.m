@@ -1,4 +1,4 @@
-function weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)
+function weightsIn = trialize_mono_inhibitory(obj, alignment, varargin)
 
 % OUTPUT:
 %     weightsEx - an N x 1 cell array with inhibitory connection weights 
@@ -13,14 +13,22 @@ function weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, 
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 
+defaultTrialType = [];          % all TrialTypes
+defaultOutcome = [];            % all outcomes
+defaultEdges = [-2 2];          % seconds
+defaultOffset = 0;              % offset from event in seconds
+defaultBpod = false;            % Dictates which find_event script is used
+
 validVectorSize = @(x) all(size(x) == [1, 2]);
+validField = @(x) ischar(x) || isempty(x);
 p = inputParser;
-addRequired(p, 'trialType', @ischar);
 addRequired(p, 'alignment', @ischar);
-addRequired(p, 'edges', validVectorSize);
-addParameter(p, 'offset', 0, @isnumeric)
-addParameter(p, 'outcome', [], @ischar);
-parse(p, trialType, alignment, edges, varargin{:});
+addParameter(p, 'trialType', defaultTrialType, validField);
+addParameter(p, 'outcome', defaultOutcome, validField);
+addParameter(p, 'edges', defaultEdges, validVectorSize);
+addParameter(p, 'offset', defaultOffset, @isnumeric)
+addParameter(p, 'bpod', defaultBpod, @islogical);
+parse(p, alignment, varargin{:});
 a = p.Results;
 
 trialType = a.trialType;
@@ -28,8 +36,14 @@ alignment = a.alignment;
 edges = a.edges;
 outcome = a.outcome;
 offset = a.offset;
+useBpod = a.bpod;
 
-eventTimes = obj.find_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+if useBpod
+    eventTimes = obj.find_bpod_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+else
+    eventTimes = obj.find_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+end
+
 edges = (edges * obj.info.baud) + eventTimes';
 edgeCells = num2cell(edges, 2);
 inhibitID = arrayfun(@(x) ~isempty(x.inhibitOutput), obj.spikes);
@@ -63,7 +77,7 @@ for r = 1:numel(hasInhibitoryConn)
         basemean = mean(basewidevals);
         basestd = std(basewidevals);        
         peakWeight = (basemean - basecorr(latMin))/basestd;
-        if isnan(peakWeight)
+        if isnan(peakWeight) || peakWeight < 0
             peakWeight = 0.001;
         end
         weightsIn{ref}(end+1) = peakWeight;
