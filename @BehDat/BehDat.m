@@ -78,6 +78,8 @@ classdef BehDat < handle
 
         [ppc_all, spikePhase, ppc_sig]  = ppc(obj, event, varargin)
 
+        filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)
+
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
     %% Video methods
