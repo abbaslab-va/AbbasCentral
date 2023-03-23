@@ -67,16 +67,24 @@ if numel(edgeCells)<3
    return
 end
 
+% for fir filter
+nyquist=baud/2;
+
+
+% for butter
 N = 2;
-[B, A] = butter(N, a.freqLimits/(baud/2));
+[B, A] = butter(N, a.freqLimits/(nyquist));
 
 for c=1:numChan
     % calculate phase
     if strcmp(a.filter, 'butter')
         chanPhase= cellfun(@(x) angle(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))), edgeCells, 'uni', 0);
+   
     else
         chanPhase= cellfun(@(x) angle(hilbert(bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud))), edgeCells, 'uni', 0);
     end
+
+
     chanPhase = cat(3, chanPhase{:});
     phase = num2cell(squeeze(chanPhase),1);
     for n=1:length(obj.spikes)
