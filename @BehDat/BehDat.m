@@ -5,8 +5,6 @@ classdef BehDat < handle
     properties
         info
         spikes
-        lfp
-        waveforms
         timestamps
         bpod
         coordinates
@@ -14,12 +12,10 @@ classdef BehDat < handle
 
     methods
         %Constructor
-        function obj = BehDat(i, s, l, w, ts, beh, c)
+        function obj = BehDat(i, s, ts, beh, c)
             if nargin == 7
                 obj.info = i;
                 obj.spikes = s;
-                obj.lfp = l;
-                obj.waveforms = w;
                 obj.timestamps = ts;
                 obj.bpod = beh;
                 obj.coordinates = c;

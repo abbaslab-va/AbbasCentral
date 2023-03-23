@@ -44,7 +44,6 @@ isDesiredOutcome = ones(1, numel(eventTrials));
 
 
 if ~isempty(trialTypeField)
-%     trialTypeField = append("x_", trialTypeField);
     trialTypeField = regexprep(trialTypeField, " ", "_");
     try
         trialTypes = obj.info.trialTypes.(trialTypeField);
@@ -56,7 +55,6 @@ if ~isempty(trialTypeField)
 end
 
 if ~isempty(outcomeField)
-%     outcomeField = append("x_", outcomeField);
     outcomeField(outcomeField == ' ') = '_';
     try
         outcomes = obj.info.outcomes.(outcomeField);
