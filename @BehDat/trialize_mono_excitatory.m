@@ -77,7 +77,7 @@ for r = 1:numel(hasExcitatoryConn)
         basemean = mean(basewidevals);
         basestd = std(basewidevals);        
         peakWeight = (basecorr(latMax) - basemean)/basestd;
-        if isnan(peakWeight) || peakWeight < 0
+        if isnan(peakWeight) || peakWeight < 0 || isinf(peakWeight)
             peakWeight = 0.001;
         end
         weightsEx{ref}(end+1) = peakWeight;
