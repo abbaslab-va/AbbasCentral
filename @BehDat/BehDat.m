@@ -13,7 +13,7 @@ classdef BehDat < handle
     methods
         %Constructor
         function obj = BehDat(i, s, ts, beh, c)
-            if nargin == 7
+            if nargin == 5
                 obj.info = i;
                 obj.spikes = s;
                 obj.timestamps = ts;
