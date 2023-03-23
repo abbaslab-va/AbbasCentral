@@ -28,7 +28,7 @@ validField = @(x) ischar(x) || isempty(x);
 addRequired(p, 'event', @ischar);
 addRequired(p, 'freqLimits', validVectorSize);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'trialType', defaultTrialType, @isvector);
+addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'bpod', defaultBpod, @islogical)
