@@ -37,7 +37,7 @@ timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 spikeStruct = get_spike_info(sessPath, ini.regions);
 
-sessObj = BehDat(info, spikeStruct, [], [], timestamps, SessionData, coords);
+sessObj = BehDat(info, spikeStruct, timestamps, SessionData, coords);
 
 try
     ts = sessObj.timestamps.keys.Trial_Start;
