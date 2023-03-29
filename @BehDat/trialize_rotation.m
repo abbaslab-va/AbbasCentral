@@ -41,15 +41,17 @@ alignToEnd = a.eos;
 
 bodyAngles = get_body_angle(obj.coordinates);
 [firstFrame, firstTrial] = find_first_frame(obj.bpod);
-framesByTrial = align_frames_to_trials(obj.bpod, size(obj.coordinates, 1), firstTrial);
+% framesByTrial = align_frames_to_trials(obj.bpod, size(obj.coordinates, 1), firstTrial);
 framesBack = edges(1);
 framesForward = edges(2);
 
-if alignToEnd || edges(1) < 0
-    frameIdx = extract_field_frames_eof(obj.bpod, framesByTrial, framesBack, stateName);
-else
-    frameIdx = extract_field_frames(obj.bpod, framesByTrial, stateName);
-end
+[frameIdx, firstFrame] = obj.find_state_frames(stateName, 'offset', framesBack, ...
+    'outcome', outcome, 'trialType', trialType, 'eos', alignToEnd);
+% if alignToEnd || edges(1) < 0
+%     frameIdx = extract_field_frames_eof(obj.bpod, framesByTrial, framesBack, stateName);
+% else
+%     frameIdx = extract_field_frames(obj.bpod, framesByTrial, stateName);
+% end
 
 % This next block of code is written to specifically interface with video
 % files recorded during NMTP_Outer_Training2 behavior. It will align the

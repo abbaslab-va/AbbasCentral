@@ -13,6 +13,7 @@ useCenter = headCrossAngle < rightAngle + .2 & headCrossAngle > rightAngle - 2;
 % mid back compared to skull seems to work best for now
 bodyLine = coordMat(:, [11 12]) - coordMat(:, [7 8]);
 thetaBody = cart2pol(bodyLine(:, 1), bodyLine(:, 2));
-thetaBody(useCenter) = thetaCenter(useCenter);
-bodyAngles = unwrap(thetaBody);
+% thetaBody(useCenter) = thetaCenter(useCenter);
+% bodyAngles = unwrap(thetaBody);
+bodyAngles = unwrap(thetaCenter);
 % bodyAngles(useCenter) = angleCenter(useCenter);
