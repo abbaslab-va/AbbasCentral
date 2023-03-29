@@ -41,10 +41,11 @@ for sub = numVids:-1:1
     csvData(:, 1:3:end) = [];
     info = struct('path', fullfile(videoStruct(sub).folder, videoStruct(sub).name), 'name', subName, ...
         'baud', 30, 'samples', size(csvData, 2), 'trialTypes', I.trialTypes, 'outcomes', I.outcomes);
-    sessionBehDat = BehDat(info, [], [], bpodSession.SessionData, csvData);
+    timestamps = struct('keys', I.timestamps);
+    sessionBehDat = BehDat(info, [], timestamps, bpodSession.SessionData, csvData);
     sessions(sub) = sessionBehDat;
 end
 
-metadata.subjects = categories(categorical(nameList));
+metadata.subjects = categories(categorical(nameList))';
 metadata.path = videoDir;
 metadata.experimenter = I.info.Experimenter;

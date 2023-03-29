@@ -18,7 +18,6 @@ defaultOutcome = [];            % all outcomes
 defaultTrialType = [];          % all TrialTypes
 defaultEOS = false;
 
-validVectorSize = @(x) all(size(x) == [1, 2]);
 validField = @(x) ischar(x) || isempty(x);
 p = inputParser;
 addRequired(p, 'stateName', @ischar);
