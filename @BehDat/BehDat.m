@@ -80,6 +80,7 @@ classdef BehDat < handle
 
     %% Video methods
 
-        
+        rotVec = trialize_rotation(obj, stateName, varargin)
+
     end
 end

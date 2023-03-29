@@ -35,7 +35,6 @@ end
 subNames = subNames(indices);
 for s = 1:numel(indices)
     sub = indices(s);
-    subFolder = subFolders(sub).folder;
     subName = subFolders(sub).name;
     sessionFolders=dir(fullfile(parentFolder,subName));
     sDirs = {sessionFolders.name}';
