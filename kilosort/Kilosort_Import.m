@@ -8,6 +8,8 @@ cd(ChosenExperiment)
 
 files = dir(ChosenExperiment);
 
+RemoveNoise = 1;
+
 %Blackrock
 if contains([files.name], '.ns6')
 
@@ -17,17 +19,99 @@ if contains([files.name], '.ns6')
     if ~isempty(dir(fullfile(ChosenExperiment , '*.ns6'))) == 1
     openNSx(NS_6)
     end
-    
-    % Converts raw (30 kHz), unfiltered blackrock data (NS.6 format) into a binary file
-    % (kilosort_Raw.bin) used by kilosort to sort spikes. Then saves this file
-    % to the current directory, which chould be the folder you chose
-    
-    kilosort_Raw = zeros(28, length(NS6.Data)); %#ok<PREALL>
-    kilosort_Raw = NS6.Data(1:28, :); %This is currently set up assuming the 4 backmost holes on the Neuralynx 32 EIB are left open
-    
-    fileID = fopen('kilosort_Raw.bin', 'w');
-    fwrite(fileID, kilosort_Raw, 'int16');
-    fclose(fileID);
+
+    if RemoveNoise == 1
+
+       RMS_Treshold = 5;
+
+       [~, linear_index] = max(abs(NS6.Data(1:28,:)), [], 'all');
+       [row, ~] = ind2sub([size(NS6.Data(1:28,:), 1), size(NS6.Data(1:28,:), 2)], linear_index);
+       temp_noise_trace = NS6.Data(row, :);
+       temp_rms = rms(temp_noise_trace);
+       noise_peaks = find(abs(temp_noise_trace) > temp_rms*RMS_Treshold);
+       noise_separation = find(diff(noise_peaks) > 20000);
+       
+       noisy_periods = {};
+       
+       if any(noise_peaks < 10001) 
+                 
+           n = find(noise_peaks < 10001, 1, 'last');
+           Early_Noise = noise_peaks(n)-1;
+           
+       else
+     
+           n = 1;
+
+       end
+
+       for time = 1:length(noise_separation)+1
+
+           if time <= length(noise_separation)
+                    
+              if exist('Early_Noise', 'var') == 1
+
+                  noisy_periods{time} = noise_peaks(n)-Early_Noise:noise_peaks(noise_separation(time));
+                  n = noise_separation(time)+1; 
+                  clear Early_Noise
+
+              elseif n >= 1
+
+                  noisy_periods{time} = noise_peaks(n)-10000:noise_peaks(noise_separation(time))+10000;
+                  n = noise_separation(time)+1; 
+
+              end
+
+
+           elseif time > length(noise_separation)
+              
+              if noise_peaks(end)+10000 > length(temp_noise_trace)
+
+                  noisy_periods{time} = noise_peaks(n)-10000:noise_peaks(end);
+
+              else
+
+                noisy_periods{time} = noise_peaks(n)-10000:noise_peaks(end)+10000;
+
+              end
+
+              
+           end
+          
+       end
+       
+       temp_columns = 1:1:length(NS6.Data);
+       noisy_periods = cell2mat(noisy_periods);
+       temp_columns(noisy_periods) = [];
+       Data_noise_removed = NS6.Data(1:28, temp_columns);
+%        Data_noise_removed = Data_noise_removed(1:28, :);      
+
+       figure
+       subplot(1,2,1)
+       plot(temp_noise_trace)
+       subplot(1,2,2)
+       plot(Data_noise_removed(row,:))
+ 
+       fileID = fopen('kilosort_Raw.bin', 'w');
+       fwrite(fileID, Data_noise_removed, 'int16');
+       fclose(fileID);
+     
+       clear NS6 noise_peaks temp_noise_trace RemoveNoise time temp_rms col n largest_value linear_index
+
+    elseif RemoveNoise == 0
+
+        % Converts raw (30 kHz), unfiltered blackrock data (NS.6 format) into a binary file
+        % (kilosort_Raw.bin) used by kilosort to sort spikes. Then saves this file
+        % to the current directory, which chould be the folder you chose
+        
+        kilosort_Raw = zeros(28, length(NS6.Data)); %#ok<PREALL>
+        kilosort_Raw = NS6.Data(1:28, :); %This is currently set up assuming the 4 backmost holes on the Neuralynx 32 EIB are left open
+        
+        fileID = fopen('kilosort_Raw.bin', 'w');
+        fwrite(fileID, kilosort_Raw, 'int16');
+        fclose(fileID);
+        
+    end
+
 
 %Whitematter ---- current geometry is set for the H6-64 channel dual shank cambridge probes
 
@@ -99,3 +183,4 @@ end
 
 % clear files
 % save('AnalogSignals', "AnalogSignals")
+save('NoisyPeriods', "noisy_periods", "RMS_Treshold", "temp_columns")
