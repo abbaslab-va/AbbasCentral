@@ -45,7 +45,9 @@ for sub = numVids:-1:1
     sessionBehDat = BehDat(info, [], timestamps, bpodSession.SessionData, csvData);
     sessions(sub) = sessionBehDat;
 end
-
+goodSessions = arrayfun(@(x) ~isempty(x.coordinates), sessions);
+nameList = nameList(goodSessions);
+sessions = sessions(goodSessions);
 metadata.subjects = categories(categorical(nameList))';
 metadata.path = videoDir;
 metadata.experimenter = I.info.Experimenter;
