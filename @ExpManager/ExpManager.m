@@ -16,7 +16,15 @@ classdef ExpManager < handle
             obj.metadata = m;
         end
 
-        newExperiment = collect_sessions(expPath)
+%         newExperiment = collect_sessions(expPath)
+
+        function sessionIdx = subset(obj, containingString)
+            sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), ...
+                obj.sessions);
+        end
+            
+
+        %% Spike methods
         
     end
 

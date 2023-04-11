@@ -3,11 +3,27 @@ This is the Github repository for the Abbas Lab's framework for behavioral, neur
 The classes and functions are designed to be as flexible as possible, allowing the user to customize the inputs according to their specific needs. 
 It contains functions for analyzing performance and positional data during behavior in freely moving mice, as well as processing and analyzing synchronous neural recordings. 
 
+## Code standards
+
+Below you can find guidelines to adhere to when writing new methods or changing existing ones that, when followed, will help to keep this codebase as readable and consistent as possible.
+
+### Class interfaces
+* All class methods should have a function header in the class interface. Methods should be defined in separate files
+* Maintain single line spacing between methods and keep them organized by function
+* "Friend" functions like plots can be kept in the class interface, commented out
+### Naming
+* Variables should be named in camel case (i.e. myVariable)
+* Functions should be all lower case with underscores (i.e. my_function)
+* Classes should use pascal case (i.e. MyClass)
+## Data organization
 This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:
 
 1) Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
 
-2) A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. An example layout for this file is shown below:
+2) A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. 
+
+### config.ini   
+An example layout for this file is shown below:
 
 ```
 [experimenter]
@@ -39,7 +55,6 @@ Correct = 1
 Incorrect = 0
 ```
 
- ## config.ini   
 * The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example call:
     
     `trializedSpikes = trialize_spikes('Laser On', 2)`
@@ -74,8 +89,7 @@ This is a structure that accompanies the BehDat object array generated from sele
         > times - a 1xN cell array of spike times, where N is the number of neurons
         > region - 1xN cell array of brain regions of the single units
         > channel - 1xN double list of original channels on acquisition hardware
-    lfp - 
-    waveforms - a 1xN cell array of average waveform shapes
+        > waveforms - a 1xN cell array of average waveform shapes
     timestamps - a structure containing subfields:
         > times - a 1xT double array of timestamp times, where T is the number of timestamps
         > codes - a 1xT double array of timestamp codes (i.e. 65529)
@@ -87,11 +101,135 @@ This is a structure that accompanies the BehDat object array generated from sele
 
 Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. Functions relating to bpod, spikes, and video can be run simultaneously on arrays of objects, as the overhead for storing the associated data is relatively low. Functions that require LFP analysis should be run on one subject at a time, as the cost to memory for storing raw ephys data is prohibitively large. These functions will load the LFP, manipulate and analyze the signal as needed, save the results, and delete the LFP from the workspace.
 
-### Bpod
+### ***Bpod***
+`[numTT, numCorrect] = outcomes(obj, val)`
 
-### Spikes
+This function returns a vector by trial type of the number of completed trials of each trial type, as well as the number correctly completed for the trial type of interest.
+
+**OUTPUT:**
+* numTT - 1xT vector where T is the number of trial types. Stores # of each trial type completed in obj.bpod
+* numCorrect - 1xT vector where T is the number of trial types. Stores # of trial types with the outcome specified by correctOutcome. If no argument is given, the default value of numCorrect is for outcomes of 1.
+
+**INPUT:**
+* correctOutcome - optionally include an integer value in your function call to
+calculate performance outcomes other than 1.
+
+`plot_performance(obj, outcome, panel)`
+
+Plots bpod performance bar chart by trial type.
+
+**INPUT:**
+* outcome - the outcome whose percentage is being visualized
+* panel - a panel handle from AbbasCentral (optional)
+
+`sankey(obj, varargin)`
+
+This function outputs a sankey plot showing the transitions between bpod
+states. By default, it displays all state transitions from all trial
+types, but users can use name-value pairs to only analyze certain
+combinations of trial types and outcomes, as well as only transitions to
+or from a certain state.
+
+***optional name/value pairs:***
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'inputStates' - a string or cell array of strings of desired input
+* states to visualize
+* 'outputStates' - a string or cell array of strings of desired output
+states to visualize
+
+`timestamps = find_bpod_event(obj, event, varargin)`
+
+Finds the timestamps in the sampling rate of the neural acquisition system corresponding to a bpod event.
+
+**OUTPUT:**
+* timestamps - a 1xE vector of timestamps from the desired event
+
+**INPUT:**
+* event -  an event character vector from the bpod SessionData
+
+***optional name/value pairs:***
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+
+### ***Spikes***
+
+`timestamps = find_event(obj, event, varargin)`
+
+Returns the timestamps in the sampling rate of the neural acquisition system corresponding to a wire TTL signal recieved by the system during recording.
+
+**OUTPUT:**
+* timestamps - a 1xE vector of timestamps from the desired event
+
+**INPUT:**
+* event -  an event character vector found in the config.ini file
+
+***optional name/value pairs:***
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+
+`spikesByTrial = trialize_spikes(obj, trialStart)`
+
+Returns a Nx1 cell array, where N is the number of neurons in the session. Each cell contains a 1xT cell array, where T is the number of trials. The contents of each of these cells will be the spike times in each trial for that neuron.
+
+**OUTPUT:**
+* spikesByTrial - Nx1 cell array
+
+**INPUT:**
+* trialStart - an event named in config.ini marking the start of each trial
+
+`binnedSpikes = bin_spikes(obj, eventEdges, binSize)`
+
+**OUTPUT:**
+* binnedSpikes - an N x T binary matrix of binned spikes around an event, where N is the number of neurons in the session and T is the number of bins.
+
+**INPUT:**
+* eventEdges - a 1x2 vector specifying the edges to bin between
+* binSize - the size of the bins in ms
+
+`binnedTrials = bin_neuron(obj, event, neuron, varargin)`
+
+`raster(obj, event, neuron, varargin)`
+
+`psth(obj, event, neuron, varargin)`
+
+`[zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)`
+
+`[corrScore, trialTypes] = xcorr(obj, event, edges)`
+
+`plot_xcorr(obj, ref, target, window)`
+
+`maxVals = mono_corr_max(obj, corrCells, region1, region2)`
+
+`find_mono(obj)`
+
+`plot_mono(obj, varargin)`
+
+`G = plot_digraph(obj, trialized, panel)`
+
+`weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)`
+
+`weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)`
+
 ### LFP
+
+`[pwr, freqs, phase] = cwt_power(obj, event, varargin)`
+
+`[ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)`
+
+`filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)`
+
 ### Video
+
+`[stateFrames, firstFrame] = find_state_frames(obj, stateName, varargin)`
+
+`rotVec = trialize_rotation(obj, stateName, varargin)`
+
+# ExpManager Class
+
+The ExpManager class' responsibility is to call the BehDat functions on specific collections of sessions from an experiment and return aggregated results that can be used for population-based statistical analyses. 
 
 # Example workflow
 The following example demonstrates how a researcher may use this package to set up a data pipeline, from collection and spike sorting, to synchronization with parallel data streams, to data analysis, visualization and storage. 
