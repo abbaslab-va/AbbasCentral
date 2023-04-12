@@ -2,7 +2,13 @@ function E = plot_digraph(obj, trialized, panel)
 
 % This function currently only accepts trialized weights from excitatory
 % connections, should be modified to parse name-value pair arguments and
-% accept excitatory and inhibitory weights
+% accept excitatory and inhibitory weights. It plots the network graph of
+% the neurons with significant cross correlations and their weights. The 
+% size of the nodes is proportional to the number of spikes in the neuron.
+% If the argument trialized is given, it should be the output from the
+% function trialize_mono_excitatory. This will plot the average weights
+% from the trialized data.
+
 if ~exist('trialized', 'var')
     trialized = [];
 end

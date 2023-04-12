@@ -1,4 +1,10 @@
 function plot_mono(obj, varargin)
+
+% Plots a figure for each cross-correlation between neurons in the
+% BehDat object. If no arguments are given, plots all neurons with a connection 
+% identified. If a single argument is given, it should be a vector of 
+% reference neuron indices to plot.
+
 numNeurons = numel(obj.spikes);
 animalName = obj.info.name;
 if nargin == 1

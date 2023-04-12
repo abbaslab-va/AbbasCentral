@@ -83,4 +83,3 @@ for r = 1:numel(hasExcitatoryConn)
         weightsEx{ref}(end+1) = peakWeight;
     end
 end
-

@@ -278,15 +278,35 @@ Plots the cross correlogram of two neurons in a given window
 * target - index of the target neuron
 * window - number of bins to correlate on either side of the center
 
-`maxVals = mono_corr_max(obj, corrCells, region1, region2)`
-
 `find_mono(obj)`
+
+Only needs to be run on an object one time. This identifies putative monosynaptic connections so that fewer cross-correlations have to be run when running trialize_mono functions. The spike fields below will be populated in the object after a call to find_mono:
+
+    > exciteOutput - indices of neurons monosynaptically downstream from the given neuron.
+    > exciteXcorr - 50 ms wide cross correlogram between the two neurons across the whole session.
+    > exciteWeight - strength of the correlation in terms of standard deviations of the peak above baseline.
 
 `plot_mono(obj, varargin)`
 
+Plots a figure for each cross-correlation between neurons in the BehDat object. If no arguments are given, plots all neurons with a connection identified. If a single argument is given, it should be a vector of reference neuron indices to plot.
+
 `G = plot_digraph(obj, trialized, panel)`
 
+Plots a figure for each cross-correlation between neurons in the BehDat object. If no arguments are given, plots all neurons with a connection identified. If a single argument is given, it should be a vector of reference neuron indices to plot.
+
 `weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)`
+
+**OUTPUT:**
+* weightsEx - an N x 1 cell array with excitatory connection weights for neuron pairs identified from find_mono, in the event window given by alignment and edges.
+
+**INPUT:**
+* trialType - a trial type char array that is in config.ini
+* alignment - an alignment char array that is in config.ini
+* edges - a 1x2 vector that defines the edges from an event within which spikes will be correlated
+
+***optional name/value pairs:***
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
 
 `weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)`
 
@@ -340,7 +360,7 @@ Provides video frames that synchronize with a bpod event when collected using th
 **OUTPUT:**
 * stateFrames - a 1xN vector of frame times where N is the number of trials.
 
-**INPUTS:**
+**INPUT:**
 * stateName - a name of a bpod state to align to
 
 ***optional name/value pairs:***
@@ -356,7 +376,7 @@ Trializes the zeroed rotation of a subject around a particular bpod event. By de
 **OUTPUT:**
 * rotVec - a 1xN cell array where N is the number of trials. Each cell contains a 1xf vector of angle data where f is the number of frames in the period of interest for each trial.
 
-**INPUTS:**
+**INPUT:**
 * stateName - a name of a bpod state to align to
 
 ***optional name/value pairs:***
