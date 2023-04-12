@@ -45,7 +45,7 @@ bodyAngles = get_body_angle(obj.coordinates);
 framesBack = edges(1);
 framesForward = edges(2);
 
-[frameIdx, firstFrame] = obj.find_state_frames(stateName, 'offset', framesBack, ...
+frameIdx = obj.find_state_frames(stateName, 'offset', framesBack, ...
     'outcome', outcome, 'trialType', trialType, 'eos', alignToEnd);
 % if alignToEnd || edges(1) < 0
 %     frameIdx = extract_field_frames_eof(obj.bpod, framesByTrial, framesBack, stateName);

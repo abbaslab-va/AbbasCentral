@@ -191,15 +191,78 @@ Returns a Nx1 cell array, where N is the number of neurons in the session. Each 
 
 `binnedTrials = bin_neuron(obj, event, neuron, varargin)`
 
+**OUTPUT:**
+* binnedTrials - an E x T binary matrix of spike times for a neuron, where E is the number of events and T is the number of bins
+
+**INPUT:**
+* event - an event character vector found in the config.ini file
+* neuron - number to index a neuron as organized in the spikes field
+
+***optional name/value pairs:***
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'edges' - 1x2 vector distance from event on either side in seconds
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'binSize' - an optional parameter to specify the bin width, in ms. default value is 1
+
 `raster(obj, event, neuron, varargin)`
+
+Plots a spike raster in a new figure according to the input parameters.
+
+**INPUT:**
+* event - a string of a state named in the config file
+* neuron - index of neuron from spike field of object
+
+***optional name/value pairs:***
+* 'edges' - 1x2 vector distance from event on either side in seconds
+* 'binSize' - a number that defines the bin size in ms
+* 'trialType' - a trial type found in config.ini
+* 'outcome' - an outcome character array found in config.ini
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'panel' - an optional handle to a panel (in the AbbasCentral app)
+* 'bpod' - a boolean that determines whether to use bpod or native timestamps
 
 `psth(obj, event, neuron, varargin)`
 
+Plots a smoothed psth for a neuron around an event according to the input parameters. This function accepts the same arguments as raster.
+
 `[zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)`
+
+Returns smoothed Z-Scored firing rates centered around events
+
+**OUTPUT:**
+* zMean - NxT matrix of z-scored firing rates, where N is the number of neurons and T is the number of bins
+* zCells - a 1xE cell array where E is the number of events. Each cell contains an NxT matrix of firing rates for that trial.
+* trialNum - an index of the bpod trial the event occurred in
+
+**INPUT:**
+* baseline - string, name of the event to use as baseline
+* bWindow - 1x2 vector, time window to use for baseline FR
+* event - string, name of the event to use as event
+* eWindow - 1x2 vector, time window to use for event FR
+* binWidth - scalar, width of the bins in milliseconds
 
 `[corrScore, trialTypes] = xcorr(obj, event, edges)`
 
+Computes the cross-correlogram of the spike trains of all neurons centered 
+around the specified event. 
+
+**OUTPUT:**
+* corrScore - a 1xE cell array where E is the number of events. Each cell contains an NxN matrix of cross-correlograms for that trial.
+* trialTypes - a 1xE vector of trial types for each trial
+
+**INPUT:**
+* event - a string of an event named in config.ini
+* edges - 1x2 vector specifying distance from the event in seconds
+
 `plot_xcorr(obj, ref, target, window)`
+
+Plots the cross correlogram of two neurons in a given window
+
+**INPUT:**
+* ref - index of the reference neuron
+* target - index of the target neuron
+* window - number of bins to correlate on either side of the center
 
 `maxVals = mono_corr_max(obj, corrCells, region1, region2)`
 
@@ -217,15 +280,77 @@ Returns a Nx1 cell array, where N is the number of neurons in the session. Each 
 
 `[pwr, freqs, phase] = cwt_power(obj, event, varargin)`
 
+Calculates power, frequency, and phase using the continuous wavelet transform.
+
+**OUTPUT:**
+* pwr - a 1xC cell array of band power where C is the number of channels
+* freqs - a 1xF cell array of strings of frequency bands
+* phase - a 1xC cell array of phases where C is the number of channels
+
+**INPUT:**
+* event - a string of a state named in the config file (required)
+
+***optional name-value pairs:***
+* 'edges' - 2x2 vector distance from event on either side in seconds (default = [-2 2])
+* 'trialType' - a trial type found in config.ini
+* 'outcome' - an outcome character array found in config.ini
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'freqLimits' - a 1x2 vector specifying cwt frequency limits (default = [1 120])
+* 'averaged' - a boolean specifying if the trials should be averaged together (default = false)
+* 'calculatePhase' - boolean specifying if phase should be calculated (default = true)
+
 `[ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)`
 
 `filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)`
 
+**OUTPUT:**
+* filteredLFP - a cell array where each cell holds the trialized filtered LFP signal for that channel
+
+**INPUT:**
+* event - a string of a state named in the config file
+* freqLimits - a 1x2 vector specifying cwt frequency limits
+***optional name-value pairs:***
+* 'edges' - 2x2 vector distance from event on either side in seconds (default = [-2 2])
+* 'trialType' - a trial type found in config.ini
+* 'outcome' - an outcome character array found in config.ini
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'bpod' - a boolean specifying if the bpod event should be used (default = false)
+* 'filter' - a string specifying the type of filter to use (default = 'bandpass', alternate = 'butter')
+
 ### Video
 
-`[stateFrames, firstFrame] = find_state_frames(obj, stateName, varargin)`
+`stateFrames = find_state_frames(obj, stateName, varargin)`
+
+Provides video frames that synchronize with a bpod event when collected using the e3vision watchtower. For use with trialize_rotation.
+
+**OUTPUT:**
+* stateFrames - a 1xN vector of frame times where N is the number of trials.
+
+**INPUTS:**
+* stateName - a name of a bpod state to align to
+
+***optional name/value pairs:***
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
 `rotVec = trialize_rotation(obj, stateName, varargin)`
+
+Trializes the zeroed rotation of a subject around a particular bpod event. By default, calculates the rotation in the 1 second following the event. 
+
+**OUTPUT:**
+* rotVec - a 1xN cell array where N is the number of trials. Each cell contains a 1xf vector of angle data where f is the number of frames in the period of interest for each trial.
+
+**INPUTS:**
+* stateName - a name of a bpod state to align to
+
+***optional name/value pairs:***
+* 'edges' - 1x2 vector distance from event on either side in seconds
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
 # ExpManager Class
 

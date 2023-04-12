@@ -1,14 +1,21 @@
 function [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 
-
+% Calculates the power of a signal using a continuous wavelet transform
+% and returns the power and phase of the signal at the specified frequencies.
+% OUTPUT:
+%     pwr - a 1xC cell array of power values for each channel
+%     freqs - a 1xC cell array of frequencies used in the cwt
+%     phase - a 1xC cell array of phase values for each channel
 % INPUT:
 %     event - a string of a state named in the config file (required)
-%     name-value pairs:
-%         > 'edges' - 1x2 vector distance from event on either side in seconds (optional)
-%         > 'freqLimits' - a 1x2 vector specifying cwt frequency limits (optional)
-%         > 'averaged' - a boolean specifying if the trials should be averaged together (default = false)
-%         > 'calculatePhase' - boolean specifying if phase should be calculated (default = true)
-%         > 'trialTypes' - a 1xN vector specifying which trial types to calculate for (default = all)
+% optional name-value pairs:
+%     > 'edges' - 1x2 vector distance from event on either side in seconds (optional)
+%     > 'freqLimits' - a 1x2 vector specifying cwt frequency limits (optional)
+%     > 'averaged' - a boolean specifying if the trials should be averaged together (default = false)
+%     > 'calculatePhase' - boolean specifying if phase should be calculated (default = true)
+%     > 'trialType' - a trial type found in config.ini
+%     > 'outcome' - an outcome character array found in config.ini
+%     > 'offset' - a number that defines the offset from the alignment you wish to center around.
 
 % default input values
 defaultEdges = [-2 2];

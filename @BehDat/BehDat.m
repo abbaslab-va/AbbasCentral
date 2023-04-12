@@ -80,7 +80,7 @@ classdef BehDat < handle
 
     %% Video methods
 
-        [stateFrames, firstFrame] = find_state_frames(obj, stateName, varargin)
+        stateFrames = find_state_frames(obj, stateName, varargin)
         
         rotVec = trialize_rotation(obj, stateName, varargin)
 

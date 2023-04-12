@@ -1,11 +1,10 @@
-function [stateFrames, firstFrame] = find_state_frames(obj, stateName, varargin)
+function stateFrames = find_state_frames(obj, stateName, varargin)
  
 % OUTPUT:
-%     frames: a 1xN vector of frame times where N is the number of trials.
+%     stateFrames - a 1xN vector of frame times where N is the number of trials.
+%     firstFrame - the bpod timing for the first frame of video
 % 
 % INPUTS:
-%     sessionData - a bpod SessionData file
-%     trializedFrames - the output from align_frames_to_trials
 %     stateName - a name of a bpod state to align to
 % optional name/value pairs:
 %     'offset' - a number that defines the offset from the alignment you wish to center around.

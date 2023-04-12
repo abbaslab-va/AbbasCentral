@@ -2,10 +2,17 @@ function psth(obj, event, neuron, varargin)
 
 % INPUT:
 %     event - a string of a state named in the config file
-%     edges - 1x2 vector distance from event on either side in seconds
 %     neuron - index of neuron from spike field of object
-%     panel - an optional handle to a panel (in the AbbasCentral app)
-%     trialTypes - an optional argument specifying the trial type to bin
+% 
+% optional name/value pairs:
+%     'edges' - 1x2 vector distance from event on either side in seconds
+%     'binSize' - a number that defines the bin size in ms
+%     'trialType' - a trial type found in config.ini
+%     'outcome' - an outcome character array found in config.ini
+%     'offset' - a number that defines the offset from the alignment you wish to center around.
+%     'panel' - an optional handle to a panel (in the AbbasCentral app)
+%     'bpod' - a boolean that determines whether to use bpod or native timestamps
+
 defaultEdges = [-2 2];          % seconds
 defaultOutcome = [];            % all outcomes
 defaultTrialType = [];          % all TrialTypes

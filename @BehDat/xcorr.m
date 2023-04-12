@@ -1,5 +1,13 @@
 function [corrScore, trialTypes] = xcorr(obj, event, edges)
 
+% Computes the cross-correlogram of the spike trains of all neurons centered 
+% around the specified event. 
+%
+% OUTPUT:
+%     corrScore - a 1xE cell array where E is the number of events. Each cell
+%     contains an NxN matrix of cross-correlograms for that trial.
+%     trialTypes - a 1xE vector of trial types for each trial
+%
 % INPUT:
 %     event - a string of an event named in config.ini
 %     edges - 1x2 vector specifying distance from the event in seconds
