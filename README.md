@@ -11,10 +11,12 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * All class methods should have a function header in the class interface. Methods should be defined in separate files
 * Maintain single line spacing between methods and keep them organized by function
 * "Friend" functions like plots can be kept in the class interface, commented out
+
 ### Naming
 * Variables should be named in camel case (i.e. myVariable)
-* Functions should be all lower case with underscores (i.e. my_function)
+* Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
+
 ## Data organization
 This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:
 
@@ -82,24 +84,36 @@ This is a structure that accompanies the BehDat object array generated from sele
 ## BehDat Properties
 
     info - a structure containing subfields:
+        > path - Path to the experimental session data
         > name - The subject's name. Will match one of the subjects in metadata.subjects
         > baud - Sampling rate of the neural aquisition hardware
         > samples - Number of samples captured in the neural session
+        > trialTypes - structure containing key-value pairs from config.ini
+        > outcomes - structure containing key-value pairs from config.ini
+        > startState - the name of the bpod state where the trial start timestamp is sent
     spikes - a structure containing subfields:
         > times - a 1xN cell array of spike times, where N is the number of neurons
         > region - 1xN cell array of brain regions of the single units
-        > channel - 1xN double list of original channels on acquisition hardware
+        > channel - 1xN double list of original channels on acquisition hardwarea
+        > fr - average firing rate over the whole session
         > waveforms - a 1xN cell array of average waveform shapes
+        > halfValleyWidth - waveform width at half of max depolarization
+        > halfPeakWidth - waveform width at half of max hyperpolarization
+        > peak2valley - difference in amplitude from peak to valley
+        > exciteOutput - generated from find_mono. Indices of neurons monosynaptically downstream from the given neuron.
+        > exciteXcorr - 50 ms wide cross correlogram between the two neurons across the whole session.
+        > exciteWeight - strength of the correlation in terms of standard deviations of the peak above baseline.
     timestamps - a structure containing subfields:
         > times - a 1xT double array of timestamp times, where T is the number of timestamps
         > codes - a 1xT double array of timestamp codes (i.e. 65529)
         > keys - a structure containing key strings that can be used by the user to reference specific timestamp codes. Set up in config.ini file
+        > trialStart - a 1xT vector of timestamps denoting the start of trials. Generated during populate_BehDat
     bpod - a SessionData file from a Bpod session
     coordinates - x and y coordinates from DeepLabCut, imported from csv
 
 ## BehDat Methods
 
-Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. Functions relating to bpod, spikes, and video can be run simultaneously on arrays of objects, as the overhead for storing the associated data is relatively low. Functions that require LFP analysis should be run on one subject at a time, as the cost to memory for storing raw ephys data is prohibitively large. These functions will load the LFP, manipulate and analyze the signal as needed, save the results, and delete the LFP from the workspace.
+Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. 
 
 ### ***Bpod***
 `[numTT, numCorrect] = outcomes(obj, val)`
@@ -358,6 +372,21 @@ The ExpManager class' responsibility is to call the BehDat functions on specific
 
 # Example workflow
 The following example demonstrates how a researcher may use this package to set up a data pipeline, from collection and spike sorting, to synchronization with parallel data streams, to data analysis, visualization and storage. 
+
 ## A) Organize project directory
+
+Collect all files related to individual behavioral sessions in separate directories. Each folder should contain at minimum:
+    
+* NS6 and NEV file
+* Bpod SessionData
+
+    Additionally, directories can contain the following:
+* CSV from deeplabcut data (see deeplabcut section for that workflow)
+
+
 ## B) Sort spikes with kilosort
-## C) Select experiment
+
+## C) Run deeplabcut on video files 
+
+## D) Select experiment
+
