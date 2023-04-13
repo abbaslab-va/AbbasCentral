@@ -24,7 +24,14 @@ classdef ExpManager < handle
         end
             
 
+        %% Bpod methods
+        
         %% Spike methods
+
+        [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
+        %% LFP methods
+        
+        %% Video methods
         
     end
 

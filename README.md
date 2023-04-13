@@ -8,7 +8,7 @@ It contains functions for analyzing performance and positional data during behav
 Below you can find guidelines to adhere to when writing new methods or changing existing ones that, when followed, will help to keep this codebase as readable and consistent as possible.
 
 ### Class interfaces
-* All class methods should have a function header in the class interface. Methods should be defined in separate files
+* All methods should have a function header in the class interface. Methods should be defined in separate files
 * Maintain single line spacing between methods and keep them organized by function
 * "Friend" functions like plots can be kept in the class interface, commented out
 
@@ -16,6 +16,10 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Variables should be named in camel case (i.e. myVariable)
 * Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
+
+### Documentation
+* All functions should have a function header with a description of the function, inputs, and outputs
+* All new methods should be updated in this readme file to match their header
 
 ## Data organization
 This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:
@@ -59,7 +63,7 @@ Incorrect = 0
 
 * The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example call:
     
-    `trializedSpikes = trialize_spikes('Laser On', 2)`
+    `trializedSpikes = trialize_spikes('Trial Start')`
 
 * The [regions] section indicates the relationship between electrode channels and implanted regions, which can be used to examine neurons from a certain region or specific relationships between one or more regions. 
 * [trialTypes] is used to indicate the type of trial you wish to investigate. The name assigned to a trial type or a collection of trial types is arbitrary and is to assist the researcher in making explicit their desired subset of data. This is extracted from the Bpod session file, in the 'TrialTypes' field.

@@ -50,7 +50,7 @@ classdef BehDat < handle
 
         psth(obj, event, neuron, varargin)
         
-        [zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)
+        [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
         [corrScore, trialTypes] = xcorr(obj, event, edges)
 
