@@ -15,7 +15,7 @@ addRequired(p, 'event', @ischar);
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
-addParameter(p, 'binWidth', 1, @isscalar);
+addParameter(p, 'binWidth', 20, @isscalar);
 addParameter(p, 'trialType', [], validInput);
 addParameter(p, 'outcome', [], validInput);
 addParameter(p, 'offset', 0, @isscalar);
@@ -30,6 +30,10 @@ outcome = a.outcome;
 offset = a.offset;
 rpIndices = cell(size(obj.sessions));
 smoothedPSTHs = cell(size(obj.sessions));
+
+% Flesh out eSteps to find the 400-100 ms prior to the event, rather than
+% hard coding that value for 20 ms bins when making rpNeurons
+% eSteps = eWindow(1)*binWidth:binWidth:eWindow(2)*binWidth;
 for i = 1:numel(obj.sessions)
     
     % Calculate baselineMean and baselineSTD
@@ -37,7 +41,7 @@ for i = 1:numel(obj.sessions)
         'eWindow', eWindow, 'binWidth', binWidth, ...
         'trialType', trialType, 'outcome', outcome, 'offset', offset);
     % Identify rpNeurons
-    rpNeurons = all(smoothedRewardPSTH(:, 600:900) > 1.5, 2);
+    rpNeurons = all(smoothedRewardPSTH(:, 36:45) > .5, 2);
 
     rpIndices{i} = find(rpNeurons);
     smoothedPSTHs{i} = smoothedRewardPSTH;

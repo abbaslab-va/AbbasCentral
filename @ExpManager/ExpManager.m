@@ -29,6 +29,8 @@ classdef ExpManager < handle
         %% Spike methods
 
         [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
+        
+        [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj)
         %% LFP methods
         
         %% Video methods

@@ -19,7 +19,8 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 
 ### Documentation
 * All functions should have a function header with a description of the function, inputs, and outputs
-* All new methods should be updated in this readme file to match their header
+* All new methods should be updated in this readme file to match their function headers
+* Comments should be used to explain the reasoning behind any non-obvious code
 
 ## Data organization
 This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:

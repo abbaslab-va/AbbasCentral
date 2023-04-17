@@ -24,7 +24,7 @@ addRequired(p, 'event', @ischar);
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
-addParameter(p, 'binWidth', 1, @isscalar);
+addParameter(p, 'binWidth', 20, @isscalar);
 addParameter(p, 'trialType', [], validInput);
 addParameter(p, 'outcome', [], validInput);
 addParameter(p, 'offset', 0, @isscalar);
@@ -54,9 +54,10 @@ baseSTD = std(baseNeurons, 0, 2);
 eventEdges = num2cell((eWindow .* obj.info.baud) + eventTimes', 2);
 eventCells = cellfun(@(x) obj.bin_spikes(x, binWidth), eventEdges, 'uni', 0);
 zCells = cellfun(@(x) (x - baseMean)./baseSTD, eventCells, 'uni', 0);
+
 % Find trial number for each event timestamp
 trialNum = discretize(eventTimes, [baseTimes obj.info.samples]);
 % Concatenate cells into 3d matrix, mean across trials, smooth and output
 zAll = cat(3, zCells{:});
 zMean = mean(zAll, 3);
-zMean = smoothdata(zMean, 2, 'gaussian', 5);
+zMean = smoothdata(zMean, 2, 'gaussian', floor(100/binWidth));
