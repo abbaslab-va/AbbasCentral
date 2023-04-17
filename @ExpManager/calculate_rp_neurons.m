@@ -31,9 +31,19 @@ offset = a.offset;
 rpIndices = cell(size(obj.sessions));
 smoothedPSTHs = cell(size(obj.sessions));
 
-% Flesh out eSteps to find the 400-100 ms prior to the event, rather than
-% hard coding that value for 20 ms bins when making rpNeurons
-% eSteps = eWindow(1)*binWidth:binWidth:eWindow(2)*binWidth;
+% This code finds the reward window in which to identify rp neurons, which
+% will vary depending on the bin size. It tries to find the bins nearest to
+% -300:-100 ms prior to the event
+eSteps = eWindow(1)*1000:binWidth:eWindow(2)*1000;
+relativeEvent = find(eSteps == min(abs(eSteps)));
+if numel(relativeEvent) > 1
+    relativeEvent = relativeEvent(1);
+end
+stepsBackLeftEdge = floor(300/binWidth);
+stepsBackRightEdge = floor(200/binWidth) + 1;
+rewardWindow = [relativeEvent - stepsBackLeftEdge, ...
+    relativeEvent - stepsBackRightEdge];
+
 for i = 1:numel(obj.sessions)
     
     % Calculate baselineMean and baselineSTD
@@ -41,7 +51,7 @@ for i = 1:numel(obj.sessions)
         'eWindow', eWindow, 'binWidth', binWidth, ...
         'trialType', trialType, 'outcome', outcome, 'offset', offset);
     % Identify rpNeurons
-    rpNeurons = all(smoothedRewardPSTH(:, 36:45) > .5, 2);
+    rpNeurons = all(smoothedRewardPSTH(:, rewardWindow) > 1, 2);
 
     rpIndices{i} = find(rpNeurons);
     smoothedPSTHs{i} = smoothedRewardPSTH;
