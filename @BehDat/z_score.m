@@ -20,11 +20,15 @@ function [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 p = inputParser;
 validVectorSize = @(x) isvector(x) && length(x) == 2;
 validInput = @(x) ischar(x) || isempty(x) || iscell(x);
+validTrials = @(x) isempty(x) || isvector(x);
+
 addRequired(p, 'event', @ischar);
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
 addParameter(p, 'binWidth', 20, @isscalar);
+addParameter(p, 'baseTrials', [], validTrials)
+addParameter(p, 'eventTrials', [], validTrials);
 addParameter(p, 'trialType', [], validInput);
 addParameter(p, 'outcome', [], validInput);
 addParameter(p, 'offset', 0, @isscalar);
@@ -35,11 +39,15 @@ baseline = a.baseline;
 bWindow = a.bWindow;
 eWindow = a.eWindow;
 binWidth = a.binWidth;
+baseTrials = a.baseTrials;
+eventTrials = a.eventTrials;
 trialType = a.trialType;
 outcome = a.outcome;
 offset = a.offset;
-baseTimes = obj.find_event(baseline, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
-eventTimes = obj.find_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+baseTimes = obj.find_event(baseline, 'trialType', trialType, 'trials', baseTrials, ...
+    'outcome', outcome, 'offset', offset);
+eventTimes = obj.find_event(event, 'trialType', trialType, 'trials', eventTrials, ...
+    'outcome', outcome, 'offset', offset);
 
 % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);

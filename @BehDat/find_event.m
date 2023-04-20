@@ -12,19 +12,23 @@ function timestamps = find_event(obj, event, varargin)
 defaultOffset = 0;
 defaultOutcome = [];
 defaultTrialTypes = [];
+defaultTrials = [];
 
-validField = @(x) ischar(x) || isempty(x);
+validField = @(x) isempty(x) || ischar(x) || iscell(x);
+validTrials = @(x) isempty(x) || isvector(x);
 p = inputParser;
 addRequired(p, 'event', @ischar);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'trialType', defaultTrialTypes, validField);
+addParameter(p, 'trials', defaultTrials, validTrials);
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
 offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
+trials = a.trials;
 
 event(event == ' ') = '_';
 try
@@ -39,11 +43,12 @@ eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples
 eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-isDesiredTT = ones(1, numel(eventTrials));
-isDesiredOutcome = ones(1, numel(eventTrials));
+trialIncluded = ones(1, numel(eventTrials));
+isDesiredTT = trialIncluded;
+isDesiredOutcome = trialIncluded;
 
 
-if ~isempty(trialTypeField)
+if ischar(trialTypeField)
     trialTypeField = regexprep(trialTypeField, " ", "_");
     try
         trialTypes = obj.info.trialTypes.(trialTypeField);
@@ -52,6 +57,20 @@ if ~isempty(trialTypeField)
         mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
         throw(mv)
     end
+elseif iscell(trialTypeField)
+    numTT = numel(trialTypeField);
+    intersectMat = zeros(numTT, numel(eventTrials));
+    for tt = 1:numTT
+        trialTypeString = regexprep(trialTypeField{tt}, " ", "_");
+        try
+            trialTypes = obj.info.trialTypes.(trialTypeString);
+            intersectMat(tt, :) = ismember(eventTrialTypes, trialTypes);
+        catch
+            mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
+            throw(mv)
+        end
+    end
+    isDesiredTT = any(intersectMat, 1);
 end
 
 if ~isempty(outcomeField)
@@ -65,4 +84,8 @@ if ~isempty(outcomeField)
     end
 end
 
-timestamps = timestamps(isDesiredTT & isDesiredOutcome);
+if ~isempty(trials)
+    trialIncluded = ismember(eventTrials, trials);
+end
+
+timestamps = timestamps(isDesiredTT & isDesiredOutcome & trialIncluded);

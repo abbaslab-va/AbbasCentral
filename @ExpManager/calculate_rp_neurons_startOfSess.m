@@ -1,4 +1,4 @@
-function [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
+function [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj, event, varargin)
 
 % Calculate rpNeurons and smoothed z-scored PSTH for all sessions
 % INPUT:
@@ -30,6 +30,7 @@ outcome = a.outcome;
 offset = a.offset;
 leftEdge = 300;     %ms
 rightEdge = 100;    %ms
+
 rpIndices = cell(size(obj.sessions));
 smoothedPSTHs = cell(size(obj.sessions));
 
@@ -47,14 +48,15 @@ rewardWindow = [relativeEvent - stepsBackLeftEdge, ...
     relativeEvent - stepsBackRightEdge];
 
 for i = 1:numel(obj.sessions)
-    
-    % Calculate baselineMean and baselineSTD
-    smoothedRewardPSTH = obj.sessions(i).z_score(event, 'baseline', baseline, 'bWindow', bWindow, ...
-        'eWindow', eWindow, 'binWidth', binWidth, ...
+        % Calculate baselineMean and baselineSTD
+    sess = obj.sessions(i);
+    firstBlock = first_block_trials(sess.bpod);
+    smoothedRewardPSTH = sess.z_score(event, 'baseline', baseline, 'bWindow', bWindow, ...
+        'eWindow', eWindow, 'binWidth', binWidth, 'baseTrials', firstBlock, 'eventTrials', firstBlock, ...
         'trialType', trialType, 'outcome', outcome, 'offset', offset);
-    % Identify rpNeurons
     rpNeurons = all(smoothedRewardPSTH(:, rewardWindow) > 1, 2);
 
     rpIndices{i} = find(rpNeurons);
     smoothedPSTHs{i} = smoothedRewardPSTH;
+    
 end

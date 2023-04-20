@@ -1,4 +1,4 @@
-function [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
+function [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, varargin)
 
 % Calculate rpNeurons and smoothed z-scored PSTH for all sessions
 % INPUT:
@@ -28,8 +28,8 @@ binWidth = a.binWidth;
 trialType = a.trialType;
 outcome = a.outcome;
 offset = a.offset;
-leftEdge = 300;     %ms
-rightEdge = 100;    %ms
+leftEdge = 100;     %ms
+rightEdge = 200;    %ms
 rpIndices = cell(size(obj.sessions));
 smoothedPSTHs = cell(size(obj.sessions));
 
@@ -39,12 +39,12 @@ smoothedPSTHs = cell(size(obj.sessions));
 eSteps = eWindow(1)*1000:binWidth:eWindow(2)*1000;
 relativeEvent = find(eSteps == min(abs(eSteps)));
 if numel(relativeEvent) > 1
-    relativeEvent = relativeEvent(1);
+    relativeEvent = relativeEvent(2);
 end
-stepsBackLeftEdge = floor(leftEdge/binWidth);
-stepsBackRightEdge = floor(rightEdge/binWidth) + 1;
-rewardWindow = [relativeEvent - stepsBackLeftEdge, ...
-    relativeEvent - stepsBackRightEdge];
+stepsForwardLeftEdge = floor(leftEdge/binWidth) - 1;
+stepsForwardRightEdge = floor(rightEdge/binWidth) - 1;
+rewardWindow = [relativeEvent + stepsForwardLeftEdge, ...
+    relativeEvent + stepsForwardRightEdge];
 
 for i = 1:numel(obj.sessions)
     
@@ -53,7 +53,7 @@ for i = 1:numel(obj.sessions)
         'eWindow', eWindow, 'binWidth', binWidth, ...
         'trialType', trialType, 'outcome', outcome, 'offset', offset);
     % Identify rpNeurons
-    rpNeurons = all(smoothedRewardPSTH(:, rewardWindow) > 1, 2);
+    rpNeurons = all(smoothedRewardPSTH(:, rewardWindow) > .5, 2);
 
     rpIndices{i} = find(rpNeurons);
     smoothedPSTHs{i} = smoothedRewardPSTH;

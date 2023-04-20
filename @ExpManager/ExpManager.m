@@ -30,7 +30,9 @@ classdef ExpManager < handle
 
         [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
 
-        [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj)
+        [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj, event, varargin)
+        
+        [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, varargin)
         %% LFP methods
         
         %% Video methods
