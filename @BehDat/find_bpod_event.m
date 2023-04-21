@@ -12,19 +12,23 @@ function timestamps = find_bpod_event(obj, event, varargin)
 defaultOffset = 0;
 defaultOutcome = [];
 defaultTrialTypes = [];
+defaultTrials = [];
 
-validField = @(x) ischar(x) || isempty(x);
+validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validTrials = @(x) isempty(x) || isvector(x);
 p = inputParser;
 addRequired(p, 'event', @ischar);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'trialType', defaultTrialTypes, validField);
+addParameter(p, 'trials', defaultTrials, validTrials);
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
 offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
+trials = a.trials;
 rawEvents = obj.bpod.RawEvents.Trial;
 
 % Find trial start times in acquisition system timestamps
@@ -36,10 +40,11 @@ numTrialStart = numel(trialStartTimes);
 eventTrials = 1:numTrialStart;
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-isDesiredTT = ones(1, numTrialStart);
-isDesiredOutcome = ones(1, numTrialStart);
+trialIncluded = ones(1, numel(eventTrials));
+isDesiredTT = trialIncluded;
+isDesiredOutcome = trialIncluded;
 
-if ~isempty(trialTypeField)
+if ischar(trialTypeField)
     trialTypeField = regexprep(trialTypeField, " ", "_");
     try
         trialTypes = obj.info.trialTypes.(trialTypeField);
@@ -48,7 +53,22 @@ if ~isempty(trialTypeField)
         mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
         throw(mv)
     end
+elseif iscell(trialTypeField)
+    numTT = numel(trialTypeField);
+    intersectMat = zeros(numTT, numel(eventTrials));
+    for tt = 1:numTT
+        trialTypeString = regexprep(trialTypeField{tt}, " ", "_");
+        try
+            trialTypes = obj.info.trialTypes.(trialTypeString);
+            intersectMat(tt, :) = ismember(eventTrialTypes, trialTypes);
+        catch
+            mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
+            throw(mv)
+        end
+    end
+    isDesiredTT = any(intersectMat, 1);
 end
+
 
 if ~isempty(outcomeField)
     outcomeField(outcomeField == ' ') = '_';
@@ -60,9 +80,12 @@ if ~isempty(outcomeField)
         throw(mv)
     end
 end
+if ~isempty(trials)
+    trialIncluded = ismember(eventTrials, trials);
+end
 
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = trialHasEvent & isDesiredTT & isDesiredOutcome;
+goodTrials = trialHasEvent & isDesiredTT & isDesiredOutcome & trialIncluded;
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);

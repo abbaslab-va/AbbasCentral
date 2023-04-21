@@ -14,7 +14,7 @@ defaultOutcome = [];
 defaultTrialTypes = [];
 defaultTrials = [];
 
-validField = @(x) isempty(x) || ischar(x) || iscell(x);
+validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTrials = @(x) isempty(x) || isvector(x);
 p = inputParser;
 addRequired(p, 'event', @ischar);

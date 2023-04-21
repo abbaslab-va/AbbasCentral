@@ -29,11 +29,13 @@ This software package makes several fundamental assumptions about your data orga
 
 2) A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. 
 
+3) The experiment is trialized, with a trial start timestamp sent by the Bpod system at the beginning of each trial. This timestamp should be called "Trial Start" in the config.ini file (no quotes - see example below).
+
 ### config.ini   
 An example layout for this file is shown below:
 
 ```
-[experimenter]
+[info]
 Experimenter = Your name here
 StartState = Name of the bpod state that sends the Trial Start Timestamp
 
@@ -62,7 +64,7 @@ Correct = 1
 Incorrect = 0
 ```
 
-* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. It must include a timestamps section and a timestamp with the key 'Trial Start' in order to trialize spikes. An example call:
+* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. An example call:
     
     `trializedSpikes = trialize_spikes('Trial Start')`
 
