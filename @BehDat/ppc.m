@@ -102,6 +102,17 @@ for c=1:numChan
     end 
 end 
 
+% nan cells with less than 100 spikes
+for row=1:size(spikePhase,1)
+    for col=1:size(spikePhase,2)
+        if numel(spikePhase{row,col})<100
+            spikePhase{row,col}=NaN;
+        else 
+        end 
+    end 
+end 
+
+
 % find significant phase distributions 
 sigPhase= cellfun(@(x) circ_rtest(x),spikePhase);
 
