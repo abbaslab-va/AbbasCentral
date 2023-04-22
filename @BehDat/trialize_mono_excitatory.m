@@ -28,6 +28,7 @@ addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'bpod', defaultBpod, @islogical);
+addParameter(p, 'includeNeg', false, @islogical);
 parse(p, alignment, varargin{:});
 a = p.Results;
 
@@ -37,6 +38,7 @@ edges = a.edges;
 outcome = a.outcome;
 offset = a.offset;
 useBpod = a.bpod;
+includeNeg = a.includeNeg;
 
 if useBpod
     eventTimes = obj.find_bpod_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
@@ -77,7 +79,7 @@ for r = 1:numel(hasExcitatoryConn)
         basemean = mean(basewidevals);
         basestd = std(basewidevals);        
         peakWeight = (basecorr(latMax) - basemean)/basestd;
-        if isnan(peakWeight) || peakWeight < 0 || isinf(peakWeight)
+        if isnan(peakWeight) || peakWeight < 0 || isinf(peakWeight) || ~includeNeg
             peakWeight = 0.001;
         end
         weightsEx{ref}(end+1) = peakWeight;
