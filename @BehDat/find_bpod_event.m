@@ -22,6 +22,8 @@ addParameter(p, 'offset', defaultOffset, @isnumeric);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'trialType', defaultTrialTypes, validField);
 addParameter(p, 'trials', defaultTrials, validTrials);
+% addParameter(p, 'priorToState', [], @ischar);
+addParameter(p, 'priorToEvent', [], @ischar);
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
@@ -29,18 +31,25 @@ offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
 trials = a.trials;
+priorToEvent = a.priorToEvent;
 rawEvents = obj.bpod.RawEvents.Trial;
 
 % Find trial start times in acquisition system timestamps
 trialStartTimes = obj.find_event('Trial Start');
 % Identify trials with the event of interest
-trialHasEvent = cellfun(@(x) isfield(x.Events, event), rawEvents);
+% trialHasEvent = cellfun(@(x) isfield(x.Events, event), rawEvents);
+fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
+trialHasEvent = cellfun(@(x) regexp(fields(x.Events), event), rawEvents, 'uni', 0);
+trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);
+fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
+eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
 % Identify trials with the desired performance and trial type
 numTrialStart = numel(trialStartTimes);
 eventTrials = 1:numTrialStart;
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 trialIncluded = ones(1, numel(eventTrials));
+trialHasEvent = trialIncluded;
 isDesiredTT = trialIncluded;
 isDesiredOutcome = trialIncluded;
 
@@ -80,18 +89,36 @@ if ~isempty(outcomeField)
         throw(mv)
     end
 end
+
 if ~isempty(trials)
     trialIncluded = ismember(eventTrials, trials);
 end
 
+if ~isempty(priorToEvent)
+    trialHasEvent = cellfun(@(x) isfield(x.Events, priorToEvent), rawEvents);
+end
 % Intersect all logical matrices to index bpod trial cells with
+% goodTrials = trialHasEvent & isDesiredTT & isDesiredOutcome & trialIncluded;
 goodTrials = trialHasEvent & isDesiredTT & isDesiredOutcome & trialIncluded;
+
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
+
+
+eventTimes2Check = eventTimes(goodTrials);
+bpodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
+
+if ~isempty(priorToEvent)
+    priorToEventTimes = cellfun(@(x) x.Events.(priorToEvent)(1, 1), rawEvents2Check, 'uni', 0);
+    priorToDiff = cellfun(@(x, y) x - y, priorToEventTimes, bpodEventTimes, 'uni', 0);
+    goodTimes = cellfun(@(x) find(x == min(x(x >= 0))), priorToDiff, 'uni', 0);
+    poop = cellfun(@(x, y) x(y), bpodEventTimes, goodTimes);
+end
+
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
-bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
+% bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
 % Calculate differences between bpod event times and trial start times and
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
