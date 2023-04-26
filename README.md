@@ -120,7 +120,7 @@ This is a structure that accompanies the BehDat object array generated from sele
 
 ## BehDat Methods
 
-Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. 
+Methods for the BehDat class can be thought of as generally belonging to one of 4 categories: Bpod, Spike, LFP, and Video. Some functions do not belong explicitly to any of these categories, but are still useful for manipulating the data. These are listed under the "Other" category.
 
 ### ***Bpod***
 `[numTT, numCorrect] = outcomes(obj, val)`
@@ -392,6 +392,26 @@ Trializes the zeroed rotation of a subject around a particular bpod event. By de
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
 * 'eos' - a boolean that if true, aligns to the end of a state rather than the start
+
+### Other methods
+
+`noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)`
+
+This function will return a matrix where time points corresponding to periods that have been removed prior to kilosorting will be marked with NaN. 
+
+**OUTPUT:**
+* noiseRemoved - an NxT matrix with the same dimensions as rawData, with rows corresponding to neurons or trials, and T corresponding to time points in the chosen bin width.
+
+**INPUT:**
+* rawData - the output of a function like bin_neuron, ppc, cwt_power, etc. that return a matrix of trialized binned data.
+* event - an event string listed in config.ini
+
+***optional name/value pairs:***
+* 'edges' - 1x2 vector distance from event on either side in seconds
+* 'binWidth' - the size of the bins in ms
+* 'offset' - a number that defines the offset from the alignment you wish to center around.
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
 
 # ExpManager Class
 

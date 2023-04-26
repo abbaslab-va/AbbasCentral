@@ -81,6 +81,9 @@ classdef BehDat < handle
         stateFrames = find_state_frames(obj, stateName, varargin)
         
         rotVec = trialize_rotation(obj, stateName, varargin)
+    %% Additional methods
+
+    noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
     end
 end

@@ -11,12 +11,12 @@ function binnedTrials = bin_neuron(obj, event, neuron, varargin)
 %     'edges' - 1x2 vector distance from event on either side in seconds
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
-%     'binSize' - an optional parameter to specify the bin width, in ms. default value is 1
+%     'binWidth' - an optional parameter to specify the bin width, in ms. default value is 1
 
 defaultEdges = [-2 2];          % seconds
 defaultOutcome = [];            % all outcomes
 defaultTrialType = [];          % all TrialTypes
-defaultBinSize = 1;             % ms
+defaultBinWidth = 1;             % ms
 defaultOffset = 0;              % offset from event in seconds
 defaultBpod = false;            % Dictates which find_event script is used
 
@@ -26,7 +26,7 @@ p = inputParser;
 addRequired(p, 'event', @ischar);
 addRequired(p, 'neuron', @isnumeric);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'binSize', defaultBinSize, @isnumeric);
+addParameter(p, 'binWidth', defaultBinWidth, @isnumeric);
 addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'outcome', defaultOutcome, validField);
 addParameter(p, 'offset', defaultOffset, @isnumeric);
@@ -37,7 +37,7 @@ a = p.Results;
 event = a.event;
 neuron = a.neuron;
 edges = a.edges;
-binSize = a.binSize;
+binWidth = a.binWidth;
 trialTypeField = a.trialType;
 outcomeField = a.outcome;
 offset = a.offset;
@@ -53,7 +53,7 @@ end
 try
     edges = (edges * baud) + timestamps';
     edgeCells = num2cell(edges, 2);
-    binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binSize:x(2)),...
+    binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binWidth:x(2)),...
         edgeCells, 'uni', 0);
     binnedTrials = cat(1, binnedTrials{:});
 catch
