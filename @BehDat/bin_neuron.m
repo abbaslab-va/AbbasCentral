@@ -56,6 +56,9 @@ try
     binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binWidth:x(2)),...
         edgeCells, 'uni', 0);
     binnedTrials = cat(1, binnedTrials{:});
+    binnedTrials=obj.remove_noisy_periods(binnedTrials,event,'trialType', trialTypeField, ...
+        'outcome', outcomeField, 'offset', offset,'binWidth',binWidth,'edges',edges);
 catch
     binnedTrials = [];
+
 end
