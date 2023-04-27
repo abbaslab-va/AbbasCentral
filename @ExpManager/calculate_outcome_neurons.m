@@ -8,17 +8,11 @@ function [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, vara
 %   - smoothedPSTHs: a cell array containing the smoothed z-scored PSTH for each session
 
 % Parse inputs
-p = inputParser;
-validVectorSize = @(x) isvector(x) && length(x) == 2;
-validInput = @(x) ischar(x) || isempty(x) || iscell(x);
-addRequired(p, 'event', @ischar);
+p = parse_BehDat('event', 'trialType', 'outcome', 'offset');
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
 addParameter(p, 'binWidth', 20, @isscalar);
-addParameter(p, 'trialType', [], validInput);
-addParameter(p, 'outcome', [], validInput);
-addParameter(p, 'offset', 0, @isscalar);
 parse(p, event, varargin{:});
 a = p.Results;
 baseline = a.baseline;

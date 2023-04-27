@@ -12,24 +12,13 @@ function stateFrames = find_bpod_state(obj, stateName, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
-defaultOffset = 0;              % offset from event in seconds
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
-defaultTrials = [];
 defaultEOS = false;
 
-validField = @(x) ischar(x) || isempty(x);
-validTrials = @(x) isempty(x) || isvector(x);
-
-p = inputParser;
+p = parse_BehDat('offset', 'outcome', 'trialType', 'trials');
 addRequired(p, 'stateName', @ischar);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'trials', defaultTrials, validTrials)
 addParameter(p, 'eos', defaultEOS, @islogical);
-parse(p, stateName, varargin{:});
 
+parse(p, stateName, varargin{:});
 a = p.Results;
 stateName = a.stateName;
 trialType = a.trialType;

@@ -19,25 +19,7 @@ function noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
-
-defaultEdges = [-2 2];
-defaultOffset = 0;
-defaultBinWidth = 1;
-defaultOutcome = [];
-defaultTrialTypes = [];
-defaultTrials = [];
-
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validTrials = @(x) isempty(x) || isvector(x);
-p = inputParser;
-addRequired(p, 'event', @ischar);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'binWidth', defaultBinWidth, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'trialType', defaultTrialTypes, validField);
-addParameter(p, 'trials', defaultTrials, validTrials);
+p = parse_BehDat('event', 'edges', 'offset', 'binWidth', 'outcome', 'trialType', 'trials');
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;

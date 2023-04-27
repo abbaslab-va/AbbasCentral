@@ -15,19 +15,10 @@ function rotVec = trialize_rotation(obj, stateName, varargin)
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
 defaultEdges = [0 1];          % seconds
-defaultOffset = 0;              % offset from event in seconds
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
 defaultEOS = false;
-
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-p = inputParser;
+p = parse_BehDat('offset', 'outcome', 'trialType');
 addRequired(p, 'stateName', @ischar);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'eos', defaultEOS, @islogical);
 parse(p, stateName, varargin{:});
 

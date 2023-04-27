@@ -17,21 +17,13 @@ function [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
 
 % Parse inputs
-p = inputParser;
-validVectorSize = @(x) isvector(x) && length(x) == 2;
-validInput = @(x) ischar(x) || isempty(x) || iscell(x);
-validTrials = @(x) isempty(x) || isvector(x);
-
-addRequired(p, 'event', @ischar);
+p = parse_BehDat('event', 'trialType', 'outcome', 'offset');
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
 addParameter(p, 'binWidth', 20, @isscalar);
 addParameter(p, 'baseTrials', [], validTrials)
 addParameter(p, 'eventTrials', [], validTrials);
-addParameter(p, 'trialType', [], validInput);
-addParameter(p, 'outcome', [], validInput);
-addParameter(p, 'offset', 0, @isscalar);
 
 parse(p, event, varargin{:});
 a = p.Results;

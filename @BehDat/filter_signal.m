@@ -14,28 +14,12 @@ function filteredLFP = filter_signal(obj, event, freqLimits, varargin)
 %     > 'filter' - a string specifying the type of filter to use (default = 'bandpass', alternate = 'butter')
 
 % default input values
-tic
-defaultEdges = [-2 2];
-defaultTrialType = [];          % all TrialTypes
-defaultOutcome = [];            % all outcomes
-defaultOffset = 0;              % offset from event in seconds
-defaultBpod = false;
 defaultFilter = 'bandpass';
 
 % input validation scheme
-p =  inputParser;
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-
-addRequired(p, 'event', @ischar);
-addRequired(p, 'freqLimits', validVectorSize);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'bpod', defaultBpod, @islogical)
+p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod')
 addParameter(p, 'filter', defaultFilter, @ischar);
-parse(p, event, freqLimits, varargin{:});
+parse(p, event, varargin{:});
 a = p.Results;
 baud = obj.info.baud;
 
@@ -71,4 +55,3 @@ for c=1:numChan
 
     
 end
-toc

@@ -15,16 +15,10 @@ function sankey(obj, varargin)
 %     states to visualize
 
 session = obj.bpod;
-defaultOutcome = [];                                            % all outcomes
-defaultTrialType = [];                                          % all TrialTypes
 defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input states
 defaultOutput = defaultInput;                                   % all output states
 
-validField = @(x) ischar(x) || isempty(x) || iscell(x);
-
-p = inputParser;
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
+p = parse_BehDat('outcome', 'trialType', 'trials')
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
 parse(p, varargin{:});

@@ -9,8 +9,8 @@ function [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 % INPUT:
 %     event - a string of a state named in the config file (required)
 % optional name-value pairs:
-%     > 'edges' - 1x2 vector distance from event on either side in seconds (optional)
-%     > 'freqLimits' - a 1x2 vector specifying cwt frequency limits (optional)
+%     > 'edges' - 1x2 vector distance from event on either side in seconds
+%     > 'freqLimits' - a 1x2 vector specifying cwt frequency limits
 %     > 'averaged' - a boolean specifying if the trials should be averaged together (default = false)
 %     > 'calculatePhase' - boolean specifying if phase should be calculated (default = true)
 %     > 'trialType' - a trial type found in config.ini
@@ -18,29 +18,13 @@ function [pwr, freqs, phase] = cwt_power(obj, event, varargin)
 %     > 'offset' - a number that defines the offset from the alignment you wish to center around.
 
 % default input values
-defaultEdges = [-2 2];
-defaultFreqLimits = [1 120];
 defaultAveraged = false;
 defaultPhase = true;
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
-defaultOffset = 0;              % offset from event in seconds
-defaultBpod = false;
-
 
 % input validation scheme
-p =  inputParser;
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-addRequired(p, 'event', @ischar);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'freqLimits', defaultFreqLimits, validVectorSize);
+p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, varargin{:});
 a = p.Results;
 

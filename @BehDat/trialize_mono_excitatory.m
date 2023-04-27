@@ -1,39 +1,27 @@
-function weightsEx = trialize_mono_excitatory(obj, alignment, varargin)
+function weightsEx = trialize_mono_excitatory(obj, event, varargin)
 
 % OUTPUT:
 %     weightsEx - an N x 1 cell array with excitatory connection weights 
 %     for neuron pairs identified from find_mono, in the event window 
-%     given by alignment and edges.
+%     given by event and edges.
 % INPUT:
 %     trialType - a trial type char array that is in config.ini
-%     alignment - an alignment char array that is in config.ini
+%     event - an event char array that is in config.ini
 %     edges - a 1x2 vector that defines the edges from an event 
 %     within which spikes will be correlated
 % optional name/value pairs:
-%     'offset' - a number that defines the offset from the alignment you wish to center around.
+%     'offset' - a number that defines the offset from the event you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
+%     'bpod' - a boolean that determines whether to use bpod or native timestamps
+%     'includeNeg' - a boolean that determines whether to include negative weights in the output (false to plot graph)
 
-defaultTrialType = [];          % all TrialTypes
-defaultOutcome = [];            % all outcomes
-defaultEdges = [-2 2];          % seconds
-defaultOffset = 0;              % offset from event in seconds
-defaultBpod = false;            % Dictates which find_event script is used
-
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-p = inputParser;
-addRequired(p, 'alignment', @ischar);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'bpod', defaultBpod, @islogical);
+p = parse_BehDat('event', 'trialType', 'outcome', 'edges', 'offset', 'bpod');
 addParameter(p, 'includeNeg', false, @islogical);
-parse(p, alignment, varargin{:});
+parse(p, event, varargin{:});
 a = p.Results;
 
 trialType = a.trialType;
-alignment = a.alignment;
+event = a.event;
 edges = a.edges;
 outcome = a.outcome;
 offset = a.offset;
@@ -41,9 +29,9 @@ useBpod = a.bpod;
 includeNeg = a.includeNeg;
 
 if useBpod
-    eventTimes = obj.find_bpod_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
 else
-    eventTimes = obj.find_event(alignment, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
 end
 
 edges = (edges * obj.info.baud) + eventTimes';

@@ -11,26 +11,11 @@ function [ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)
 tic
 disp(obj.info.path)
 % default input values
-defaultEdges = [-2 2];
-defaultFreqLimits = [1 120];
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
-defaultOffset = 0;              % offset from event in seconds
-defaultBpod = false;
 defaultFilter = 'bandpass';
 
 
 % input validation scheme
-p =  inputParser;
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-addRequired(p, 'event', @ischar);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'freqLimits', defaultFreqLimits, validVectorSize);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'bpod', defaultBpod, @islogical);
+p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod')
 addParameter(p, 'filter', defaultFilter, @ischar);
 parse(p, event, varargin{:});
 a = p.Results;
@@ -39,9 +24,9 @@ baud = obj.info.baud;
 
 % timestamp and trialize event times
 if a.bpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'trials', a.trials);
 else
-    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'trials', a.trials);
 end
 a.edges = (a.edges * baud) + eventTimes';
 edgeCells = num2cell(a.edges, 2);

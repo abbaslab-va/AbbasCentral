@@ -13,24 +13,8 @@ function binnedTrials = bin_neuron(obj, event, neuron, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'binWidth' - an optional parameter to specify the bin width, in ms. default value is 1
 
-defaultEdges = [-2 2];          % seconds
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
-defaultBinWidth = 1;             % ms
-defaultOffset = 0;              % offset from event in seconds
-defaultBpod = false;            % Dictates which find_event script is used
+p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'offset', 'bpod')
 
-validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) ischar(x) || isempty(x);
-p = inputParser;
-addRequired(p, 'event', @ischar);
-addRequired(p, 'neuron', @isnumeric);
-addParameter(p, 'edges', defaultEdges, validVectorSize);
-addParameter(p, 'binWidth', defaultBinWidth, @isnumeric);
-addParameter(p, 'trialType', defaultTrialType, validField);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'bpod', defaultBpod, @islogical)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;

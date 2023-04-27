@@ -12,17 +12,10 @@ function stateFrames = find_state_frames(obj, stateName, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
-defaultOffset = 0;              % offset from event in seconds
-defaultOutcome = [];            % all outcomes
-defaultTrialType = [];          % all TrialTypes
 defaultEOS = false;
 
-validField = @(x) ischar(x) || isempty(x);
-p = inputParser;
+p = parse_BehDat('offset', 'outcome', 'trialType');
 addRequired(p, 'stateName', @ischar);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'trialType', defaultTrialType, validField);
 addParameter(p, 'eos', defaultEOS, @islogical);
 parse(p, stateName, varargin{:});
 

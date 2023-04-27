@@ -9,21 +9,10 @@ function timestamps = find_bpod_event(obj, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
-defaultOffset = 0;
-defaultOutcome = [];
-defaultTrialTypes = [];
-defaultTrials = [];
-
-validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validTrials = @(x) isempty(x) || isvector(x);
-p = inputParser;
-addRequired(p, 'event', @ischar);
-addParameter(p, 'offset', defaultOffset, @isnumeric);
-addParameter(p, 'outcome', defaultOutcome, validField);
-addParameter(p, 'trialType', defaultTrialTypes, validField);
-addParameter(p, 'trials', defaultTrials, validTrials);
+p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
 addParameter(p, 'priorToEvent', [], @ischar);
+
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
