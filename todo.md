@@ -13,13 +13,13 @@
 - [x] Implement Z-Score function
 - [x] Implement rasterplot function
 - [x] Sankey diagram for bpod state transitions
-- [ ] Integrate movement analysis pipeline into BehDat
+- [x] Integrate movement analysis pipeline into BehDat
 - [ ] Design user interface for GUI
     - [x] Raster plot
     - [x] PSTH
     - [x] CWT power
     - [x] By trial type
-    - [ ] By trial outcome
+    - [x] By trial outcome
     - [ ] Clickable scatter plot to select neuron
     - [x] Bpod performance plotter
     - [x] Sankey diagram

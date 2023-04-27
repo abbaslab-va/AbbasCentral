@@ -29,7 +29,7 @@ defaultPanel = [];
 parser = inputParser;
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
-validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x)
+validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTrials = @(x) isempty(x) || isvector(x);
 
 for i = 1:numel(varargin)
