@@ -13,14 +13,14 @@ function raster(obj, event, neuron, varargin)
 %     'panel' - an optional handle to a panel (in the AbbasCentral app)
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
 
-p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'offset', 'panel', 'bpod');
+p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
 
 % bin spikes in 1 ms bins
 spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, ...
-    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod));
+    'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'trials', a.trials));
 % this function included in packages directory of Abbas-WM
 % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
 % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
