@@ -10,6 +10,7 @@ function timestamps = find_event(obj, event, varargin)
 %     'trialType' - a trial type found in config.ini
 
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
+addParameter(p,'trialized', false, @islogical);
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;

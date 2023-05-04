@@ -74,6 +74,8 @@ classdef BehDat < handle
 
         filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)
 
+        ITPC = itpc(obj, event, varargin)
+
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
     %% Video methods

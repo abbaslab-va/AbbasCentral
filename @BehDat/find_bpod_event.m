@@ -12,6 +12,7 @@ function timestamps = find_bpod_event(obj, event, varargin)
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
 addParameter(p, 'priorToEvent', [], @ischar);
+addParameter(p,'trialized', false, @islogical)
 
 parse(p, event, varargin{:});
 a = p.Results;
@@ -21,6 +22,7 @@ outcomeField = a.outcome;
 trialTypeField = a.trialType;
 trials = a.trials;
 priorToEvent = a.priorToEvent;
+trialized = a.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 
 % Find trial start times in acquisition system timestamps
@@ -114,3 +116,13 @@ eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStart
 eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
 
 timestamps = cat(2, eventTimes{:}) + offset;
+
+if trialized 
+    eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
+    temp=timestamps;
+    trialNo = unique(eventTrial);
+    timestamps=cell(1,numel(trialNo));
+    for t = trialNo
+        timestamps{t} = temp(eventTrial == t);
+    end
+end 
