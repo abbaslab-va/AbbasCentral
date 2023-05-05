@@ -35,7 +35,11 @@ info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, 't
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
-spikeStruct = get_spike_info(sessPath, ini.regions);
+if ~isempty(dir('*.npy'))
+    spikeStruct = get_spike_info(sessPath, ini.regions);
+else
+    spikeStruct = struct();
+end
 
 sessObj = BehDat(info, spikeStruct, timestamps, SessionData, coords);
 

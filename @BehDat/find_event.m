@@ -18,6 +18,7 @@ offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
 trials = a.trials;
+trialized = a.trialized;
 
 event(event == ' ') = '_';
 try
@@ -78,3 +79,13 @@ if ~isempty(trials)
 end
 
 timestamps = timestamps(isDesiredTT & isDesiredOutcome & trialIncluded);
+
+if trialized 
+    eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
+    temp=timestamps;
+    trialNo = unique(eventTrial);
+    timestamps=cell(1,numel(trialNo));
+    for t = trialNo
+        timestamps{t} = temp(eventTrial == t);
+    end
+end 

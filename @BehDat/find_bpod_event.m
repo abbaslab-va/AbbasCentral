@@ -12,7 +12,7 @@ function timestamps = find_bpod_event(obj, event, varargin)
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
 addParameter(p, 'priorToEvent', [], @ischar);
-addParameter(p,'trialized', false, @islogical)
+addParameter(p,'trialized', false, @islogical);
 
 parse(p, event, varargin{:});
 a = p.Results;
@@ -100,6 +100,8 @@ rawEvents2Check = rawEvents(goodTrials);
 eventTimes2Check = eventTimes(goodTrials);
 bpodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
+
+% Need to complete this section
 if ~isempty(priorToEvent)
     priorToEventTimes = cellfun(@(x) x.Events.(priorToEvent)(1, 1), rawEvents2Check, 'uni', 0);
     priorToDiff = cellfun(@(x, y) x - y, priorToEventTimes, bpodEventTimes, 'uni', 0);
