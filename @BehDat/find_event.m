@@ -80,7 +80,7 @@ end
 
 timestamps = timestamps(isDesiredTT & isDesiredOutcome & trialIncluded);
 
-if trialized 
+if trialized  
     eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
     temp=timestamps;
     trialNo = unique(eventTrial);

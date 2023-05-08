@@ -115,16 +115,14 @@ bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check
 % Calculate differences between bpod event times and trial start times and
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
-eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
+% subtract the factor that bpod outpaces the blackrock system by, .0136
+eventOffsetCorrected = cellfun(@(x) x - x.*.0136, eventOffset, 'uni', 0);
+eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
+% eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
 
-timestamps = cat(2, eventTimes{:}) + offset;
 
 if trialized 
-    eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
-    temp=timestamps;
-    trialNo = unique(eventTrial);
-    timestamps=cell(1,numel(trialNo));
-    for t = trialNo
-        timestamps{t} = temp(eventTrial == t);
-    end
+    timestamps = cellfun(@(x) x + offset, eventTimes, 'uni', 0);
+else
+    timestamps = cat(2, eventTimes{:}) + offset;
 end 
