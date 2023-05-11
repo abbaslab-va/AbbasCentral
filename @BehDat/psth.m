@@ -13,7 +13,7 @@ function psth(obj, event, neuron, varargin)
 %     'panel' - an optional handle to a panel (in the AbbasCentral app)
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
 
-p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod')
+p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;

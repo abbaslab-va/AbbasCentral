@@ -15,7 +15,7 @@ defaultFilter = 'bandpass';
 
 
 % input validation scheme
-p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod')
+p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
 addParameter(p, 'filter', defaultFilter, @ischar);
 parse(p, event, varargin{:});
 a = p.Results;
