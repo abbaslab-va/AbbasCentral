@@ -85,7 +85,7 @@ classdef BehDat < handle
         rotVec = trialize_rotation(obj, stateName, varargin)
     %% Additional methods
 
-    noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
+        noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
     end
 end

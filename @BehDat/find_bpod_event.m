@@ -14,7 +14,6 @@ p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p, 'priorToEvent', [], @ischar);
 addParameter(p, 'excludeEventsByState', [], @ischar);
 addParameter(p,'trialized', false, @islogical);
-
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
