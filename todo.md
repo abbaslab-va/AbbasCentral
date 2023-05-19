@@ -24,7 +24,7 @@
     - [x] Bpod performance plotter
     - [x] Sankey diagram
     - [ ] HCTSA
-    - [ ] Rotation
+    - [x] Rotation
 - [x] Implement cwt power function
 - [ ] Identify putative connection types
     - [x] Monosynaptic excitatory

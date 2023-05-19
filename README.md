@@ -16,6 +16,7 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Variables should be named in camel case (i.e. myVariable)
 * Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
+* Dot syntax is preferred for object methods in BehDat (i.e. myObject.myMethod())
 
 ### Documentation
 * All functions should have a function header with a description of the function, inputs, and outputs
