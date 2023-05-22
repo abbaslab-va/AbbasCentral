@@ -87,5 +87,7 @@ classdef BehDat < handle
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
+        bpodOffset = samplingDiff(obj)
+
     end
 end
