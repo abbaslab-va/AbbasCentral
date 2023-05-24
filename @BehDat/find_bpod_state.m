@@ -4,11 +4,11 @@ function stateEdges = find_bpod_state(obj, stateName, varargin)
 %     stateEdges - a 1xN cell array of state edges where N is the number of trials.
 % 
 % INPUTS:
-%     stateName - a name of a bpod state to align to
+%     stateName - a name of a bpod state to find edges for in the acquisition system's sampling rate
 % optional name/value pairs:
-%     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
+%     'trials' - a vector of trial numbers to include
 
 
 p = parse_BehDat('outcome', 'trialType', 'trials');

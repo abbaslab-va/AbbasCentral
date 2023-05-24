@@ -8,6 +8,11 @@ function timestamps = find_bpod_event(obj, event, varargin)
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
+%     'trials' - a vector of trial numbers to include
+%     'priorToEvent' - a character vector of an event to find the time prior to
+%     'excludeEventsByState' - a character vector of a state to exclude trials from
+%     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
+%     'trialized' - a logical that determines whether to return a cell array of timestamps for each trial or a vector of all timestamps
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
