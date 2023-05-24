@@ -9,10 +9,12 @@ function timestamps = find_bpod_event(obj, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
 addParameter(p, 'priorToEvent', [], @ischar);
 addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'withinState', [], validStates)
 addParameter(p,'trialized', false, @islogical);
 parse(p, event, varargin{:});
 a = p.Results;
@@ -25,6 +27,7 @@ priorToEvent = a.priorToEvent;
 trialized = a.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 excludeEventsByState = a.excludeEventsByState;
+withinState = a.withinState;
 
 % Find trial start times in acquisition system timestamps
 trialStartTimes = obj.find_event('Trial Start');
@@ -121,6 +124,7 @@ if ~isempty(excludeEventsByState)
 end
 
 
+
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
 % bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
@@ -133,6 +137,26 @@ eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'u
 eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 % eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
 
+if ischar(withinState) || isstring(withinState)
+    stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField, ...
+        'trials', trials);
+elseif iscell(withinState)
+    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
+        'trials', trials), withinState, 'uni', 0);
+    stateTimeCell = cat(1, stateTimeCell{:});
+    eventIdx = num2cell(1:numel(eventTimes));
+    stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
+end
+
+if ~isempty(withinState)
+    % This double cellfun operates on withinState which contains a cell for each trial,
+    % with a cell for each state inside of that.
+    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimes, 'uni', 0);
+    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), eventTimes, includeTimes, 'uni', 0);
+end
 
 if trialized 
     timestamps = cellfun(@(x) x + offset, eventTimes, 'uni', 0);

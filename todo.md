@@ -35,3 +35,4 @@
     - [ ] Shared excitatory input
     - [ ] Shared inhibatory input
 - [ ] Ensemble activity across trials
+- [ ] Implement BehDat into ExpManager

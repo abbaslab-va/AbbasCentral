@@ -1,8 +1,7 @@
-function stateFrames = find_bpod_state(obj, stateName, varargin)
+function stateEdges = find_bpod_state(obj, stateName, varargin)
  
 % OUTPUT:
-%     stateFrames - a 1xN vector of frame times where N is the number of trials.
-%     firstFrame - the bpod timing for the first frame of video
+%     stateEdges - a 1xN cell array of state edges where N is the number of trials.
 % 
 % INPUTS:
 %     stateName - a name of a bpod state to align to
@@ -10,68 +9,60 @@ function stateFrames = find_bpod_state(obj, stateName, varargin)
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
-%     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
-defaultEOS = false;
 
-p = parse_BehDat('offset', 'outcome', 'trialType', 'trials');
+p = parse_BehDat('outcome', 'trialType', 'trials');
 addRequired(p, 'stateName', @ischar);
-addParameter(p, 'eos', defaultEOS, @islogical);
 
 parse(p, stateName, varargin{:});
 a = p.Results;
 stateName = a.stateName;
 trialType = a.trialType;
 outcome = a.outcome;
-offset = a.offset;
-alignToEnd = a.eos;
+trials = a.trials;
 rawEvents = obj.bpod.RawEvents.Trial;
+eventTrials = 1:numel(obj.timestamps.trialStart);
 
-% stateEdge determines if frames are found from the end of a state
-% backwards by offset (2) or from the start of a state (1)
-if alignToEnd
-    stateEdge = 2;
-else
-    stateEdge = 1;
-end
 
 correctTrialType = true(1, obj.bpod.nTrials);
 correctOutcome = true(1, obj.bpod.nTrials);
+trialIncluded = true(1, obj.bpod.nTrials);
 if ~isempty(trialType)
     ttToIndex = obj.info.trialTypes.(trialType);
     correctTrialType = obj.bpod.TrialTypes == ttToIndex;
 end
+
 if ~isempty(outcome)
     outcomeToIndex = obj.info.outcomes.(outcome);
     correctOutcome = obj.bpod.SessionPerformance == outcomeToIndex;
 end
-trialsIntersect = correctTrialType & correctOutcome;
 
-trialStartTimes = obj.find_event('Trial Start');
-fieldNames = cellfun(@(x) fields(x.States), rawEvents, 'uni', 0);
-
-
-
-
-
-
-[firstFrame, firstTrial] = find_first_frame(obj.bpod);
-framesByTrial = align_frames_to_trials(obj.bpod, size(obj.coordinates, 1), firstTrial);
-framesByTrial = framesByTrial(:, trialsIntersect);
-EventCells = obj.bpod.RawEvents.Trial;
-EventCells = EventCells(trialsIntersect);
-stateFrames = zeros(1, numel(EventCells));
-for trialno = 1:numel(EventCells)
-    trialStates = EventCells{trialno}.States;
-    if isfield(trialStates,stateName) && ~isempty(framesByTrial{1, trialno})
-        delayReward = trialStates.(stateName)(end, stateEdge);
-        keyFrames = intersect(find(framesByTrial{1, trialno}<delayReward+.02), find(framesByTrial{1, trialno}>delayReward-.02));
-        if keyFrames
-            stateFrames(trialno) = framesByTrial{2, trialno}(keyFrames(1));
-        end
-    end
+if ~isempty(trials)
+    trialIncluded = ismember(eventTrials, trials); 
 end
-stateFrames(stateFrames == 0) = [];
-if offset < 0
-    stateFrames = stateFrames + offset;
-end
+
+goodTrials = correctTrialType & correctOutcome & trialIncluded;
+rawEvents2Check = rawEvents(goodTrials);
+
+fieldNames = cellfun(@(x) fields(x.States), rawEvents2Check, 'uni', 0);
+
+fieldsToIndex = cellfun(@(x) regexp(x, stateName), fieldNames, 'uni', 0);
+fieldsToIndex = cellfun(@(x) cellfun(@(y) ~isempty(y), x), fieldsToIndex, 'uni', 0);
+
+trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
+stateTimesBpod = cellfun(@(x, y) x(y), trialCells, fieldsToIndex, 'uni', 0);
+% Find bpod intra-trial times for Trial Start timestamp
+bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
+% bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
+% Calculate differences between bpod event times and trial start times and
+% convert to sampling rate of acquisition system
+stateOffset = cellfun(@(x, y) cellfun(@(z) round((z - y) * obj.info.baud), x, 'uni', 0), stateTimesBpod, bpodStartTimes, 'uni', 0);
+stateOffset = cellfun(@(x) cat(1, x{:}), stateOffset, 'uni', 0);
+% subtract the factor by which bpod outpaces the blackrock system
+averageOffset = obj.samplingDiff;
+stateOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), stateOffset, 'uni', 0);
+trialStartTimes = num2cell(obj.timestamps.trialStart(goodTrials));
+stateTimes = cellfun(@(x, y) x + y, trialStartTimes, stateOffsetCorrected, 'uni', 0);
+
+stateEdges = cellfun(@(x) x(all(~isnan(x), 2), :), stateTimes, 'uni', 0);
+stateEdges = cellfun(@(x) num2cell(x, 2), stateEdges, 'uni', 0);

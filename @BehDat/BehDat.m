@@ -31,6 +31,8 @@ classdef BehDat < handle
         sankey(obj, varargin)
 
         timestamps = find_bpod_event(obj, event, varargin)
+        
+        stateEdges = find_bpod_state(obj, stateName, varargin)
 
         adjust_vip_trialTypes(obj)
 
@@ -83,6 +85,9 @@ classdef BehDat < handle
         stateFrames = find_state_frames(obj, stateName, varargin)
         
         rotVec = trialize_rotation(obj, stateName, varargin)
+        
+        stateFrames = find_bpod_state_video(obj, stateName, varargin)
+
     %% Additional methods
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
