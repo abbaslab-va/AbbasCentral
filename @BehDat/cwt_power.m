@@ -20,14 +20,16 @@ function [pwr, freqs, lfp_all] = cwt_power(obj, event, varargin)
 % default input values
 defaultAveraged = false;
 defaultPhase = true;
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
+addParameter(p, 'withinState', [], validStates)
 parse(p, event, varargin{:});
 a = p.Results;
-
+withinState = a.withinState;
 useBpod = a.bpod;
 
 % set up filterbank and downsample signal
@@ -39,7 +41,7 @@ filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'Ti
 
 % timestamp and trialize event times
 if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', withinState);
 else
     eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
