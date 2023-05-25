@@ -13,13 +13,15 @@ function psth(obj, event, neuron, varargin)
 %     'panel' - an optional handle to a panel (in the AbbasCentral app)
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
 
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
+addParameter(p, 'withinState', [], validStates)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
 
-spikeMat = obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, ...
-    'outcome', a.outcome, 'trialType', a.trialType, 'trials', a.trials, 'offset', a.offset, 'bpod', a.bpod);
+spikeMat = obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'offset', a.offset, 'binWidth', a.binWidth, ...
+    'outcome', a.outcome, 'trialType', a.trialType, 'trials', a.trials, 'bpod', a.bpod, 'withinState', a.withinState);
 
 meanSpikes = mean(spikeMat, 1);
 smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50);

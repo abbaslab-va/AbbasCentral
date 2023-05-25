@@ -9,8 +9,12 @@ function timestamps = find_event(obj, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
+% Need to implement withinState as param for app - don't necesessarily need
+% to flesh it out here
+addParameter(p, 'withinState', [], validStates)
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;

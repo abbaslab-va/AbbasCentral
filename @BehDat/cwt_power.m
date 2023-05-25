@@ -36,7 +36,7 @@ useBpod = a.bpod;
 baud = obj.info.baud;
 sf = 2000;
 downsampleRatio = baud/sf;
-sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
+sigLength = (a.edges(2) - a.edges(1)) * sf;
 filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times

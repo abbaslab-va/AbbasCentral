@@ -86,8 +86,6 @@ classdef BehDat < handle
         
         rotVec = trialize_rotation(obj, stateName, varargin)
         
-        stateFrames = find_bpod_state_video(obj, stateName, varargin)
-
     %% Additional methods
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
