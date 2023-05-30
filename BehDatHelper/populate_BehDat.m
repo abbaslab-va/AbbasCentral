@@ -49,5 +49,5 @@ try
     sessObj.timestamps.trialStart = timestamps;
 catch
     CE = MException('BehDat:config', 'Please ensure one of the timestamps in your config file is assigned to Trial Start');
-    throw(CE)
+    warning('BehDat:config', 'Please ensure one of the timestamps in your config file is assigned to Trial Start')
 end

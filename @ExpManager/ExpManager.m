@@ -16,7 +16,7 @@ classdef ExpManager < handle
             obj.metadata = m;
         end
 
-%         newExperiment = collect_sessions(expPath)
+%         newExperiment = collect_sessions(expPath)     % collect all sessions in a directory, not an ExpManager method
 
         function sessionIdx = subset(obj, containingString)
             sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), ...
@@ -26,6 +26,8 @@ classdef ExpManager < handle
 
         %% Bpod methods
         
+        plot_performance(obj, varargin);
+
         %% Spike methods
 
         [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
@@ -33,6 +35,10 @@ classdef ExpManager < handle
         [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj, event, varargin)
         
         [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, varargin)
+
+        binnedSessions = bin_spikes(obj, varargin);
+
+        
         %% LFP methods
         
         %% Video methods

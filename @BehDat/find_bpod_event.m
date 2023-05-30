@@ -8,13 +8,19 @@ function timestamps = find_bpod_event(obj, event, varargin)
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
+%     'trials' - a vector of trial numbers to include
+%     'priorToEvent' - a character vector of an event to find the time prior to
+%     'excludeEventsByState' - a character vector of a state to exclude trials from
+%     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
+%     'trialized' - a logical that determines whether to return a cell array of timestamps for each trial or a vector of all timestamps
 
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
 addParameter(p, 'priorToEvent', [], @ischar);
 addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'withinState', [], validStates)
 addParameter(p,'trialized', false, @islogical);
-
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
@@ -26,6 +32,7 @@ priorToEvent = a.priorToEvent;
 trialized = a.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 excludeEventsByState = a.excludeEventsByState;
+withinState = a.withinState;
 
 % Find trial start times in acquisition system timestamps
 trialStartTimes = obj.find_event('Trial Start');
@@ -122,17 +129,39 @@ if ~isempty(excludeEventsByState)
 end
 
 
+
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
 % bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
 % Calculate differences between bpod event times and trial start times and
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
-% subtract the factor that bpod outpaces the blackrock system by, .0136
-eventOffsetCorrected = cellfun(@(x) x - x.*.0136, eventOffset, 'uni', 0);
- eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
-%eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
+% subtract the factor by which bpod outpaces the blackrock system
+averageOffset = obj.samplingDiff;
+eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
+% eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);
 
+if ischar(withinState) || isstring(withinState)
+    stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField, ...
+        'trials', trials);
+elseif iscell(withinState)
+    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
+        'trials', trials), withinState, 'uni', 0);
+    stateTimeCell = cat(1, stateTimeCell{:});
+    eventIdx = num2cell(1:numel(eventTimes));
+    stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
+end
+
+if ~isempty(withinState)
+    % This double cellfun operates on withinState which contains a cell for each trial,
+    % with a cell for each state inside of that.
+    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimes, 'uni', 0);
+    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), eventTimes, includeTimes, 'uni', 0);
+end
 
 if trialized 
     timestamps = cellfun(@(x) x + offset, eventTimes, 'uni', 0);

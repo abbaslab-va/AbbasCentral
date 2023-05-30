@@ -16,6 +16,7 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Variables should be named in camel case (i.e. myVariable)
 * Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
+* Dot syntax is preferred for object methods in BehDat (i.e. myObject.myMethod())
 
 ### Documentation
 * All functions should have a function header with a description of the function, inputs, and outputs
@@ -173,6 +174,25 @@ Finds the timestamps in the sampling rate of the neural acquisition system corre
 * 'offset' - a number that defines the offset from the alignment you wish to center around.
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
+* 'trials' - a vector of trial numbers to include in the output
+* 'priorToEvent' - a character vector of an event to include only timestamps that occur before the event
+* 'excludeEventsByState' - a character vector of a state to exclude trials from the output that contain this state
+* 'withinState' - a character vector, string, or cell array of states to include only timestamps that occur within this state
+
+`stateEdges = find_bpod_state(obj, stateName, varargin)`
+
+Returns the start and end timestamps of a bpod state per trial in the sampling rate of the neural acquisition system.
+
+**OUTPUT:**
+* stateEdges - a 1xT cell array of 2xN matrices, where T is the number of trials and N is the number of times the state was entered in the trial. The first row of the matrix is the start time of the state, and the second row is the end time of the state.
+
+**INPUT:**
+* stateName - a character vector of the state to find
+
+***optional name/value pairs:***
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'trials' - a vector of trial numbers to include in the output
 
 ### ***Spikes***
 

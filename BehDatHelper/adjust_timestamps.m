@@ -8,6 +8,11 @@ function tsStruct = adjust_timestamps(nev, numTrials)
 %signals in the Bpod script. Furthermore, the 'Wire1' timestamp should be
 %used to mark the start of a new trial.
 
+if isempty(nev.Data.SerialDigitalIO.TimeStamp)
+    tsStruct.times = [];
+    tsStruct.codes = [];
+    return
+end
 adjustedTimestamps(1,:) = double(nev.Data.SerialDigitalIO.TimeStamp);
 adjustedTimestamps(2,:) = double(nev.Data.SerialDigitalIO.UnparsedData');
 
@@ -30,7 +35,7 @@ try
     end 
     
 
-catch(ME)
+catch
     tsStruct.times = [];
     tsStruct.codes = [];
     return
