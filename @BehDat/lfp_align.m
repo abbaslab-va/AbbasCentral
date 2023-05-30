@@ -1,4 +1,4 @@
-function ITPC= itpc(obj, event, varargin)
+function lfp_all = lfp_align(obj, event, varargin)
 
 % Calculates the power of a signal using a continuous wavelet transform
 % and returns the power and phase of the signal at the specified frequencies.
@@ -20,11 +20,11 @@ function ITPC= itpc(obj, event, varargin)
 % default input values
 defaultAveraged = false;
 defaultPhase = true;
-defaultFilter = 'bandpass';
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
-addParameter(p, 'filter', defaultFilter, @ischar);
+addParameter(p, 'averaged', defaultAveraged, @islogical);
+addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 parse(p, event, varargin{:});
 a = p.Results;
 
@@ -35,7 +35,7 @@ baud = obj.info.baud;
 sf = 2000;
 downsampleRatio = baud/sf;
 sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
-filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
+%filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times
 if useBpod
@@ -48,14 +48,11 @@ try
     a.edges = (a.edges * baud) + eventTimes';
     edgeCells = num2cell(a.edges, 2);
 catch
-    ITPC = [];
- 
+    %pwr = [];
+    %phase = [];
+    %freqs = [];
     return
 end
-if numel(edgeCells)<10
-    ITPC=[];
-    return
-end 
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
@@ -63,29 +60,22 @@ lfp = double(NS6.Data);
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 clear NS6
 numChan = size(lfp, 1);
-phase = cell(1, numChan);
-nyquist=baud/2;
-
-
-% for butter
-N = 2;
-[B, A] = butter(N, a.freqLimits/(nyquist));
-
-    % calculate phase
-
+%pwr = cell(1, numChan);
+%phase = cell(1, numChan);
 
 % calculate power and phase
-for c = 1:numChan
-    if strcmp(a.filter, 'butter')
-        chanPhase= cellfun(@(x) angle(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))), edgeCells, 'uni', 0);
-   
-    else
-        chanPhase= cellfun(@(x) angle(hilbert(bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud))), edgeCells, 'uni', 0);
-    end
-    temp=cell2mat(chanPhase);
-    ITPC{c}=abs(mean(exp(1i*temp)));
+for c = 1:numChan-1
+    lfp_all{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
     disp(num2str(c))
 end 
+%freqs = flip(f{1});
+
+if a.averaged
+   % pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
+    %phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
+    lfp_all = cellfun(@(x) mean(cell2num(x)), lfp_all, 'uni', 0);
+end
+
 
 
 disp(obj.info)

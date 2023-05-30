@@ -1,5 +1,6 @@
-function psth(obj, event, neuron, varargin)
-
+function smoothSpikes=psth(obj, event, neuron, varargin)
+% OUTPUT:
+%     smoothSpikes- a 1xT vector of smoothed spike times
 % INPUT:
 %     event - a string of a state named in the config file
 %     neuron - index of neuron from spike field of object
@@ -13,7 +14,7 @@ function psth(obj, event, neuron, varargin)
 %     'panel' - an optional handle to a panel (in the AbbasCentral app)
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
 
-p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod')
+p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
@@ -22,15 +23,15 @@ spikeMat = obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.bin
     'outcome', a.outcome, 'trialType', a.trialType, 'trials', a.trials, 'offset', a.offset, 'bpod', a.bpod);
 
 meanSpikes = mean(spikeMat, 1);
-smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50);
+smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50)*(1000/a.binWidth);
 if ~isempty(a.panel)
     h = figure('Visible', 'off');
-    plot(smoothSpikes * 2000)    
+    plot(smoothSpikes)    
     copyobj(h.Children, a.panel)
     close(h)
 else
     figure
-    plot(smoothSpikes * 2000)   
+    plot(smoothSpikes)   
 end
      
 
