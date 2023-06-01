@@ -1,5 +1,6 @@
-function psth(obj, event, neuron, varargin)
-
+function smoothSpikes=psth(obj, event, neuron, varargin)
+% OUTPUT:
+%     smoothSpikes- a 1xT vector of smoothed spike times
 % INPUT:
 %     event - a string of a state named in the config file
 %     neuron - index of neuron from spike field of object
@@ -24,15 +25,15 @@ spikeMat = obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'offset', a.offse
     'outcome', a.outcome, 'trialType', a.trialType, 'trials', a.trials, 'bpod', a.bpod, 'withinState', a.withinState);
 
 meanSpikes = mean(spikeMat, 1);
-smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50);
+smoothSpikes = smoothdata(meanSpikes, 'Gaussian', 50)*(1000/a.binWidth);
 if ~isempty(a.panel)
     h = figure('Visible', 'off');
-    plot(smoothSpikes * 2000)    
+    plot(smoothSpikes)    
     copyobj(h.Children, a.panel)
     close(h)
 else
     figure
-    plot(smoothSpikes * 2000)   
+    plot(smoothSpikes)   
 end
      
 

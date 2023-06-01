@@ -50,7 +50,7 @@ classdef BehDat < handle
 
         raster(obj, event, neuron, varargin)
 
-        psth(obj, event, neuron, varargin)
+        smoothedSpikes = psth(obj, event, neuron, varargin)
         
         [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
@@ -67,6 +67,8 @@ classdef BehDat < handle
         weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
         
         weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)
+
+        sigs = zeta_call(obj, event, varargin) 
         
     %% LFP methods
 
@@ -77,6 +79,8 @@ classdef BehDat < handle
         filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)
 
         ITPC = itpc(obj, event, varargin)
+
+        lfp = lfp_align(obj, event, varargin)
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 

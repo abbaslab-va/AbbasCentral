@@ -263,9 +263,12 @@ Plots a spike raster in a new figure according to the input parameters.
 * 'panel' - an optional handle to a panel (in the AbbasCentral app)
 * 'bpod' - a boolean that determines whether to use bpod or native timestamps
 
-`psth(obj, event, neuron, varargin)`
+`smoothSpikes=psth(obj, event, neuron, varargin)`
 
 Plots a smoothed psth for a neuron around an event according to the input parameters. This function accepts the same arguments as raster.
+
+**OUTPUT:**
+* smoothSpikes- a vector of smoothed spike times
 
 `[zMean, zCells, trialNum] = z_score(obj, baseline, bWindow, event, eWindow, binWidth)`
 
