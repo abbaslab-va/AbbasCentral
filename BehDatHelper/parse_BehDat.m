@@ -31,19 +31,19 @@ parser = inputParser;
 validVectorSize = @(x) all(size(x) == [1, 2]);
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTrials = @(x) isempty(x) || isvector(x);
-
+validNumber = @(x) isnumeric(x) && x > 0;
 for i = 1:numel(varargin)
     switch varargin{i}
         case 'event'
             addRequired(parser, 'event', @ischar);
         case 'neuron'
-            addRequired(parser, 'neuron', @isnumeric);
+            addRequired(parser, 'neuron', validNumber);
         case 'edges'
             addParameter(parser, 'edges', defaultEdges, validVectorSize);
         case 'offset'
             addParameter(parser, 'offset', defaultOffset, @isnumeric);
         case 'binWidth'
-            addParameter(parser, 'binWidth', defaultBinWidth, @isnumeric);
+            addParameter(parser, 'binWidth', defaultBinWidth, validNumber);
         case 'trialType'
             addParameter(parser, 'trialType', defaultTrialType, validField);
         case 'outcome'

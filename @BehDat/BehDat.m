@@ -70,6 +70,7 @@ classdef BehDat < handle
 
         sigs = zeta_call(obj, event, varargin) 
         
+        hctsa(obj, varargin)
     %% LFP methods
 
         [pwr, freqs, phase] = cwt_power(obj, event, varargin)
