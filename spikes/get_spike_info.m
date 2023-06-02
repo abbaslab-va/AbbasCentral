@@ -70,7 +70,7 @@ for neuron = 1:length(goodClusters)
     numspikes=1000;
     if length(spikeTimeArray{neuron})<numspikes
         numspikes=length(spikeTimeArray{neuron});
-    end 
+    end
     channel=goodChannels{neuron};
     highPassedData = highpass(single(NS6.Data(channel, 1:spikeTimeArray{neuron}(numspikes))), 500, 30000);
     averageWaveforms{neuron} = zeros(numspikes,101);

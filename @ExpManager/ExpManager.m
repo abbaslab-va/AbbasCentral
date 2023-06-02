@@ -38,6 +38,7 @@ classdef ExpManager < handle
 
         binnedSessions = bin_spikes(obj, varargin);
 
+        hctsa(obj, varargin);
         
         %% LFP methods
         

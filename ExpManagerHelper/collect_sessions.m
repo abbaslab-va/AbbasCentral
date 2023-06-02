@@ -8,6 +8,9 @@ function newExperiment = collect_sessions(expPath, dirFolders)
 %     expPath - path to data as specified in README
 %     dirFolders - indices of folders in path to use (optional)
 
-
-[expSessions, expMetadata] = select_experiment(expPath, dirFolders);
+if ~exist('dirFolders', 'var')
+    [expSessions, expMetadata] = select_experiment(expPath);
+else
+    [expSessions, expMetadata] = select_experiment(expPath, dirFolders);
+end
 newExperiment = ExpManager(expSessions, expMetadata);
