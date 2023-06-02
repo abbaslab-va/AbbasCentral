@@ -26,11 +26,12 @@ p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset
 addParameter(p, 'window', defaultWindow, @isnumeric);
 addParameter(p, 'overlap', defaultOverlap, @isnumeric);
 addRequired(p, 'regions', @iscell);
+addParameter(p, 'excludeEventsByState', [], @ischar);
 parse(p, event, regions, varargin{:});
 a = p.Results;
 
 useBpod = a.bpod;
-regions=a.regions;
+
 % set up filterbank and downsample signal
 baud = obj.info.baud;
 sf = 2000;
@@ -40,7 +41,7 @@ sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
 
 % timestamp and trialize event times
 if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset,'excludeEventsByState',a.excludeEventsByState);
 else
     eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
@@ -61,22 +62,22 @@ lfp = double(NS6.Data);
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 clear NS6
 numChan = size(lfp, 1);
-%pwr = cell(1, numChan);
-%phase = cell(1, numChan);
 
-% calculate power and phase
-for c = 1:numChan-1
+
+
+for c = 1:numChan
     lfp_all{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
-    disp(num2str(c))
 end 
-%freqs = flip(f{1});
-
-if a.averaged
-   % pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
-    %phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
-    lfp_all = cellfun(@(x) mean(cell2num(x)), lfp_all, 'uni', 0);
-end
 
 
+[m,n] = ndgrid([17,19,21,23,25,27,29,31],[15]);
+Z = [m(:),n(:)];
+    
+for combo=1:size(Z,1)
+      cxy=cellfun(@(x,y) mscohere(x,y,a.window,a.overlap,[a.freqLimits(1):a.freqLimits(2)],sf),lfp_all{Z(combo,1)},lfp_all{Z(combo,2)},'uni',0);
+      cxy_band(combo)=mean(cellfun(@(x) mean(x),cxy,'uni',1));    
+end 
 
-disp(obj.info)
+cohere=mean(cxy_band);
+
+disp(obj.info.path)

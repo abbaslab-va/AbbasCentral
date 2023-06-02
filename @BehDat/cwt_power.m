@@ -27,10 +27,12 @@ p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 addParameter(p, 'withinState', [], validStates)
+addParameter(p, 'excludeEventsByState', [], @ischar);
 parse(p, event, varargin{:});
 a = p.Results;
 withinState = a.withinState;
 useBpod = a.bpod;
+
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
@@ -41,7 +43,7 @@ filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'Ti
 
 % timestamp and trialize event times
 if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', withinState);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', withinState,'excludeEventsByState',a.excludeEventsByState);
 else
     eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end

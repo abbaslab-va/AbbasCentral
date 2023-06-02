@@ -11,6 +11,7 @@ function sigs=zeta_call(obj, event, varargin)
 
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials','bpod');
 addParameter(p,'length', 0.5, @isnumeric);
+addParameter(p, 'excludeEventsByState', [], @ischar);
 
 parse(p, event, varargin{:});
 a = p.Results;
@@ -21,7 +22,7 @@ trialTypeField = a.trialType;
 useBpod = a.bpod;
 
 if useBpod
-    events = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    events = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset,'excludeEventsByState',a.excludeEventsByState);
     events=uniquetol(events,0.5*30000,'DataScale',1);
 else
     events = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
