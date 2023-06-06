@@ -42,16 +42,19 @@ for s = 1:numel(indices)
     for sess=1:numel(sessionFolders)
         Fullpath = fullfile(parentFolder, subName, sessionFolders(sess).name);
         expSessions(ctr) = populate_BehDat(Fullpath, subName, I);
+        sessNames{ctr} = sessionFolders(sess).name;
         ctr = ctr + 1;
     end 
 end
+hasSpikes = arrayfun(@(x) ~isempty(x.spikes), expSessions);
+expSessions = expSessions(hasSpikes);
+sessNames = sessNames(hasSpikes);
 metadata.subjects = subNames;
 metadata.path = parentFolder;
+metadata.sessions = sessNames;
 try
     metadata.experimenter = I.info.experimenter;
 catch
     metadata.experimenter = "";
 end
 
-hasSpikes = arrayfun(@(x) ~isempty(x.spikes), expSessions);
-expSessions = expSessions(hasSpikes);
