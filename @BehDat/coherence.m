@@ -70,7 +70,7 @@ for c = 1:numChan
 end 
 
 
-[m,n] = ndgrid([17,19,21,23,25,27,29,31],[15]);
+[m,n] = ndgrid(obj.info.regions.(a.regions(1)),obj.info.regions.(a.regions(2)));
 Z = [m(:),n(:)];
     
 for combo=1:size(Z,1)
