@@ -38,7 +38,7 @@ edges = (edges * obj.info.baud) + eventTimes';
 edgeCells = num2cell(edges, 2);
 exciteID = arrayfun(@(x) ~isempty(x.exciteOutput), obj.spikes);
 numSpikes = numel(obj.spikes);
-weightsEx = cell(numSpikes, 1);
+weightsEx = struct('weights', cell(numSpikes, 1), 'fr', cell(numSpikes, 1));
 hasExcitatoryConn = find(exciteID);
 numEvents = numel(edgeCells);
 
@@ -70,6 +70,13 @@ for r = 1:numel(hasExcitatoryConn)
         if isnan(peakWeight) || (peakWeight < 0 & ~includeNeg) || isinf(peakWeight) || peakWeight>50
             peakWeight = 0.001; 
         end
-        weightsEx{ref}(end+1) = peakWeight;
+        weightsEx(ref).weights(end+1) = peakWeight;
     end
+end
+eventDur = cellfun(@(x) (x(2) - x(1))/obj.info.baud, edgeCells);
+totalDur = sum(eventDur);
+for ref = 1:numSpikes
+    spikeTimes = cellfun(@(x) histcounts(obj.spikes(ref).times, 'BinEdges', x), edgeCells);
+    spikeSubset = sum(spikeTimes);
+    weightsEx(ref).fr = spikeSubset/totalDur;
 end

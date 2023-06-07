@@ -41,7 +41,7 @@ for ref = 1:numNeurons
             connGraphEx{2}(end+1) = target;
             weightsEx(end+1) = obj.spikes(ref).exciteWeight(t);
             try
-                weightsExTrialized(end+1) = trialized{ref}(t);
+                weightsExTrialized(end+1) = trialized(ref).weights(t);
             catch
             end
         end
@@ -95,7 +95,13 @@ if ~isempty(weightsIn)
 end
 
 % size data
-sizes = sizes(1:numel(E.XData));
+if ~isempty(trialized)
+    fr = extractfield(trialized, 'fr');
+%     sizes = cell2mat(fr);
+    sizes = fr(1:numel(E.XData));
+else
+    sizes = sizes(1:numel(E.XData));
+end
 scatter(E.XData, E.YData, 100*sizes/max(sizes), 'k', 'o', 'filled')
 
 %% Trialized overlay
