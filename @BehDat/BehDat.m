@@ -91,6 +91,8 @@ classdef BehDat < handle
         
         rotVec = trialize_rotation(obj, stateName, varargin)
         
+        get_e3v_frame_times(obj, bncData)
+        
     %% Additional methods
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)

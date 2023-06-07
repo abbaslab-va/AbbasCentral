@@ -27,17 +27,16 @@ labelsAll = arrayfun(@(x) get_labels(x), obj.sessions, 'uni', 0);
 labels = cat(2, labelsAll{:});
 
 % Extract waveform features in same order
-hvw = arrayfun(@(x) extractfield(x.spikes, 'halfValleyWidth'), obj.sessions, 'uni', 0);
 hpw = arrayfun(@(x) extractfield(x.spikes, 'halfPeakWidth'), obj.sessions, 'uni', 0);
-p2v = arrayfun(@(x) extractfield(x.spikes, 'peak2valley'), obj.sessions, 'uni', 0);
-waveformFeatures = [cat(2, hvw{:}); cat(2, hpw{:}); cat(2, p2v{:})];
+fr = arrayfun(@(x) extractfield(x.spikes, 'fr'), obj.sessions, 'uni', 0);
+waveformFeatures = [cat(2, hpw{:}); cat(2, fr{:})];
 % Save locally for now because I don't have permission to save to randall's
 % computer
 cd('E:\Ephys\Test')
 save('hctsa_allTS.mat', 'timeSeriesData', 'labels', 'keywords')
 TS_Init('hctsa_allTS.mat', 'INP_mops.txt', 'INP_ops_reduced.txt');
 sample_runscript_matlab();
-% TS_LabelGroups('raw',labels);
+TS_LabelGroups();
 TS_Normalize('mixedSigmoid',[0.5, 1.0]);
 
 % Cluster
@@ -63,10 +62,9 @@ idxcolors(idx == 3, :) = repmat([0 1 0], numel(find(idx == 3)), 1);
 scatter3(scores(:, 1), scores(:, 2), scores(:, 3), 15, idxcolors, 'filled')
 waveformFeatures = waveformFeatures(:, 1:size(idxcolors, 1));
 figure
-scatter3(waveformFeatures(1, :), waveformFeatures(2, :), waveformFeatures(3, :), 15, idxcolors, 'filled')
-xlabel('Half Valley Width')
-ylabel('Half Peak Width')
-zlabel('Peak to Valley')
+scatter(waveformFeatures(1, :), waveformFeatures(2, :), 15, idxcolors, 'filled')
+xlabel('Half Peak Width')
+ylabel('Firing Rate')
 % scatter3(scores(:, 1), scores(:, 2), scores(:, 3), 15, idx, 'filled')
 end
 
