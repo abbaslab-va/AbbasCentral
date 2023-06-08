@@ -102,6 +102,7 @@ if ~isempty(trialized)
 else
     sizes = sizes(1:numel(E.XData));
 end
+sizes(sizes == 0) = 0.001;
 scatter(E.XData, E.YData, 100*sizes/max(sizes), 'k', 'o', 'filled')
 
 %% Trialized overlay

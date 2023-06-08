@@ -27,6 +27,7 @@ outcome = a.outcome;
 offset = a.offset;
 useBpod = a.bpod;
 includeNeg = a.includeNeg;
+baud = obj.info.baud;
 
 if useBpod
     eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
@@ -45,7 +46,9 @@ numEvents = numel(edgeCells);
 for r = 1:numel(hasExcitatoryConn)
     ref = hasExcitatoryConn(r);
     eTargets = obj.spikes(ref).exciteOutput;
+    refSpikes = obj.spikes(ref).times;
     for target = eTargets
+        targetSpikes = obj.spikes(target).times;
         corrMat = zeros(numEvents, 101);
         indEx = obj.spikes(ref).exciteOutput == target;
         sessCorr = obj.spikes(ref).exciteXcorr(indEx, :);
@@ -53,12 +56,11 @@ for r = 1:numel(hasExcitatoryConn)
         if numel(latMax) ~= 1
             latMax = latMax(latMax > 47 & latMax < 51);
         end
-
         for e = 1:numEvents
             eventEdges = edgeCells{e};
-            binEdges = eventEdges(1):obj.info.baud/1000:eventEdges(2);
-            refSpikes = histcounts(obj.spikes(ref).times, 'BinEdges', binEdges);
-            targetSpikes = histcounts(obj.spikes(target).times, 'BinEdges', binEdges);
+            binEdges = eventEdges(1):baud/1000:eventEdges(2);
+            refSpikes = histcounts(refSpikes, 'BinEdges', binEdges);
+            targetSpikes = histcounts(targetSpikes, 'BinEdges', binEdges);
             corrMat(e, :) = xcorr(refSpikes, targetSpikes, 50);
         end
 
