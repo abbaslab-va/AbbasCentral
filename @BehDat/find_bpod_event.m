@@ -15,10 +15,11 @@ function timestamps = find_bpod_event(obj, event, varargin)
 %     'trialized' - a logical that determines whether to return a cell array of timestamps for each trial or a vector of all timestamps
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 % addParameter(p, 'priorToState', [], @ischar);
-addParameter(p, 'priorToEvent', [], @ischar);
-addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'priorToEvent', [], validEvent);
+addParameter(p, 'excludeEventsByState', [], validEvent);
 addParameter(p, 'withinState', [], validStates)
 addParameter(p,'trialized', false, @islogical);
 parse(p, event, varargin{:});

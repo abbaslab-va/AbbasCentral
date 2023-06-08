@@ -14,6 +14,7 @@ function rotVec = trialize_rotation(obj, stateName, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
+validVectorSize = @(x) all(size(x) == [1, 2]);
 defaultEdges = [0 1];          % seconds
 defaultEOS = false;
 p = parse_BehDat('offset', 'outcome', 'trialType');
