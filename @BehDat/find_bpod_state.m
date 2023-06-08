@@ -21,20 +21,22 @@ trialType = a.trialType;
 outcome = a.outcome;
 trials = a.trials;
 rawEvents = obj.bpod.RawEvents.Trial;
-eventTrials = 1:numel(obj.timestamps.trialStart);
-
+numTrialStart = numel(obj.timestamps.trialStart);
+eventTrials = 1:numTrialStart;
+eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
+eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 
 correctTrialType = true(1, obj.bpod.nTrials);
 correctOutcome = true(1, obj.bpod.nTrials);
 trialIncluded = true(1, obj.bpod.nTrials);
 if ~isempty(trialType)
     ttToIndex = obj.info.trialTypes.(trialType);
-    correctTrialType = obj.bpod.TrialTypes == ttToIndex;
+    correctTrialType = ismember(eventTrialTypes, ttToIndex);
 end
 
 if ~isempty(outcome)
     outcomeToIndex = obj.info.outcomes.(outcome);
-    correctOutcome = obj.bpod.SessionPerformance == outcomeToIndex;
+    correctOutcome = ismember(eventOutcomes, outcomeToIndex);
 end
 
 if ~isempty(trials)

@@ -6,7 +6,9 @@ function get_e3v_frame_times(obj, bncData)
 % increasing to 50% when saving commences.
 % 
 % INPUT:
-%     bncData - a vector from NS6.Data, typically channel 33 or 34. Not standardized currently
+%     bncData - a vector from NS6.Data, typically channel 33 or 34. Not
+%     standardized currently, depends on which analog in is used on the
+%     cereplex direct, which this method was initially built for.
 
 % Voltage peaks around 20000, but the rise time often exceeds the length of
 % a duty cycle at 30000 hz. The cutoff of 2000 is somewhat arbitrary but

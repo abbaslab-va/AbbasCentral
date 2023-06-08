@@ -46,9 +46,9 @@ numEvents = numel(edgeCells);
 for r = 1:numel(hasExcitatoryConn)
     ref = hasExcitatoryConn(r);
     eTargets = obj.spikes(ref).exciteOutput;
-    refSpikes = obj.spikes(ref).times;
+    refTimes = obj.spikes(ref).times;
     for target = eTargets
-        targetSpikes = obj.spikes(target).times;
+        targetTimes = obj.spikes(target).times;
         corrMat = zeros(numEvents, 101);
         indEx = obj.spikes(ref).exciteOutput == target;
         sessCorr = obj.spikes(ref).exciteXcorr(indEx, :);
@@ -59,8 +59,8 @@ for r = 1:numel(hasExcitatoryConn)
         for e = 1:numEvents
             eventEdges = edgeCells{e};
             binEdges = eventEdges(1):baud/1000:eventEdges(2);
-            refSpikes = histcounts(refSpikes, 'BinEdges', binEdges);
-            targetSpikes = histcounts(targetSpikes, 'BinEdges', binEdges);
+            refSpikes = histcounts(refTimes, 'BinEdges', binEdges);
+            targetSpikes = histcounts(targetTimes, 'BinEdges', binEdges);
             corrMat(e, :) = xcorr(refSpikes, targetSpikes, 50);
         end
 
