@@ -29,13 +29,14 @@ defaultPanel = [];
 parser = inputParser;
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
+validEvent = @(x) isempty(x) || ischar(x) || isstring(x)
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTrials = @(x) isempty(x) || isvector(x);
 validNumber = @(x) isnumeric(x) && x > 0;
 for i = 1:numel(varargin)
     switch varargin{i}
         case 'event'
-            addRequired(parser, 'event', @ischar);
+            addRequired(parser, 'event', validEvent);
         case 'neuron'
             addRequired(parser, 'neuron', validNumber);
         case 'edges'

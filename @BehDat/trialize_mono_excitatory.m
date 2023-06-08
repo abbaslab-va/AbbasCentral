@@ -56,7 +56,7 @@ for r = 1:numel(hasExcitatoryConn)
         if numel(latMax) ~= 1
             latMax = latMax(latMax > 47 & latMax < 51);
         end
-        for e = 1:numEvents
+        parfor e = 1:numEvents
             eventEdges = edgeCells{e};
             binEdges = eventEdges(1):baud/1000:eventEdges(2);
             refSpikes = histcounts(refTimes, 'BinEdges', binEdges);
