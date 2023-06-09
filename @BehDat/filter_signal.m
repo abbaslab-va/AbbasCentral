@@ -17,7 +17,7 @@ function filteredLFP = filter_signal(obj, event, freqLimits, varargin)
 defaultFilter = 'bandpass';
 
 % input validation scheme
-p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod')
+p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'filter', defaultFilter, @ischar);
 parse(p, event, varargin{:});
 a = p.Results;

@@ -16,7 +16,7 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Variables should be named in camel case (i.e. myVariable)
 * Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
-* Dot syntax is preferred for object methods in BehDat (i.e. myObject.myMethod())
+* Dot syntax is preferred for object methods in BehDat (i.e. myObject.my_method())
 
 ### Documentation
 * All functions should have a function header with a description of the function, inputs, and outputs
@@ -65,9 +65,11 @@ Correct = 1
 Incorrect = 0
 ```
 
-* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes. An example call:
+* The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes or find_event. An example call:
     
-    `trializedSpikes = trialize_spikes('Trial Start')`
+    `trializedSpikes = obj.trialize_spikes('Trial Start');`
+
+    `ts = obj.find_event('Forage', 'trialType', 'Left', 'outcomes', 'Correct');`
 
 * The [regions] section indicates the relationship between electrode channels and implanted regions, which can be used to examine neurons from a certain region or specific relationships between one or more regions. 
 * [trialTypes] is used to indicate the type of trial you wish to investigate. The name assigned to a trial type or a collection of trial types is arbitrary and is to assist the researcher in making explicit their desired subset of data. This is extracted from the Bpod session file, in the 'TrialTypes' field.
