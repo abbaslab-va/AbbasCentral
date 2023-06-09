@@ -30,11 +30,13 @@ correctTrialType = true(1, obj.bpod.nTrials);
 correctOutcome = true(1, obj.bpod.nTrials);
 trialIncluded = true(1, obj.bpod.nTrials);
 if ~isempty(trialType)
+    trialType = regexprep(trialType, " ", "_");
     ttToIndex = obj.info.trialTypes.(trialType);
     correctTrialType = ismember(eventTrialTypes, ttToIndex);
 end
 
 if ~isempty(outcome)
+    outcome = regexprep(outcome, " ", "_");
     outcomeToIndex = obj.info.outcomes.(outcome);
     correctOutcome = ismember(eventOutcomes, outcomeToIndex);
 end
