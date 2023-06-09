@@ -1,5 +1,7 @@
 function rotVec = trialize_rotation(obj, stateName, varargin)
- 
+% Trializes rotation in experiments that were recorded using the e3v
+% watchtower synchronized to the bpod state machine via bnc ttl.
+% 
 % OUTPUT:
 %     rotVec: a 1xN cell array where N is the number of trials. Each cell
 %     contains a 1xf vector of angle data where f is the number of frames in the

@@ -91,6 +91,8 @@ classdef BehDat < handle
         
         rotVec = trialize_rotation(obj, stateName, varargin)
         
+        %[f, h] = rotation_surf(rotVec, panel)
+
         get_e3v_frame_times(obj, bncData)
         
     %% Additional methods
