@@ -27,6 +27,6 @@ bncLo(badLo) = [];
 % samples (at 30000 hz, this is slightly less than half of a frame at 30
 % hz)
 bncDiff = bncLo - bncHi;
-savedFrames = bncHi(find(bncDiff > 400));
+savedFrames = bncHi(bncDiff > 400);
 obj.video.frameTimes = savedFrames;
 

@@ -101,7 +101,7 @@ for neuron = 1:length(goodClusters)
 
     [pksInv, locsInv, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
     [~, maxIdxInv] = max(pInv);
-    halfPeakWidth{neuron} = w(maxIdxInv);
+    halfPeakWidth{neuron} = wInv(maxIdxInv);
 end
 
 spikeStruct= struct('times', spikeTimeArray, 'region', cellRegions, 'channel', goodChannels, ...
