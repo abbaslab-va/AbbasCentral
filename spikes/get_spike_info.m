@@ -60,28 +60,34 @@ for cluster = 1:numCells
 end
 
 % Get Waveforms and Waveform metrics
-[parent, child] = fileparts(sessPath);
+[~, child] = fileparts(sessPath);
 NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')));
+% This rearranges the NS6 data so that each row corresponds to the channel
+% signal for the corresponding neuron. This means some rows will be
+% duplicates, but it makes it a slice variable instead of a broadcast
+% variable for the parfor loop (for speed)
+rawData = NS6.Data;
+neuronChannels = rawData(cell2mat(goodChannels), :);
 
-
-averageWaveforms = cell(length(goodClusters),1);
+numNeurons = length(goodClusters);
+numSamples = length(NS6.Data);
+averageWaveforms = cell(numNeurons,1);
 fr = averageWaveforms;
 halfValleyWidth = averageWaveforms;
 halfPeakWidth = averageWaveforms;
 peak2valley = averageWaveforms;
 %%
-for neuron = 1:length(goodClusters)
+parfor neuron = 1:numNeurons
     totalSpikes = length(spikeTimeArray{neuron});
     numspikes=1000;
     if totalSpikes < numspikes
         numspikes = length(spikeTimeArray{neuron});
     end
     if ~numspikes
-        spikeStruct = [];
-        return
+        continue
     end
-    channel = goodChannels{neuron};
-    highPassedData = highpass(single(NS6.Data(channel, 1:spikeTimeArray{neuron}(numspikes))), 500, 30000);
+    chanData = neuronChannels(neuron, :)
+    highPassedData = highpass(single(chanData(1:spikeTimeArray{neuron}(numspikes))), 500, 30000);
     averageWaveforms{neuron} = zeros(numspikes,101);
     for spike = 1:numspikes
         try
@@ -90,16 +96,16 @@ for neuron = 1:length(goodClusters)
         end
     end      
 
-    fr{neuron} = totalSpikes/(length(NS6.Data)/30000);
+    fr{neuron} = totalSpikes/(numSamples/30000);
 
     % Waveform metrics
     averageWaveforms{neuron} = mean(averageWaveforms{neuron});
-    [pks, locs, w, p] = findpeaks(averageWaveforms{neuron});
+    [~, ~, w, p] = findpeaks(averageWaveforms{neuron});
     [~, maxIdx] = max(p);
     halfValleyWidth{neuron} = w(maxIdx);
     peak2valley{neuron} = abs(min(averageWaveforms{neuron}))/abs(max(averageWaveforms{neuron}));
 
-    [pksInv, locsInv, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
+    [~, ~, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
     [~, maxIdxInv] = max(pInv);
     halfPeakWidth{neuron} = wInv(maxIdxInv);
 end

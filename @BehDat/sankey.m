@@ -17,8 +17,9 @@ function sankey(obj, varargin)
 session = obj.bpod;
 defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input states
 defaultOutput = defaultInput;                                   % all output states
+validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 
-p = parse_BehDat('outcome', 'trialType', 'trials')
+p = parse_BehDat('outcome', 'trialType', 'trials');
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
 parse(p, varargin{:});
