@@ -1,4 +1,4 @@
-function bpodOffset = samplingDiff(obj)
+function bpodOffset = sampling_diff(obj)
 
 % This function calculates the difference between the elapsed time between trials recorded
 % by the Bpod and the elapsed time between trials recorded by the blackrock acquisition system.

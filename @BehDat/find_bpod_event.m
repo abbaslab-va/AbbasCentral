@@ -138,7 +138,7 @@ bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.samplingDiff;
+averageOffset = obj.sampling_diff;
 eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
 eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 % eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffset, 'uni', 0);

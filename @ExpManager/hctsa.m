@@ -23,6 +23,8 @@ timeSeriesData = cat(1, tsAll{:});
 timeSeriesData = num2cell(timeSeriesData, 2)';
 keywordsAll = arrayfun(@(x) extractfield(x.spikes, 'region'), obj.sessions, 'uni', 0);
 keywords = cat(2, keywordsAll{:});
+emptyKeywords = cellfun(@(x) isempty(x), keywords);
+[keywords{emptyKeywords}] = deal('Unknown');
 labelsAll = arrayfun(@(x) get_labels(x), obj.sessions, 'uni', 0);
 labels = cat(2, labelsAll{:});
 
@@ -32,7 +34,8 @@ fr = arrayfun(@(x) extractfield(x.spikes, 'fr'), obj.sessions, 'uni', 0);
 waveformFeatures = [cat(2, hpw{:}); cat(2, fr{:})];
 % Save locally for now because I don't have permission to save to randall's
 % computer
-cd('E:\Ephys\Test')
+userDir = uigetdir;
+cd(userDir)
 save('hctsa_allTS.mat', 'timeSeriesData', 'labels', 'keywords')
 TS_Init('hctsa_allTS.mat', 'INP_mops.txt', 'INP_ops_reduced.txt');
 sample_runscript_matlab();
@@ -55,10 +58,11 @@ figure
 load('HCTSA_N.mat')
 [~, score] = pca(TS_DataMat);
 scores = [score(:, 1), score(:, 2), score(:, 3)];
-idx = kmeans(scores, 3);
+idx = kmeans(scores, 4, 'Distance', 'cityblock', 'Replicates', 5);
 idxcolors(idx == 1, :) = repmat([1 0 0], numel(find(idx == 1)), 1);
 idxcolors(idx == 2, :) = repmat([0 0 1], numel(find(idx == 2)), 1);
 idxcolors(idx == 3, :) = repmat([0 1 0], numel(find(idx == 3)), 1);
+idxcolors(idx == 4, :) = repmat([0 1 1], numel(find(idx == 4)), 1);
 scatter3(scores(:, 1), scores(:, 2), scores(:, 3), 15, idxcolors, 'filled')
 waveformFeatures = waveformFeatures(:, 1:size(idxcolors, 1));
 figure

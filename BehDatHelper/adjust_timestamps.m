@@ -13,32 +13,45 @@ if isempty(nev.Data.SerialDigitalIO.TimeStamp)
     tsStruct.codes = [];
     return
 end
-adjustedTimestamps(1,:) = double(nev.Data.SerialDigitalIO.TimeStamp);
-adjustedTimestamps(2,:) = double(nev.Data.SerialDigitalIO.UnparsedData');
 
-
-diffs = diff(adjustedTimestamps(1, :)); 
-takeOut1 = find(diffs ~= 1);
-
-adjustedTimestamps = adjustedTimestamps(:, takeOut1);
-adjustedTimestamps(1,:) = double((adjustedTimestamps(1, :)));
-
-Check_length = find(adjustedTimestamps(2, :) == 65529);
+ts = double(nev.Data.SerialDigitalIO.TimeStamp);
+codes = double(nev.Data.SerialDigitalIO.UnparsedData);
+% Find 'off' timestamps
+tsOff = codes == 65528;
+offLocs = find(tsOff);
+offSep = diff(offLocs);
+% Should only be separated by one number
+badSep = find(offSep ~= 2);
+if badSep(end) == numel(offLocs)
+    codes(offLocs(end):end) = [];
+    badSep(end) = [];
+end
+edges = [offLocs(badSep), offLocs(badSep+1)];
+edges = num2cell(edges, 2);
+% Find the values between the offs with more than one that are not max and
+% remove those indices
+checkIdx = cellfun(@(x) x(1)+1:x(2)-1, edges, 'uni', 0);
+checkCodes = cellfun(@(x) codes(x) ~= max(codes(x)), checkIdx, 'uni', 0);
+badTS = cellfun(@(x, y) x(y), checkIdx, checkCodes, 'uni', 0);
+badTS = cat(2, badTS{:});
+ts(badTS) = [];
+codes(badTS) = [];
+% Compare number of trial starts to the number of bpod trial starts
+checkLength = find(codes == 65529);
 try
-    if length(Check_length) - numTrials == 1
-       adjustedTimestamps=adjustedTimestamps(:, 1:Check_length(end) - 2);
-    
+    if length(checkLength) - numTrials == 1
+       ts = ts(1:checkLength(end) - 2);
+       codes = codes(1:checkLength(end) - 2);
+
 %     elseif length(Check_length) - numTrials ~= 0
 %          ME = MException('BehDat:BadTS', ...
 %         'Trial start timestamps have a length mismatch with the Bpod Session file');
 %         throw(ME);
     end 
-    
-
 catch
     tsStruct.times = [];
     tsStruct.codes = [];
     return
 end
-tsStruct.times = adjustedTimestamps(1, :);
-tsStruct.codes = adjustedTimestamps(2, :);
+tsStruct.times = ts;
+tsStruct.codes = codes';

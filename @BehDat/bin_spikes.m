@@ -6,8 +6,11 @@ function binnedSpikes = bin_spikes(obj, eventEdges, binSize, neuronNo)
 % INPUT:
 %     eventEdges - a 1x2 vector specifying the edges to bin between
 %     binSize - the size of the bins in ms
-
-stepSize = floor(obj.info.baud/1000*binSize);
+if obj.info.baud == 1
+    stepSize = obj.info.baud/1000*binSize;
+else
+    stepSize = floor(obj.info.baud/1000*binSize);
+end
 binEdges = eventEdges(1):stepSize:eventEdges(2);
 numNeurons = numel(obj.spikes);
 
