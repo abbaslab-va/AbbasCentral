@@ -21,7 +21,8 @@ p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
 addParameter(p, 'excludeEventsByState', [], validEvent);
 addParameter(p, 'withinState', [], validStates);
-addParameter(p, 'priorToState', [], validStates);
+% addParameter(p, 'priorToState', [], validStates);     % Still need to
+% implement this param
 addParameter(p, 'priorToEvent', [], validEvent);
 parse(p, event, varargin{:});
 a = p.Results;
@@ -34,7 +35,7 @@ trialized = a.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 excludeEventsByState = a.excludeEventsByState;
 withinState = a.withinState;
-priorToState = a.priorToState;
+% priorToState = a.priorToState;
 priorToEvent = a.priorToEvent;
 
 % Find trial start times in acquisition system timestamps
@@ -51,7 +52,6 @@ eventTrials = 1:numTrialStart;
 eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
 eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 trialIncluded = ones(1, numel(eventTrials));
-eventInTrial = trialIncluded;
 isDesiredTT = trialIncluded;
 isDesiredOutcome = trialIncluded;
 
@@ -95,11 +95,8 @@ if ~isempty(trials)
     trialIncluded = ismember(eventTrials, trials);
 end
 
-if ~isempty(priorToEvent)
-    eventInTrial = cellfun(@(x) isfield(x.Events, priorToEvent), rawEvents);
-end
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = eventInTrial & isDesiredTT & isDesiredOutcome & trialIncluded;
+goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
