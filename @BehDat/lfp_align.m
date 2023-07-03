@@ -18,7 +18,7 @@ function [lfp_all, chanPhaseMat]= lfp_align(obj, event, varargin)
 %     > 'offset' - a number that defines the offset from the alignment you wish to center around.
 
 % default input values
-goodEvent = @(x) isempty(x) || ischar(x)
+goodEvent = @(x) isempty(x) || ischar(x);
 defaultAveraged = false;
 defaultPhase = false;
 
@@ -78,7 +78,7 @@ if a.phase
         chanPhaseMat(:,c,:)=cell2mat(chanPhase);
         %lfp_allmat(:,c,:)=lfpChan;
         %disp(num2str(c));
-        lfp_all=[];
+        lfp_all=NaN;
     end 
  
 else

@@ -60,17 +60,29 @@ nyquist=baud/2;
 N = 2;
 [B, A] = butter(N, a.freqLimits/(nyquist));
 
+
+% if 64GB ram or less. you will run out of memory with more than 200
+% events. subsampling events below 
+if numel(edgeCells)>200
+    edgeCells=randsample(edgeCells,200);
+end 
+
 for c=1:numChan
     % calculate phase
     if strcmp(a.filter, 'butter')
         chanPhase= cellfun(@(x) angle(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))), edgeCells, 'uni', 0);
+        %chanSig= cellfun(@(x) filtfilt(B, A, lfp(c, x(1):x(2)-1)), edgeCells, 'uni', 0);
+        %chanPwr= cellfun(@(x)  abs(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))).^2, edgeCells, 'uni', 0);
    
     else
         chanPhase= cellfun(@(x) angle(hilbert(bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud))), edgeCells, 'uni', 0);
     end
 
 
-    chanPhase = cat(3, chanPhase{:});
+    chanPhase =cat(3, chanPhase{:});
+   % chanSigAll{c}=squeeze(cat(3, chanSig{:}));
+    %chanPwrAll{c}=squeeze(cat(3, chanPwr{:}));
+
     phase = num2cell(squeeze(chanPhase),1);
     for n=1:length(obj.spikes)
         % find spike times around event and zero to start of event
@@ -102,7 +114,10 @@ end
 sigPhase= cellfun(@(x) circ_rtest(x),spikePhase);
 
 %calculate ppc
+tic 
 ppc_all=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
+toc
+
 
 % make nonsignificant ppc NaN
 ppc_sig=ppc_all;
@@ -110,3 +125,49 @@ ppc_sig(sigPhase>0.05)=NaN;
 
 
 toc
+
+
+
+
+
+
+%% testying
+% pfc=[1,3,5,7,9,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
+% cla=[17,19,21,23,25,27,29,31];
+% figure()
+% for ch=1:numel(chanSigAll)
+%     hold on
+%     if ismember(ch,pfc)
+%         plot(mean(chanSigAll{ch},2),'k')
+%     elseif ismember(ch,cla)
+%         plot(mean(chanSigAll{ch},2),'b')
+%     else 
+%         plot(mean(chanSigAll{ch},2),'g')
+%     end 
+% 
+% 
+%     disp(num2str(ch))
+% end 
+
+%% Power testing 
+% pfc=[1,3,5,7,9,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
+% cla=[17,19,21,23,25,27,29,31];
+% figure()
+% for ch=1:numel(chanPwrAll)
+%     hold on
+%     if ismember(ch,pfc)
+%         plot(normalize(mean(chanPwrAll{ch},2)),'k')
+%     elseif ismember(ch,cla)
+%         plot(normalize(mean(chanPwrAll{ch},2)),'b')
+%     else 
+%         plot(normalize(mean(chanPwrAll{ch},2)),'g')
+%     end 
+% 
+% 
+%     disp(num2str(ch))
+% end 
+
+
+
+
+ 
