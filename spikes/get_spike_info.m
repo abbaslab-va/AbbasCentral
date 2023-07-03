@@ -87,9 +87,7 @@ parfor neuron = 1:numNeurons
         continue
     end
     chanData = neuronChannels(neuron, :)
-    tic
     highPassedData = highpass(single(chanData(1:spikeTimeArray{neuron}(numspikes))), 500, 30000);
-    toc
     averageWaveforms{neuron} = zeros(numspikes,101);
     for spike = 1:numspikes
         try

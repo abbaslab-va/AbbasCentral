@@ -17,6 +17,9 @@ function [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
 
 % Parse inputs
+validVectorSize = @(x) all(size(x) == [1, 2]);
+validTrials = @(x) isempty(x) || isvector(x);
+
 p = parse_BehDat('event', 'trialType', 'outcome', 'offset');
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);

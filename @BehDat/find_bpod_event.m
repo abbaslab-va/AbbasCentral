@@ -105,39 +105,66 @@ trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
 
 eventTimes2Check = eventTimes(goodTrials);
-bpodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
+goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
 if ~isempty(excludeEventsByState)
     goodStates = cellfun(@(x) regexp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
     goodStates = cellfun(@(x) cellfun(@(y) ~isempty(y), x), goodStates, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
     excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates, 'uni', 0);
-    timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), bpodEventTimes, excludeStateTimes, 'uni', 0);
+    timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), goodEventTimes, excludeStateTimes, 'uni', 0);
     timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
     timesToRemove = cellfun(@(x) any(x == 1, 1), timesToRemove, 'uni', 0);
-    bpodEventTimes = cellfun(@(x, y) x(~y), bpodEventTimes, timesToRemove, 'uni', 0);
+    goodEventTimes = cellfun(@(x, y) x(~y), goodEventTimes, timesToRemove, 'uni', 0);
 end
 
-
-% % Need to complete this section
-% if ~isempty(priorToEvent)
-%     priorToEventTimes = cellfun(@(x) x.Events.(priorToEvent)(1, 1), rawEvents2Check, 'uni', 0);
-%     priorToDiff = cellfun(@(x, y) x - y, priorToEventTimes, bpodEventTimes, 'uni', 0);
-%     goodTimes = cellfun(@(x) find(x == min(x(x >= 0))), priorToDiff, 'uni', 0);
-%     poop = cellfun(@(x, y) x(y), bpodEventTimes, goodTimes);
-% end
-
+if ~isempty(priorToEvent)
+    allEventNames = cellfun(@(x) fields(x.Events), rawEvents2Check, 'uni', 0);
+    allEventTimes = cellfun(@(x) struct2cell(x.Events), rawEvents2Check, 'uni', 0);
+    % Ignore any events that are not PortIn or PortOut
+    goodEventNames = cellfun(@(x) cellfun(@(y) contains(y, 'Port'), x), allEventNames, 'uni', 0);
+    allEventNames = cellfun(@(x, y) x(y), allEventNames, goodEventNames, 'uni', 0);
+    allEventTimes = cellfun(@(x, y) x(y), allEventTimes, goodEventNames, 'uni', 0);
+    numEvents = cellfun(@(x) cellfun(@(y) numel(y), x, 'uni', 0), allEventTimes, 'uni', 0);
+    % Have to deal the names an equal number of times to the number of events
+    % per trial so I can sort the times and rearrange the event names based on
+    % the sorted times
+    repeatedNames = cellfun(@(x) cell(numel(x), 1), numEvents, 'uni', 0);
+    for t = 1:numel(repeatedNames)
+        trialNames = allEventNames{t};
+        for e = 1:numel(trialNames)
+            [repeatedNames{t}{e}{1:numEvents{t}{e}}] = deal(allEventNames{t}{e});
+        end
+    end
+    unsortedNames = cellfun(@(x) cat(2, x{:}), repeatedNames, 'uni', 0);
+    unsortedTimes = cellfun(@(x) cat(2, x{:}), allEventTimes, 'uni', 0);
+    [sortedTimes, sortedIdx] = cellfun(@(x) sort(x), unsortedTimes, 'uni', 0);
+    sortedNames = cellfun(@(x, y) x(y), unsortedNames, sortedIdx, 'uni', 0);
+    % Event times are now organized chronologically in sortedTimes, with a
+    % corresponding cell array for the names of the events
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
+    priorToEventTimes = cellfun(@(x) regexp(x, priorToEvent), sortedNames, 'uni', 0);
+    priorToEventTimes = cellfun(@(x) cellfun(@(y) ~isempty(y), x), priorToEventTimes, 'uni', 0);
+    % Shift priorTo matrix one event to the left, eliminate the last event
+    % due to circular shifting, and intersect logical matrices
+    eventPrior = cellfun(@(x) circshift(x, -1), priorToEventTimes, 'uni', 0);
+    for t = 1:numel(eventPrior)
+        eventPrior{t}(end) = false;
+    end
+    timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
+    goodEventTimes = cellfun(@(x, y) x(y), sortedTimes, timesToKeep, 'uni', 0);
+end
 
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
 % bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
 % Calculate differences between bpod event times and trial start times and
 % convert to sampling rate of acquisition system
-eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, bpodEventTimes, bpodStartTimes, 'uni', 0);
+eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
 averageOffset = obj.sampling_diff;
 eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
-eventTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
+eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 if ischar(withinState) || isstring(withinState)
     stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField, ...
@@ -146,22 +173,22 @@ elseif iscell(withinState)
     stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
         'trials', trials), withinState, 'uni', 0);
     stateTimeCell = cat(1, stateTimeCell{:});
-    eventIdx = num2cell(1:numel(eventTimes));
+    eventIdx = num2cell(1:numel(eventTimesCorrected));
     stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
 end
 
 if ~isempty(withinState)
     % This double cellfun operates on withinState which contains a cell for each trial,
     % with a cell for each state inside of that.
-    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimes, 'uni', 0);
+    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
     includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
     includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
     includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-    eventTimes = cellfun(@(x, y) x(y), eventTimes, includeTimes, 'uni', 0);
+    eventTimesCorrected = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
 end
 
 if trialized 
-    timestamps = cellfun(@(x) x + offset, eventTimes, 'uni', 0);
+    timestamps = cellfun(@(x) x + offset, eventTimesCorrected, 'uni', 0);
 else
-    timestamps = cat(2, eventTimes{:}) + offset;
+    timestamps = cat(2, eventTimesCorrected{:}) + offset;
 end 

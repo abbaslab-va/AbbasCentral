@@ -14,3 +14,4 @@ else
     [expSessions, expMetadata] = select_experiment(expPath, dirFolders);
 end
 newExperiment = ExpManager(expSessions, expMetadata);
+arrayfun(@(x) x.find_mono, newExperiment.sessions);
