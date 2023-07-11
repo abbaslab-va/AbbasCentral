@@ -1,4 +1,4 @@
-function filteredLFP = filter_signal(obj, event, freqLimits, varargin)
+function filteredLFP = filter_signal(obj, event, varargin)
 
 % OUTPUT:
 %     filteredLFP - a cell array where each cell holds the trialized filtered LFP signal for that channel
@@ -14,7 +14,7 @@ function filteredLFP = filter_signal(obj, event, freqLimits, varargin)
 %     > 'filter' - a string specifying the type of filter to use (default = 'bandpass', alternate = 'butter')
 
 % default input values
-defaultFilter = 'bandpass';
+defaultFilter = 'butter';
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 
 % input validation scheme
@@ -54,6 +54,4 @@ for c=1:numChan
         filteredSignal = cellfun(@(x) bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud), edgeCells, 'uni', 0);
     end
     filteredLFP{c} = cat(1, filteredSignal{:});
-
-    
 end
