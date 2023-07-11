@@ -1,7 +1,6 @@
 function sigs=zeta_call(obj, event, varargin) 
 
-% OUTPUT:
-%     timestamps - a 1xE vector of timestamps from the desired event
+% OUTPUT:'lineStyle','--'
 % INPUT:
 %     event -  an event character vector from the bpod SessionData
 % optional name/value pairs:
