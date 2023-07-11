@@ -48,6 +48,8 @@ classdef BehDat < handle
 
         binnedTrials = bin_neuron(obj, event, neuron, varargin)
 
+        [meanFR, frCells, trialNo] = bin_all_neurons(obj, event, varargin)
+
         raster(obj, event, neuron, varargin)
 
         smoothedSpikes = psth(obj, event, neuron, varargin)
@@ -77,7 +79,7 @@ classdef BehDat < handle
 
         [ppc_all, spikePhase, ppc_sig]  = ppc(obj, event, varargin)
 
-        filteredLFP = filter_signal(obj, alignment, freqLimits, varargin)
+        filteredLFP = filter_signal(obj, event, varargin)
 
         ITPC = itpc(obj, event, varargin)
 
