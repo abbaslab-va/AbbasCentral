@@ -15,9 +15,11 @@ function filteredLFP = filter_signal(obj, event, freqLimits, varargin)
 
 % default input values
 defaultFilter = 'bandpass';
+validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
+addParameter(p, 'withinState', [], validStates)
 addParameter(p, 'filter', defaultFilter, @ischar);
 parse(p, event, varargin{:});
 a = p.Results;
@@ -25,7 +27,7 @@ baud = obj.info.baud;
 
 % timestamp and trialize event times
 if a.bpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', a.withinState);
 else
     eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
