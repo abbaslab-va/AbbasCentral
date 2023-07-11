@@ -12,11 +12,14 @@ tic
 disp(obj.info.path)
 % default input values
 defaultFilter = 'bandpass';
-
+defaultScramble= 5; 
+defaultBuffer= 2; 
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
 addParameter(p, 'filter', defaultFilter, @ischar);
+addParameter(p, 'scramble', defaultScramble, @isnumeric);
+addParameter(p, 'buffer', defaultBuffer, @isnumeric);
 parse(p, event, varargin{:});
 a = p.Results;
 
@@ -61,35 +64,60 @@ N = 2;
 [B, A] = butter(N, a.freqLimits/(nyquist));
 
 
+
+
 % if 64GB ram or less. you will run out of memory with more than 200
 % events. subsampling events below 
 if numel(edgeCells)>200
     edgeCells=randsample(edgeCells,200);
 end 
 
+if a.scramble
+    for e=1:numel(edgeCells)
+        offsetScram(e)=randsample([1:0.1:defaultScramble],1)*baud;
+    end
+offsetScram=num2cell(offsetScram)';
+    edgeCells=cellfun(@(x,y) x+y,offsetScram,edgeCells,'uni',0);
+else 
+    disp('poop')
+end 
+
+% Take only 1 sec for phase locking:This has been hard coded to be timelocked from 0 to 1 if given edges [-2 2 ] 
+
+%edgeCellsSpikes=cellfun(@(x) [x(1)+60000 x(2)-30000],edgeCells, 'uni', 0);
+edgeCellsLfp=cellfun(@(x) [x(1)-(a.buffer*baud) x(2)+ (a.buffer*baud) ],edgeCells, 'uni', 0);
+
+
 for c=1:numChan
     % calculate phase
     if strcmp(a.filter, 'butter')
-        chanPhase= cellfun(@(x) angle(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))), edgeCells, 'uni', 0);
-        %chanSig= cellfun(@(x) filtfilt(B, A, lfp(c, x(1):x(2)-1)), edgeCells, 'uni', 0);
+        chanSig= cellfun(@(x) filtfilt(B, A, lfp(c, x(1):x(2)-1)), edgeCellsLfp, 'uni', 0);
+        chanPhase= cellfun(@(x,y) angle(hilbert(y)), edgeCellsLfp, chanSig, 'uni', 0);
+       
         %chanPwr= cellfun(@(x)  abs(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))).^2, edgeCells, 'uni', 0);
    
     else
-        chanPhase= cellfun(@(x) angle(hilbert(bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud))), edgeCells, 'uni', 0);
+        chanSig= cellfun(@(x) bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud), edgeCellsLfp, 'uni', 0);
+        chanPhase= cellfun(@(x,y) angle(hilbert(y)), edgeCellsLfp, chanSig, 'uni', 0);
     end
 
+    % Just take from time 0 to 1 
 
-    chanPhase =cat(3, chanPhase{:});
+ chanPhase= cellfun(@(x) x(a.buffer*baud:(end-a.buffer*baud)-1)',chanPhase, 'uni', 0)';
+ %chanSig= cellfun(@(x) x(60000:89999),chanSig, 'uni', 0);
+
+
+   % chanPhase =cat(3, chanPhase{:});
    % chanSigAll{c}=squeeze(cat(3, chanSig{:}));
     %chanPwrAll{c}=squeeze(cat(3, chanPwr{:}));
 
-    phase = num2cell(squeeze(chanPhase),1);
+   % phase = num2cell(squeeze(chanPhase),1);
     for n=1:length(obj.spikes)
         % find spike times around event and zero to start of event
         spikes= cellfun(@(x) obj.spikes(n).times(find(obj.spikes(n).times>x(1) & obj.spikes(n).times<x(2))), edgeCells,'uni',0');
         spikesZeroed =cellfun(@(x,y) x-y(1),spikes,edgeCells,'uni',0)';
         % index spike times to LFP
-        spikePhaseTemp=cellfun(@(x,y) x(y), phase, spikesZeroed,'uni' ,0) ;
+        spikePhaseTemp=cellfun(@(x,y) x(y), chanPhase, spikesZeroed,'uni' ,0) ;
         spikePhaseTemp=cat(1,spikePhaseTemp{:});
         if isempty(spikePhaseTemp)
             spikePhase{c,n}=NaN;
@@ -125,9 +153,6 @@ ppc_sig(sigPhase>0.05)=NaN;
 
 
 toc
-
-
-
 
 
 
