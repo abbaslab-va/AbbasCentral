@@ -105,10 +105,20 @@ eventTimes2Check = eventTimes(goodTrials);
 goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
 if ~isempty(excludeEventsByState)
+    % Get cell array of all state times to exclude events within
     goodStates = cellfun(@(x) regexp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
     goodStates = cellfun(@(x) cellfun(@(y) ~isempty(y), x), goodStates, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
-    excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates, 'uni', 0);
+    excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
+    % Find those state times that are nan (did not happen in the trial)
+    nanStates = cellfun(@(x) isnan(x(1)), excludeStateTimes);
+    % This replaces all the times that were nans with negative state edges
+    % since that's something that will never happen in a bpod state and
+    % it's easier than removing those trials
+    for i = find(nanStates)
+        excludeStateTimes{i} = [-2 -1];
+    end
+    excludeStateTimes = cellfun(@(x) num2cell(x, 2), excludeStateTimes, 'uni', 0);
     timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), goodEventTimes, excludeStateTimes, 'uni', 0);
     timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
     timesToRemove = cellfun(@(x) any(x == 1, 1), timesToRemove, 'uni', 0);
