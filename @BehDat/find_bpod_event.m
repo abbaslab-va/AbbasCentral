@@ -106,8 +106,7 @@ goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
 if ~isempty(excludeEventsByState)
     % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) regexp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
-    goodStates = cellfun(@(x) cellfun(@(y) ~isempty(y), x), goodStates, 'uni', 0);
+    goodStates = cellfun(@(x) strcmp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
     excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
     % Find those state times that are nan (did not happen in the trial)
