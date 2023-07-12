@@ -28,7 +28,9 @@ classdef BehDat < handle
 
         plot_performance(obj, outcome, panel)
 
-        sankey(obj, varargin)
+        state_sankey(obj, varargin)
+
+        event_sankey(obj, varargin)
 
         timestamps = find_bpod_event(obj, event, varargin)
         

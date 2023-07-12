@@ -1,4 +1,4 @@
-function sankey(obj, varargin)
+function state_sankey(obj, varargin)
 
 % This function outputs a sankey plot showing the transitions between bpod
 % states. By default, it displays all state transitions from all trial
