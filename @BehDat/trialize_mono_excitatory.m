@@ -17,6 +17,8 @@ function weightsEx = trialize_mono_excitatory(obj, event, varargin)
 
 p = parse_BehDat('event', 'trialType', 'outcome', 'edges', 'offset', 'bpod');
 addParameter(p, 'includeNeg', false, @islogical);
+addParameter(p, 'refRegion', [], @ischar)
+addParameter(p, 'targetRegion', [], @ischar)
 parse(p, event, varargin{:});
 a = p.Results;
 
@@ -28,6 +30,8 @@ offset = a.offset;
 useBpod = a.bpod;
 includeNeg = a.includeNeg;
 baud = obj.info.baud;
+refRegion = a.refRegion;
+targetRegion = a.targetRegion;
 
 if useBpod
     eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
@@ -40,12 +44,22 @@ edgeCells = num2cell(edges, 2);
 exciteID = arrayfun(@(x) ~isempty(x.exciteOutput), obj.spikes);
 numSpikes = numel(obj.spikes);
 weightsEx = struct('weights', cell(numSpikes, 1), 'fr', cell(numSpikes, 1));
-hasExcitatoryConn = find(exciteID);
+cellRegions = extractfield(obj.spikes, 'region');
+if ~isempty(refRegion)
+    goodRefCells = cellfun(@(x) strcmp(x, refRegion), cellRegions)';
+    hasExcitatoryConn = find(exciteID & goodRefCells);
+else
+    hasExcitatoryConn = find(exciteID);
+end
 numEvents = numel(edgeCells);
 
 for r = 1:numel(hasExcitatoryConn)
     ref = hasExcitatoryConn(r);
     eTargets = obj.spikes(ref).exciteOutput;
+    if ~isempty(targetRegion)
+        goodTargetCells = find(cellfun(@(x) strcmp(x, targetRegion), cellRegions));
+        eTargets = eTargets(ismember(eTargets, goodTargetCells));
+    end
     refTimes = obj.spikes(ref).times;
     for target = eTargets
         targetTimes = obj.spikes(target).times;
