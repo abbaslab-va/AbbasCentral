@@ -8,12 +8,12 @@ function [ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)
 %         > 'averaged' - a boolean specifying if the trials should be averaged together (default = false)
 %         > 'calculatePhase' - boolean specifying if phase should be calculated (default = true)
 %         > 'trialTypes' - a 1xN vector specifying which trial types to calculate for (default = all)
-tic
+
 disp(obj.info.path)
 % default input values
-defaultFilter = 'bandpass';
-defaultScramble= 5; 
-defaultBuffer= 2; 
+defaultFilter = 'butter';
+defaultScramble = 0; 
+defaultBuffer = 1; 
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
@@ -33,98 +33,78 @@ else
 end
 a.edges = (a.edges * baud) + eventTimes';
 edgeCells = num2cell(a.edges, 2);
-
+numEvents = numel(edgeCells);
+numNeurons = length(obj.spikes);
+numChan = obj.info.numChannels;
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
-NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
-lfp = double(NS6.Data);
-% norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
-clear NS6
-
-numChan = size(lfp, 1);
-numNeurons=length(obj.spikes);
-spikePhase=cell(numChan,numNeurons);
 
 %check is num event is less than three, if true populate with nans 
-if numel(edgeCells)<3
-   ppc_all=zeros(numChan,numNeurons);
-   spikePhase=cell(numChan,numNeurons);
-   ppc_all(:)=NaN;
-   ppc_sig=ppc_all;
-   [spikePhase{:}]=deal(NaN);
+if numel(edgeCells) < 3
+   ppc_all = zeros(numChan, numNeurons);
+   spikePhase = cell(numChan, numNeurons);
+   ppc_all(:) = NaN;
+   ppc_sig = ppc_all;
+   [spikePhase{:}] = deal(NaN);
    return
 end
 
-% for fir filter
-nyquist=baud/2;
-
-
-% for butter
+% FIR filter and butter
+nyquist = baud/2;
 N = 2;
 [B, A] = butter(N, a.freqLimits/(nyquist));
 
 
-
-
 % if 64GB ram or less. you will run out of memory with more than 200
 % events. subsampling events below 
-if numel(edgeCells)>200
-    edgeCells=randsample(edgeCells,200);
+if numEvents > 200
+    edgeCells = randsample(edgeCells,200);
+    numEvents = 200;
 end 
 
 if a.scramble
-    for e=1:numel(edgeCells)
-        offsetScram(e)=randsample([1:0.1:defaultScramble],1)*baud;
+    offsetScram = zeros(1, numEvents);
+    for e = 1:numEvents
+        offsetScram(e) = randsample(1:0.1:defaultScramble, 1) * baud;
     end
-offsetScram=num2cell(offsetScram)';
-    edgeCells=cellfun(@(x,y) x+y,offsetScram,edgeCells,'uni',0);
-else 
-    disp('poop')
+    offsetScram=num2cell(offsetScram)';
+    edgeCells=cellfun(@(x,y) x + y, offsetScram, edgeCells,'uni',0);
 end 
 
-% Take only 1 sec for phase locking:This has been hard coded to be timelocked from 0 to 1 if given edges [-2 2 ] 
+edgeCellsLfp = cellfun(@(x) [x(1) - (a.buffer*baud) x(2) + (a.buffer*baud)], edgeCells, 'uni', 0);
+timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCellsLfp, 'uni', 0);
+NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')), x), timeStrings, 'uni', 0);
+lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
 
-%edgeCellsSpikes=cellfun(@(x) [x(1)+60000 x(2)-30000],edgeCells, 'uni', 0);
-edgeCellsLfp=cellfun(@(x) [x(1)-(a.buffer*baud) x(2)+ (a.buffer*baud) ],edgeCells, 'uni', 0);
+numChan = NS6{1}.MetaTags.ChannelCount;
+spikePhase=cell(numChan,numNeurons);
+clear NS6
 
+% calculate phase
+if strcmp(a.filter, 'butter')
+    chanSig = cellfun(@(x) filtfilt(B, A, x), lfp, 'uni', 0);
+else
+    chanSig = cellfun(@(x) bandpass(x, a.freqLimits, baud), lfp, 'uni', 0);
+end
+chanPhase = cellfun(@(x) angle(hilbert(x)), chanSig, 'uni', 0);
+chanPhase = cellfun(@(x) x(a.buffer*baud:(end-a.buffer*baud)-1, :), chanPhase, 'uni', 0)';
 
-for c=1:numChan
-    % calculate phase
-    if strcmp(a.filter, 'butter')
-        chanSig= cellfun(@(x) filtfilt(B, A, lfp(c, x(1):x(2)-1)), edgeCellsLfp, 'uni', 0);
-        chanPhase= cellfun(@(x,y) angle(hilbert(y)), edgeCellsLfp, chanSig, 'uni', 0);
-       
-        %chanPwr= cellfun(@(x)  abs(hilbert(filtfilt(B, A, lfp(c, x(1):x(2)-1)))).^2, edgeCells, 'uni', 0);
-   
-    else
-        chanSig= cellfun(@(x) bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud), edgeCellsLfp, 'uni', 0);
-        chanPhase= cellfun(@(x,y) angle(hilbert(y)), edgeCellsLfp, chanSig, 'uni', 0);
-    end
-
-    % Just take from time 0 to 1 
-
- chanPhase= cellfun(@(x) x(a.buffer*baud:(end-a.buffer*baud)-1)',chanPhase, 'uni', 0)';
- %chanSig= cellfun(@(x) x(60000:89999),chanSig, 'uni', 0);
-
-
-   % chanPhase =cat(3, chanPhase{:});
-   % chanSigAll{c}=squeeze(cat(3, chanSig{:}));
-    %chanPwrAll{c}=squeeze(cat(3, chanPwr{:}));
-
-   % phase = num2cell(squeeze(chanPhase),1);
-    for n=1:length(obj.spikes)
-        % find spike times around event and zero to start of event
-        spikes= cellfun(@(x) obj.spikes(n).times(find(obj.spikes(n).times>x(1) & obj.spikes(n).times<x(2))), edgeCells,'uni',0');
-        spikesZeroed =cellfun(@(x,y) x-y(1),spikes,edgeCells,'uni',0)';
-        % index spike times to LFP
-        spikePhaseTemp=cellfun(@(x,y) x(y), chanPhase, spikesZeroed,'uni' ,0) ;
-        spikePhaseTemp=cat(1,spikePhaseTemp{:});
-        if isempty(spikePhaseTemp)
+% phase = num2cell(squeeze(chanPhase),1);
+for n=1:length(obj.spikes)
+    % find spike times around event and zero to start of event
+    spikes = cellfun(@(x) obj.spikes(n).times(find(obj.spikes(n).times>x(1) & obj.spikes(n).times<x(2))), edgeCells,'uni',0');
+    spikesZeroed = cellfun(@(x,y) (x-y(1))', spikes, edgeCells,'uni',0)';
+    % index spike times to LFP
+    spikePhaseTemp = cellfun(@(x,y) x(y, :), chanPhase, spikesZeroed,'uni' ,0) ;
+    spikePhaseTemp = cat(1,spikePhaseTemp{:});
+    spikePhaseChan = num2cell(spikePhaseTemp, 1);
+    for c = 1:numChan
+        if isempty(spikePhaseChan{c})
             spikePhase{c,n}=NaN;
         else
-            spikePhase{c,n}= spikePhaseTemp;
+            spikePhase{c,n}= spikePhaseChan{c};
         end 
-    end 
+    end
 end 
 
 % nan cells with less than 100 spikes
@@ -142,9 +122,9 @@ end
 sigPhase= cellfun(@(x) circ_rtest(x),spikePhase);
 
 %calculate ppc
-tic 
+ 
 ppc_all=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
-toc
+
 
 
 % make nonsignificant ppc NaN
@@ -152,7 +132,7 @@ ppc_sig=ppc_all;
 ppc_sig(sigPhase>0.05)=NaN;
 
 
-toc
+
 
 
 
