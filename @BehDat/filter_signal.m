@@ -33,25 +33,18 @@ else
 end
 a.edges = (a.edges * baud) + eventTimes';
 edgeCells = num2cell(a.edges, 2);
-
+timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCells, 'uni', 0);
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
-NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
-lfp = double(NS6.Data);
-% norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
+NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')), x), timeStrings, 'uni', 0);
+lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
 clear NS6
-
-numChan = size(lfp, 1);
-filteredLFP = cell(1, numChan);
+% norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 N = 2;
 [B, A] = butter(N, a.freqLimits/(baud/2));
-for c=1:numChan
-%     calculate phase (minimum order filter)
 
-    if strcmp(a.filter, 'butter')
-        filteredSignal = cellfun(@(x) filtfilt(B, A, lfp(c, x(1):x(2)-1)), edgeCells, 'uni', 0);
-    else
-        filteredSignal = cellfun(@(x) bandpass(lfp(c, x(1):x(2)-1), a.freqLimits, baud), edgeCells, 'uni', 0);
-    end
-    filteredLFP{c} = cat(1, filteredSignal{:});
+if strcmp(a.filter, 'butter')
+    filteredLFP = cellfun(@(x) filtfilt(B, A, x), lfp, 'uni', 0); 
+else
+    filteredLFP = cellfun(@(x) bandpass(x, a.freqLimits, baud), lfp, 'uni', 0);
 end
