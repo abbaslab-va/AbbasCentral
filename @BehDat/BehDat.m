@@ -77,7 +77,7 @@ classdef BehDat < handle
         hctsa(obj, varargin)
     %% LFP methods
 
-        [pwr, freqs, phase] = cwt_power(obj, event, varargin)
+        [pwr, freqs, phase, lfpAll] = cwt_power(obj, event, varargin)
 
         [ppc_all, spikePhase, ppc_sig]  = ppc(obj, event, varargin)
 

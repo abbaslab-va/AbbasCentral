@@ -1,4 +1,4 @@
-function [ppc_all, spikePhase, ppc_sig] = ppc(obj, event, varargin)
+function [ppcAll, spikePhase, ppcSig] = ppc(obj, event, varargin)
 
 % INPUT:
 %     event - a string of a state named in the config file (required)
@@ -36,15 +36,14 @@ edgeCells = num2cell(a.edges, 2);
 numEvents = numel(edgeCells);
 numNeurons = length(obj.spikes);
 numChan = obj.info.numChannels;
-% navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
 
 %check is num event is less than three, if true populate with nans 
 if numel(edgeCells) < 3
-   ppc_all = zeros(numChan, numNeurons);
+   ppcAll = zeros(numChan, numNeurons);
    spikePhase = cell(numChan, numNeurons);
-   ppc_all(:) = NaN;
-   ppc_sig = ppc_all;
+   ppcAll(:) = NaN;
+   ppcSig = ppcAll;
    [spikePhase{:}] = deal(NaN);
    return
 end
@@ -89,7 +88,6 @@ end
 chanPhase = cellfun(@(x) angle(hilbert(x)), chanSig, 'uni', 0);
 chanPhase = cellfun(@(x) x(a.buffer*baud:(end-a.buffer*baud)-1, :), chanPhase, 'uni', 0)';
 
-% phase = num2cell(squeeze(chanPhase),1);
 for n=1:length(obj.spikes)
     % find spike times around event and zero to start of event
     spikes = cellfun(@(x) obj.spikes(n).times(find(obj.spikes(n).times>x(1) & obj.spikes(n).times<x(2))), edgeCells,'uni',0');
@@ -117,62 +115,12 @@ for row=1:size(spikePhase,1)
     end 
 end 
 
-
 % find significant phase distributions 
 sigPhase= cellfun(@(x) circ_rtest(x),spikePhase);
 
 %calculate ppc
- 
-ppc_all=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
-
-
+ppcAll=cellfun(@(x) mean(nonzeros(triu(cos(x.'-x),1))),spikePhase);
 
 % make nonsignificant ppc NaN
-ppc_sig=ppc_all;
-ppc_sig(sigPhase>0.05)=NaN;
-
-
-
-
-
-
-%% testying
-% pfc=[1,3,5,7,9,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
-% cla=[17,19,21,23,25,27,29,31];
-% figure()
-% for ch=1:numel(chanSigAll)
-%     hold on
-%     if ismember(ch,pfc)
-%         plot(mean(chanSigAll{ch},2),'k')
-%     elseif ismember(ch,cla)
-%         plot(mean(chanSigAll{ch},2),'b')
-%     else 
-%         plot(mean(chanSigAll{ch},2),'g')
-%     end 
-% 
-% 
-%     disp(num2str(ch))
-% end 
-
-%% Power testing 
-% pfc=[1,3,5,7,9,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
-% cla=[17,19,21,23,25,27,29,31];
-% figure()
-% for ch=1:numel(chanPwrAll)
-%     hold on
-%     if ismember(ch,pfc)
-%         plot(normalize(mean(chanPwrAll{ch},2)),'k')
-%     elseif ismember(ch,cla)
-%         plot(normalize(mean(chanPwrAll{ch},2)),'b')
-%     else 
-%         plot(normalize(mean(chanPwrAll{ch},2)),'g')
-%     end 
-% 
-% 
-%     disp(num2str(ch))
-% end 
-
-
-
-
- 
+ppcSig=ppcAll;
+ppcSig(sigPhase>0.05)=NaN;
