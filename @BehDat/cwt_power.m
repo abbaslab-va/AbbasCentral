@@ -20,14 +20,16 @@ function [pwr, freqs, phase, lfpAll] = cwt_power(obj, event, varargin)
 % default input values
 defaultAveraged = false;
 defaultPhase = false;
+defaultSF = 2000;
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-
+validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 addParameter(p, 'withinState', [], validStates)
 addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'samplingFreq', defaultSF, validSF);
 parse(p, event, varargin{:});
 a = p.Results;
 withinState = a.withinState;
@@ -36,8 +38,7 @@ calculatePhase = a.calculatePhase;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
-sf = 2000;
-downsampleRatio = baud/sf;
+downsampleRatio = baud/a.samplingFreq;
 sigLength = (a.edges(2) - a.edges(1)) * sf;
 filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 numChan = obj.info.numChannels;

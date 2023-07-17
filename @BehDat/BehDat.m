@@ -52,7 +52,7 @@ classdef BehDat < handle
 
         [meanFR, frCells, trialNo] = bin_all_neurons(obj, event, varargin)
 
-        raster(obj, event, neuron, varargin)
+        h = raster(obj, event, neuron, varargin)
 
         smoothedSpikes = psth(obj, event, neuron, varargin)
         
