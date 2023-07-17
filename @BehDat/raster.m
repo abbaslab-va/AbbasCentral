@@ -32,7 +32,6 @@ function h = raster(obj, event, neuron, varargin)
     if ~isempty(a.panel)
         h = figure('Visible', 'off');
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
-        label_raster(obj, h, a);
         copyobj(h.Children, a.panel)
         close(h)
     else
@@ -43,7 +42,7 @@ function h = raster(obj, event, neuron, varargin)
 end
 
 function label_raster(sessObj, figH, params)
-    title({sessObj.info.name, ['Neuron' ' ' num2str(params.neuron)]})
+    title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
     xlabel('Time From Event (sec)')
     ylabel('Events/Trials')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);

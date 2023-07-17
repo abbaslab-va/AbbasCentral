@@ -1,6 +1,7 @@
-function eventNames = map_bpod_events(eventNumbers)
+function [eventNames, eventInds] = map_bpod_events(eventNumbers)
 
 inputNumbers = 69:84;
+eventInds = ismember(eventNumbers, inputNumbers);
 eventNumbers = eventNumbers(ismember(eventNumbers, inputNumbers));
 eventNumberCells = num2cell(eventNumbers);
 inputNumberCell = num2cell(inputNumbers);
