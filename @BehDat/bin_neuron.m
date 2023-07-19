@@ -15,8 +15,12 @@ function binnedTrials = bin_neuron(obj, event, neuron, varargin)
 %     'binWidth' - an optional parameter to specify the bin width, in ms. default value is 1
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
 p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
 addParameter(p, 'withinState', [], validStates)
+addParameter(p, 'priorToState', [], validStates)
+addParameter(p, 'excludeEventsByState', [], validStates)
+addParameter(p, 'priorToEvent', [], validEvent)
 parse(p, event, neuron, varargin{:});
 
 a = p.Results;
@@ -29,11 +33,11 @@ outcomeField = a.outcome;
 offset = a.offset;
 trials = a.trials;
 useBpod = a.bpod;
-withinState = a.withinState;
 
 baud = obj.info.baud;
 if useBpod
-    timestamps = obj.find_bpod_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'trials', trials, 'offset', offset, 'withinState', withinState);
+    timestamps = obj.find_bpod_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'trials', trials, 'offset', offset, ...
+        'priorToEvent', a.priorToEvent, 'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState);
 else
     timestamps = obj.find_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'trials', trials, 'offset', offset);
 end

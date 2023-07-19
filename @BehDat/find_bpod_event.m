@@ -21,7 +21,7 @@ p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
 addParameter(p, 'excludeEventsByState', [], validEvent);
 addParameter(p, 'withinState', [], validStates);
-addParameter(p, 'priorToState', [], validStates);     % Still need to implement this param
+addParameter(p, 'priorToState', [], validStates);
 addParameter(p, 'priorToEvent', [], validEvent);
 parse(p, event, varargin{:});
 a = p.Results;
@@ -136,7 +136,10 @@ if ~isempty(priorToEvent)
     % due to circular shifting, and intersect logical matrices
     eventPrior = cellfun(@(x) circshift(x, -1), priorToEventTimes, 'uni', 0);
     for t = 1:numel(eventPrior)
-        eventPrior{t}(end) = false;
+        try
+            eventPrior{t}(end) = false;
+        catch
+        end
     end
     timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
     goodEventTimes = cellfun(@(x, y) x(y), sortedTimes, timesToKeep, 'uni', 0);
@@ -153,7 +156,6 @@ if ~isempty(priorToState)
     eventAndStateNames = cellfun(@(x, y) [x y], sortedEventNames, sortedStateNames, 'uni', 0);
     [sortedCombinedTimes, sortedCombinedInds] = cellfun(@(x) sort(x), eventAndStateTimes, 'uni', 0);
     sortedEventAndStateNames = cellfun(@(x, y) x(y), eventAndStateNames, sortedCombinedInds, 'uni', 0);
-    
     currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedCombinedTimes, goodEventTimes, 'uni', 0);
     priorToStateTimes = cellfun(@(x) strcmp(x, priorToState), sortedEventAndStateNames, 'uni', 0);
     % Shift priorTo matrix one event to the left, eliminate the last event
