@@ -8,7 +8,7 @@ function bpodOffset = sampling_diff(obj)
 acqDiff = diff(obj.timestamps.trialStart);
 bpodDiff = diff(obj.bpod.TrialStartTimestamp .* obj.info.baud);
 if numel(acqDiff) ~= numel(bpodDiff)
-    bpodOffset = 1;
+    bpodOffset = 0;
     return
 end
 sampDiff = (bpodDiff - acqDiff)./acqDiff;
