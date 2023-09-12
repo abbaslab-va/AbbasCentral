@@ -50,7 +50,7 @@ classdef BehDat < handle
 
         binnedTrials = bin_neuron(obj, event, neuron, varargin)
 
-        [meanFR, frCells, trialNo] = bin_all_neurons(obj, event, varargin)
+        binnedNeurons = bin_all_neurons(obj, event, varargin)
 
         h = raster(obj, event, neuron, varargin)
 

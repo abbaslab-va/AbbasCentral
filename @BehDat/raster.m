@@ -14,15 +14,20 @@ function h = raster(obj, event, neuron, varargin)
     %     'bpod' - a boolean that determines whether to use bpod or native timestamps
     
     validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+    validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
     p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
     addParameter(p, 'withinState', [], validStates)
+    addParameter(p, 'priorToState', [], validStates)
+    addParameter(p, 'excludeEventsByState', [], validStates)
+    addParameter(p, 'priorToEvent', [], validEvent)
     parse(p, event, neuron, varargin{:});
     
     a = p.Results;
     
     % bin spikes in 1 ms bins
     spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
-        'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'withinState', a.withinState));
+        'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
+        'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
     % this function included in packages directory of Abbas-WM
     % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
     % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
