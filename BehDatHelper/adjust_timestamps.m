@@ -22,9 +22,11 @@ offLocs = find(tsOff);
 offSep = diff(offLocs);
 % Should only be separated by one number
 badSep = find(offSep ~= 2);
-if badSep(end) == numel(offLocs)
-    codes(offLocs(end):end) = [];
-    badSep(end) = [];
+if ~isempty(badSep)
+    if badSep(end) == numel(offLocs)
+        codes(offLocs(end):end) = [];
+        badSep(end) = [];
+    end
 end
 edges = [offLocs(badSep), offLocs(badSep+1)];
 edges = num2cell(edges, 2);

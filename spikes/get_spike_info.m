@@ -9,8 +9,11 @@ function spikeStruct = get_spike_info(sessPath, regions)
 %Getting spike info from Kilosort3 files
 unsortedSpikeTimes = double(readNPY(strcat(sessPath, '\spike_times.npy')));
 unsortedSpikeClusters = double(readNPY(strcat(sessPath, '\spike_clusters.npy')))+1;
-clusterInfo = tdfread(strcat(sessPath, '\cluster_info.tsv'));
-
+try clusterInfo = tdfread(strcat(sessPath, '\cluster_info.tsv'));
+catch 
+    spikeStruct = get_spike_info_noPhy(sessPath);
+    return
+end
 %Combining your manually curated clusters (if any) with those that kilosort
 %automatically assigns
 nameFields = fields(clusterInfo);

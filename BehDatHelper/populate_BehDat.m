@@ -23,9 +23,14 @@ if ~exist('SessionData', 'var')
 end
 [~,FolderName] = fileparts(sessPath);   
 
-NEV_file = strcat(sessPath,'\',FolderName, '.nev');
-if ~isempty(dir(fullfile(sessPath , '*.nev')))
-    NEV=openNEV(NEV_file);
+
+NEV_dir = dir(fullfile(sessPath,'*.nev'));
+NEV_names = extractfield(NEV_dir, 'name');
+if numel(NEV_names)~=1
+    CE = MException('BehDat:config', 'Need to have exactly 1 NEV file in the current directory');
+    throw(CE)
+else
+    NEV=openNEV(fullfile(sessPath, NEV_names{1}));
 end
 
 sf = double(NEV.MetaTags.SampleRes);

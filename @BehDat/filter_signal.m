@@ -36,7 +36,8 @@ edgeCells = num2cell(a.edges, 2);
 timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCells, 'uni', 0);
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
-NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')), x), timeStrings, 'uni', 0);
+ns6_dir = dir(fullfile(parentDir, sub,'*.ns6'));
+NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, ns6_dir.name), x), timeStrings, 'uni', 0);
 lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
 clear NS6
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
