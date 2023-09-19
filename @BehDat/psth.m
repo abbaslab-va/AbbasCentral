@@ -32,6 +32,8 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
             'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
             'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+        labelY{1} = "";
+        labelY{2} = "All";
     else
         % parse through all inputted trialTypes and outcomes to produce a
         % stacked raster plot of all combos
@@ -43,10 +45,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         end
         spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
         labelY = cell(size(spikeMat, 1) * 2, 1);
-        lineY = zeros(numel(a.trialType) * numel(a.outcome), 1);
-        tickY = lineY;
         ctr = 0;
-        totalSz = 0;
         for tt = 1:numel(a.trialType)
             for o = 1:numel(a.outcome)
                 ctr = ctr + 1;
@@ -55,10 +54,6 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
                 spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
                 'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
                 'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
-                numRows = size(spikeMat{ctr}, 1);
-                lineY(ctr) = numRows + totalSz;
-                totalSz = lineY(ctr);
-                tickY(ctr) = totalSz - .5 * numRows;
                 labelY{ctr*2 - 1} = "";
                 labelY{ctr*2} = strcat(currentTT, ", ", currentOutcome);
             end
@@ -84,6 +79,11 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
+        end
+        if a.plotSEM
+            legend(labelY)
+        else
+            legend(labelY(2:2:end))
         end
 %         plot(spikesSmooth)    
         copyobj(h.Children, a.panel)
