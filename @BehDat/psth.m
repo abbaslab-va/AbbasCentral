@@ -68,9 +68,9 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     if ~iscell(spikeMat)
         spikesSmooth = smoothdata(spikeMat, 2, 'Gaussian', 50)*(1000/a.binWidth);
         spikesSmooth = num2cell(spikesSmooth, [1 2]);
-        spikesMean = mean(spikeMat, 1);
+        spikesMean = mean(spikesSmooth{1}, 1);
         spikesMean = num2cell(spikesMean, [1 2]);
-        spikesSEM = std(spikesSmooth, 1)/sqrt(size(spikesSmooth, 1));
+        spikesSEM = std(spikesSmooth{1}, 1)/sqrt(size(spikesSmooth{1}, 1));
         spikesSEM = num2cell(spikesSEM, [1 2]);
     else
         spikesSmooth = cellfun(@(x) smoothdata(x, 2, 'Gaussian', 50)*(1000/a.binWidth), spikeMat, 'uni', 0);
