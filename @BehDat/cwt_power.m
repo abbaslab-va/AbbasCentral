@@ -79,7 +79,7 @@ freqs = cell(1, numChan);
 lfpDownsampled = cellfun(@(x) downsample(x, downsampleRatio), lfp, 'uni', 0);
 clear lfp
 % calculate power and phase
-for c = 1:numChan
+parfor c = 1:numChan
     [AS, f] = cellfun(@(x) cwt(x(:, c), 'FilterBank', filterbank), lfpDownsampled, 'uni', 0);
     if calculatePhase
         chanPhase = cellfun(@(x) flip(angle(x), 1), AS, 'uni', 0);
@@ -88,7 +88,7 @@ for c = 1:numChan
     end
     freqs{c} = flip(f{c});
     chanPower = cellfun(@(x) flip(abs(x).^2, 1), AS, 'uni', 0);
-    clear AS
+%     clear AS
     pwr{c} = single(cat(3, chanPower{:}));
     disp(num2str(c))
 end 

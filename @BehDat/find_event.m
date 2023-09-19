@@ -67,8 +67,8 @@ elseif iscell(trialTypeField)
     isDesiredTT = any(intersectMat, 1);
 end
 
-if ~isempty(outcomeField)
-    outcomeField(outcomeField == ' ') = '_';
+if ischar(outcomeField)
+    outcomeField = regexprep(outcomeField, " ", "_");
     try
         outcomes = obj.info.outcomes.(outcomeField);
         isDesiredOutcome = ismember(eventOutcomes, outcomes);
@@ -76,7 +76,32 @@ if ~isempty(outcomeField)
         mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
         throw(mv)
     end
+elseif iscell(outcomeField)
+    numOutcomes = numel(outcomeField);
+    intersectMat = zeros(numOutcomes, numel(eventTrials));
+    for o = 1:numOutcomes
+        outcomeString = regexprep(outcomeField{o}, " ", "_");
+        try
+            outcomes = obj.info.outcomes.(outcomeString);
+            intersectMat(o, :) = ismember(eventOutcomes, outcomes);
+        catch
+            mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
+            throw(mv)
+        end
+    end
+    isDesiredOutcome = any(intersectMat, 1);
 end
+
+% if ~isempty(outcomeField)
+%     outcomeField(outcomeField == ' ') = '_';
+%     try
+%         outcomes = obj.info.outcomes.(outcomeField);
+%         isDesiredOutcome = ismember(eventOutcomes, outcomes);
+%     catch
+%         mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
+%         throw(mv)
+%     end
+% end
 
 if ~isempty(trials)
     trialIncluded = ismember(eventTrials, trials);
