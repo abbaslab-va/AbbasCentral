@@ -86,7 +86,7 @@ parfor c = 1:numChan
         chanPhase = cat(3, chanPhase{:});
         phase{c} = chanPhase;
     end
-    freqs{c} = flip(f{c});
+    freqs{c} = flip(f{1});
     chanPower = cellfun(@(x) flip(abs(x).^2, 1), AS, 'uni', 0);
 %     clear AS
     pwr{c} = single(cat(3, chanPower{:}));
@@ -96,7 +96,7 @@ freqs = freqs{1};
 if a.averaged
     pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
     phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
-    lfpAll = cellfun(@(x) mean(cell2num(x)), lfpAll, 'uni', 0);
+    lfpAll = cellfun(@(x) mean(cell2mat(x)), lfpAll, 'uni', 0);
 end
 
 

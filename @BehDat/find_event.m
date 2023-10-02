@@ -1,4 +1,4 @@
-function timestamps = find_event(obj, event, varargin)
+function [timestamps, bpodTrials] = find_event(obj, event, varargin)
 
 % OUTPUT:
 %     timestamps - a 1xE vector of timestamps from the desired event
@@ -107,7 +107,8 @@ if ~isempty(trials)
     trialIncluded = ismember(eventTrials, trials);
 end
 
-timestamps = timestamps(isDesiredTT & isDesiredOutcome & trialIncluded);
+bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
+timestamps = timestamps(bpodTrials);
 
 if trialized  
     eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);

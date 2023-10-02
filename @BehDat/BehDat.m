@@ -42,7 +42,7 @@ classdef BehDat < handle
 
     %% Spike methods
     
-        timestamps = find_event(obj, event, varargin)
+        [timestamps, bpodTrials] = find_event(obj, event, varargin)
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 
