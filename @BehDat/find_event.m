@@ -19,6 +19,9 @@ addParameter(p,'trialized', false, @islogical);
 % Need to implement withinState as param for app - don't necesessarily need
 % to flesh it out here
 addParameter(p, 'withinState', [], validStates)
+addParameter(p, 'excludeEventsByState', [], validStates)
+addParameter(p, 'priorToState', [], validStates)
+addParameter(p, 'priorToEvent', [], validStates)
 addParameter(p, 'withinTimes', [], validTimes)
 parse(p, event, varargin{:});
 a = p.Results;
