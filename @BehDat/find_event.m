@@ -8,13 +8,21 @@ function [timestamps, bpodTrials] = find_event(obj, event, varargin)
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
+%     'trials' - a vector specifying which trials to include
+%     'withinTimes' - a 1x2 vector specifying times to select events within (seconds)
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validTimes = @(x) all(size(x) == [1, 2]);
+
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
 % Need to implement withinState as param for app - don't necesessarily need
 % to flesh it out here
 addParameter(p, 'withinState', [], validStates)
+addParameter(p, 'excludeEventsByState', [], validStates)
+addParameter(p, 'priorToState', [], validStates)
+addParameter(p, 'priorToEvent', [], validStates)
+addParameter(p, 'withinTimes', [], validTimes)
 parse(p, event, varargin{:});
 a = p.Results;
 event = a.event;
@@ -23,6 +31,7 @@ outcomeField = a.outcome;
 trialTypeField = a.trialType;
 trials = a.trials;
 trialized = a.trialized;
+withinTimes = a.withinTimes;
 
 event(event == ' ') = '_';
 try
@@ -40,6 +49,7 @@ eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 trialIncluded = ones(1, numel(eventTrials));
 isDesiredTT = trialIncluded;
 isDesiredOutcome = trialIncluded;
+trialInBounds = trialIncluded;
 
 
 if ischar(trialTypeField)
@@ -92,22 +102,17 @@ elseif iscell(outcomeField)
     isDesiredOutcome = any(intersectMat, 1);
 end
 
-% if ~isempty(outcomeField)
-%     outcomeField(outcomeField == ' ') = '_';
-%     try
-%         outcomes = obj.info.outcomes.(outcomeField);
-%         isDesiredOutcome = ismember(eventOutcomes, outcomes);
-%     catch
-%         mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-%         throw(mv)
-%     end
-% end
-
 if ~isempty(trials)
     trialIncluded = ismember(eventTrials, trials);
 end
 
-bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
+if ~isempty(withinTimes)
+    edgesInSamples = withinTimes * obj.info.baud;
+    trialInBounds = discretize(timestamps, edgesInSamples);
+    trialInBounds = ~isnan(trialInBounds);
+end
+
+bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded & trialInBounds;
 timestamps = timestamps(bpodTrials);
 
 if trialized  

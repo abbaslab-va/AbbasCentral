@@ -28,7 +28,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     cMap = brewermap([], 'paired');
         % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
-    if (isempty(a.trialType) && isempty(a.outcome)) || (~iscell(a.trialType) && ~iscell(a.outcome))
+    if (isempty(a.trialType) && isempty(a.outcome) && isempty(a.trials)) || (~iscell(a.trialType) && ~iscell(a.outcome) && ~iscell(a.trials))
         spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
             'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
             'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
@@ -43,19 +43,25 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         if ~iscell(a.outcome)
             a.outcome = num2cell(a.outcome, [1 2]);
         end
+        if ~iscell(a.trials)
+            a.trials = num2cell(a.trials, [1 2]);
+        end
         spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
         labelY = cell(size(spikeMat, 1) * 2, 1);
         ctr = 0;
         for tt = 1:numel(a.trialType)
             for o = 1:numel(a.outcome)
-                ctr = ctr + 1;
-                currentTT = a.trialType{tt};
-                currentOutcome = a.outcome{o};
-                spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
-                'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
-                'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
-                labelY{ctr*2 - 1} = "";
-                labelY{ctr*2} = strcat(currentTT, ", ", currentOutcome);
+                for tr = 1:numel(a.trials)
+                    ctr = ctr + 1;
+                    currentTT = a.trialType{tt};
+                    currentOutcome = a.outcome{o};
+                    currentTrials = a.trials{tr};
+                    spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', currentTrials, ...
+                    'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
+                    'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+                    labelY{ctr*2 - 1} = "";
+                    labelY{ctr*2} = strcat(currentTT, ", ", currentOutcome, ", trials ", num2str(currentTrials));
+                end
             end
         end
     end
