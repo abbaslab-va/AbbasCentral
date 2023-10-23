@@ -91,7 +91,7 @@ if ischar(outcomeField)
     end
 elseif iscell(outcomeField)
     numOutcomes = numel(outcomeField);
-    intersectMat = zeros(numTT, numel(numOutcomes));
+    intersectMat = zeros(numOutcomes, numel(eventTrials));
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomeField{o}, " ", "_");
         try
