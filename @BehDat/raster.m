@@ -71,23 +71,22 @@ function h = raster(obj, event, neuron, varargin)
     else
         lineY(end) = [];
     end
-    
-
-    % this function included in packages directory of Abbas-WM
-    % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
-    % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
-    % MATLAB Central File Exchange. Retrieved February 2, 2023. 
-    
+  
     
     if ~isempty(a.panel)
         h = figure('Visible', 'off');
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+        % this function included in packages directory of Abbas-WM
+        % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
+        % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
+        % MATLAB Central File Exchange. Retrieved February 2, 2023. 
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5)
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
+        label_raster(obj, h, a, true);
         copyobj(h.Children, a.panel)
         close(h)
     else
@@ -96,17 +95,22 @@ function h = raster(obj, event, neuron, varargin)
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5)
         end
-        label_raster(obj, h, a);
         if ~isempty(lineY)
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
+        label_raster(obj, h, a, false);
     end
 end
 
-function label_raster(sessObj, figH, params)
-    title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+function label_raster(sessObj, figH, params, panel)
+    if panel
+        fontWeight = 16;
+    else
+        fontWeight = 24;
+        title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+    end
     xlabel('Time From Event (sec)')
     ylabel('Events/Trials')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
@@ -117,5 +121,6 @@ function label_raster(sessObj, figH, params)
     xticks(timeTix)
     xticklabels(timeLabels)
     yticks([1 figH.Children.YLim(2) - 1])
-    set(gca,'FontSize', 24, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    yticklabels({num2str(figH.Children.YLim(1) + 1), num2str(figH.Children.YLim(2) - 1)})
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
 end

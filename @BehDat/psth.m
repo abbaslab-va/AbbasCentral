@@ -86,6 +86,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
+        label_psth(obj, h, a, true);
         if a.plotSEM
             legend(labelY)
         else
@@ -101,7 +102,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
-        label_psth(obj, h, a);
+        label_psth(obj, h, a, false);
         if a.plotSEM
             legend(labelY)
         else
@@ -110,8 +111,13 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     end
 end
 
-function label_psth(sessObj, figH, params)
-    title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+function label_psth(sessObj, figH, params, panel)
+    if panel
+        fontWeight = 16;
+    else
+        fontWeight = 24;
+        title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+    end
     xlabel('Time From Event (sec)')
     ylabel('Firing Rate (hz)')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
@@ -122,7 +128,7 @@ function label_psth(sessObj, figH, params)
     xticks(timeTix)
     xticklabels(timeLabels)
     yticks([1 figH.Children.YLim(2) - 1])
-    set(gca,'FontSize', 24, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 
 function [lineh,shadeh]=ShadedErrorPlot(x,means,sem,linecolor,shadecolor,alpha)
