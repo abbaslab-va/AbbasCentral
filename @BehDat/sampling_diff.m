@@ -7,9 +7,11 @@ function bpodOffset = sampling_diff(obj)
 
 acqDiff = diff(obj.timestamps.trialStart);
 bpodDiff = diff(obj.bpod.TrialStartTimestamp .* obj.info.baud);
-if numel(acqDiff) ~= numel(bpodDiff)
-    bpodOffset = 0;
-    return
-end
-sampDiff = (bpodDiff - acqDiff)./acqDiff;
-bpodOffset = mean(sampDiff);
+acqDiff = acqDiff(1:numel(bpodDiff));
+% if numel(acqDiff) ~= numel(bpodDiff)
+%     bpodOffset = 0;
+%     return
+% end
+bpodOffset = (bpodDiff - acqDiff)./acqDiff;
+bpodOffset = [0 bpodOffset];
+% bpodOffset = mean(sampDiff);

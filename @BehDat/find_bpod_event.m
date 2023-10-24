@@ -98,7 +98,7 @@ elseif iscell(outcomeField)
             outcomeField = obj.info.outcomes.(outcomeString);
             intersectMat(tt, :) = ismember(eventOutcomes, outcomeField);
         catch
-            mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
+            mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
             throw(mv)
         end
     end
@@ -189,8 +189,8 @@ bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.sampling_diff;
-eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+averageOffset = num2cell(obj.sampling_diff);
+eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffset, 'uni', 0);
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 if ischar(withinState) || isstring(withinState)
