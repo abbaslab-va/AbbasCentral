@@ -46,10 +46,20 @@ function h = raster(obj, event, neuron, varargin)
         ctr = 0;
         totalSz = 0;
         for tt = 1:numel(a.trialType)
+            currentTT = a.trialType{tt};
+            if isempty(currentTT)
+                currentTTString = 'All';
+            else
+                currentTTString = currentTT;
+            end
             for o = 1:numel(a.outcome)
-                ctr = ctr + 1;
-                currentTT = a.trialType{tt};
                 currentOutcome = a.outcome{o};
+                if isempty(currentOutcome)
+                    currentOutcomeString = 'All';
+                else
+                    currentOutcomeString = currentOutcome;
+                end
+                ctr = ctr + 1;
                 spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
                 'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
                 'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
@@ -57,7 +67,7 @@ function h = raster(obj, event, neuron, varargin)
                 lineY(ctr) = numRows + totalSz;
                 totalSz = lineY(ctr);
                 tickY(ctr) = totalSz - .5 * numRows;
-                labelY{ctr} = strcat(currentTT, ", ", currentOutcome);
+                labelY{ctr} = strcat(currentTTString, ", ", currentOutcomeString);
             end
         end
         spikeMat = cat(1, spikeMat{:});
@@ -80,18 +90,19 @@ function h = raster(obj, event, neuron, varargin)
         % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
         % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
         % MATLAB Central File Exchange. Retrieved February 2, 2023. 
+        label_raster(obj, h, a, true);
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5)
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
-        label_raster(obj, h, a, true);
         copyobj(h.Children, a.panel)
         close(h)
     else
         h = figure;
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+        h = label_raster(obj, h, a, false);
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5)
         end
@@ -100,11 +111,10 @@ function h = raster(obj, event, neuron, varargin)
             yticklabels(labelY)
             ytickangle(45)
         end
-        label_raster(obj, h, a, false);
     end
 end
 
-function label_raster(sessObj, figH, params, panel)
+function figH = label_raster(sessObj, figH, params, panel)
     if panel
         fontWeight = 16;
     else
