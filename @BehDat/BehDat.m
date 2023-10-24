@@ -55,6 +55,8 @@ classdef BehDat < handle
         h = raster(obj, event, neuron, varargin)
 
         smoothedSpikes = psth(obj, event, neuron, varargin)
+
+        h = mean_population_response(obj, event, varargin)
         
         [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
