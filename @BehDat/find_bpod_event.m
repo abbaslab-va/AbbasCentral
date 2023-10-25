@@ -96,7 +96,7 @@ elseif iscell(outcomeField)
         outcomeString = regexprep(outcomeField{o}, " ", "_");
         try
             outcomeField = obj.info.outcomes.(outcomeString);
-            intersectMat(tt, :) = ismember(eventOutcomes, outcomeField);
+            intersectMat(o, :) = ismember(eventOutcomes, outcomeField);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
             throw(mv)
