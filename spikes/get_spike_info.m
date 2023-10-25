@@ -71,7 +71,7 @@ try
 
 NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')));
 if NS6 == -1
-    NS6_dir = dir('*.ns6');
+    NS6_dir = dir([sessPath,'\*.ns6']);
     NS6 = openNSx(fullfile(sessPath,NS6_dir.name));    
 end
 % This rearranges the NS6 data so that each row corresponds to the channel
