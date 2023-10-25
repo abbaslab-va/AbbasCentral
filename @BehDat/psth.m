@@ -96,6 +96,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
+        whitebg(h);
         label_psth(obj, h, a, true);
         if a.plotSEM
             legend(labelY)
@@ -112,6 +113,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
+        whitebg(h);
         label_psth(obj, h, a, false);
         if a.plotSEM
             legend(labelY)

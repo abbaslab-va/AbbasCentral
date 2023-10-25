@@ -99,10 +99,12 @@ function h = raster(obj, event, neuron, varargin)
             yticklabels(labelY)
             ytickangle(45)
         end
+        whitebg(h);
         copyobj(h.Children, a.panel)
         close(h)
     else
         h = figure;
+        whitebg(h);
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
         h = label_raster(obj, h, a, false);
         if ~isempty(lineY)
@@ -111,6 +113,7 @@ function h = raster(obj, event, neuron, varargin)
             yticklabels(labelY)
             ytickangle(45)
         end
+        whitebg(h);
     end
 end
 
