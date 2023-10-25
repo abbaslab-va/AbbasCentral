@@ -137,7 +137,7 @@ function label_psth(sessObj, figH, params, panel)
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
     xticks(timeTix)
     xticklabels(timeLabels)
-    yticks([1 figH.Children.YLim(2) - 1])
+    yticks([0 round(figH.Children.YLim(2))])
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 

@@ -42,7 +42,7 @@ function h = raster(obj, event, neuron, varargin)
         spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
         labelY = spikeMat;
         lineY = zeros(numel(a.trialType) * numel(a.outcome), 1);
-        tickY = lineY;
+        tickY = [lineY; lineY];
         ctr = 0;
         totalSz = 0;
         for tt = 1:numel(a.trialType)
@@ -66,8 +66,10 @@ function h = raster(obj, event, neuron, varargin)
                 numRows = size(spikeMat{ctr}, 1);
                 lineY(ctr) = numRows + totalSz;
                 totalSz = lineY(ctr);
-                tickY(ctr) = totalSz - .5 * numRows;
-                labelY{ctr} = strcat(currentTTString, ", ", currentOutcomeString);
+                tickY(ctr*2 - 1) = totalSz - .5 * numRows;
+                tickY(ctr*2) = totalSz;
+                labelY{ctr*2 - 1} = strcat(currentTTString, ", ", currentOutcomeString);
+                labelY{ctr*2} = num2str(numRows);
             end
         end
         spikeMat = cat(1, spikeMat{:});
@@ -105,8 +107,6 @@ function h = raster(obj, event, neuron, varargin)
         h = label_raster(obj, h, a, false);
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5)
-        end
-        if ~isempty(lineY)
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
@@ -130,7 +130,7 @@ function figH = label_raster(sessObj, figH, params, panel)
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
     xticks(timeTix)
     xticklabels(timeLabels)
-    yticks([1 figH.Children.YLim(2) - 1])
-    yticklabels({num2str(figH.Children.YLim(1) + 1), num2str(figH.Children.YLim(2) - 1)})
+    % yticks([1 figH.Children.YLim(2) - 1])
+    % yticklabels({num2str(figH.Children.YLim(1) + 1), num2str(figH.Children.YLim(2) - 1)})
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
 end
