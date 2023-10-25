@@ -32,19 +32,18 @@ function h = mean_population_response(obj, event, varargin)
 end
 
 function h = plot_pop_response(meanMat, params, figTitle)
-    figure
-    h = surf(meanMat);
-    view(2)
-    colormap('parula')
-    set(h, 'edgecolor', 'none');
-    colorbar
 
-    if params.panel
-        fontWeight = 16;
-    else
+    if isempty(params.panel)
         fontWeight = 24;
         title(figTitle)
+        figure
+    else
+        fontWeight = 16;
+        figH = figure('Visible', 'off');
     end
+    h = heatmap(meanMat, 'GridVisible', 'off');
+    colormap('parula')
+    colorbar
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
@@ -52,8 +51,22 @@ function h = plot_pop_response(meanMat, params, figTitle)
     rightEdge = params.edges(2)*1000/params.binWidth;
     stepSize = .5*1000/params.binWidth;
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
-    xticks(timeTix)
-    xticklabels(timeLabels)
-    yticks([1 numel(h.YData)])
-    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    timeTix(1) = 1;
+    % xticks(timeTix)
+    % xticklabels(timeLabels)
+    % yticks([1 numel(h.YData)])
+    % set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    xLabels = cell(size(meanMat, 2), 1);
+    [xLabels{:}] = deal("");
+    [xLabels{timeTix}] = timeLabels{:};
+    numNeurons = size(meanMat, 1);
+    neuronNumLabels = {num2str(numNeurons), num2str(1)}
+    yLabels = cell(numNeurons, 1);
+    [yLabels{:}] = deal("");
+    [yLabels{[1, numNeurons], 1}] = neuronNumLabels{:};
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XDisplayLabels', xLabels, 'YDisplayLabels', yLabels);
+    if ~isempty(params.panel)
+        copyobj(figH.Children, params.panel)
+        close(figH)
+    end
 end
