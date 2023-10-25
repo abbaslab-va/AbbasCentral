@@ -20,7 +20,7 @@ function [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 validVectorSize = @(x) all(size(x) == [1, 2]);
 validTrials = @(x) isempty(x) || isvector(x);
 
-p = parse_BehDat('event', 'trialType', 'outcome', 'offset');
+p = parse_BehDat('event', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'baseline', 'Trial Start', @ischar);
 addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
@@ -39,11 +39,16 @@ eventTrials = a.eventTrials;
 trialType = a.trialType;
 outcome = a.outcome;
 offset = a.offset;
+bpod = a.bpod;
 baseTimes = obj.find_event(baseline, 'trialType', trialType, 'trials', baseTrials, ...
     'outcome', outcome, 'offset', offset);
-eventTimes = obj.find_event(event, 'trialType', trialType, 'trials', eventTrials, ...
+if bpod
+    eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'trials', eventTrials, ...
     'outcome', outcome, 'offset', offset);
-
+else
+    eventTimes = obj.find_event(event, 'trialType', trialType, 'trials', eventTrials, ...
+    'outcome', outcome, 'offset', offset);
+end
 % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
 baseCells = cellfun(@(x) obj.bin_spikes(x, binWidth), baseEdges, 'uni', 0);

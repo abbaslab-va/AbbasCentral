@@ -50,17 +50,27 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         labelY = cell(size(spikeMat, 1) * 2, 1);
         ctr = 0;
         for tt = 1:numel(a.trialType)
+            currentTT = a.trialType{tt};
+            if isempty(currentTT)
+                currentTTString = 'All';
+            else
+                currentTTString = currentTT;
+            end
             for o = 1:numel(a.outcome)
+                currentOutcome = a.outcome{o};
+                if isempty(currentOutcome)
+                    currentOutcomeString = 'All';
+                else
+                    currentOutcomeString = currentOutcome;
+                end
                 for tr = 1:numel(a.trials)
                     ctr = ctr + 1;
-                    currentTT = a.trialType{tt};
-                    currentOutcome = a.outcome{o};
                     currentTrials = a.trials{tr};
                     spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', currentTrials, ...
                     'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
                     'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
                     labelY{ctr*2 - 1} = "";
-                    labelY{ctr*2} = strcat(currentTT, ", ", currentOutcome, ", trials ", num2str(currentTrials));
+                    labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString);
                 end
             end
         end
@@ -127,7 +137,7 @@ function label_psth(sessObj, figH, params, panel)
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
     xticks(timeTix)
     xticklabels(timeLabels)
-    yticks([1 figH.Children.YLim(2) - 1])
+    yticks([0 round(figH.Children.YLim(2))])
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 

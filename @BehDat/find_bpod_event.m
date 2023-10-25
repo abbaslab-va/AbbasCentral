@@ -81,10 +81,10 @@ elseif iscell(trialTypeField)
 end
 
 if ischar(outcomeField)
-    outcomeField = regexprep(outcomeField, " ", "_");
+    outcomeString = regexprep(outcomeField, " ", "_");
     try
-        outcomeField = obj.info.outcomes.(outcomeField);
-        isDesiredOutcome = ismember(eventOutcomes, outcomeField);
+        outcomes = obj.info.outcomes.(outcomeString);
+        isDesiredOutcome = ismember(eventOutcomes, outcomes);
     catch
         mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
         throw(mv)
@@ -95,8 +95,8 @@ elseif iscell(outcomeField)
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomeField{o}, " ", "_");
         try
-            outcomeField = obj.info.outcomes.(outcomeString);
-            intersectMat(tt, :) = ismember(eventOutcomes, outcomeField);
+            outcomes = obj.info.outcomes.(outcomeString);
+            intersectMat(o, :) = ismember(eventOutcomes, outcomes);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
             throw(mv)
