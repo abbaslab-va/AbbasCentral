@@ -23,7 +23,7 @@ if isempty(trialTypes)
     isDesiredTT = ones(1, numTrials);
 else
     numTT = numel(trialTypes);
-    intersectMat = zeros(numTT, numel(eventTrials));
+    intersectMat = zeros(numTT, numTrials);
     for tt = 1:numTT
         trialTypeString = regexprep(trialTypes{tt}, " ", "_");
         try
@@ -45,7 +45,7 @@ if isempty(outcomes)
     isDesiredOutcome = ones(1, numTrials);
 else
     numOutcomes = numel(outcomes);
-    intersectMat = zeros(numOutcomes, numel(eventTrials));
+    intersectMat = zeros(numOutcomes, numTrials);
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomes{o}, " ", "_");
         try
@@ -63,7 +63,7 @@ end
 if isempty(trials)
     trialIncluded = ones(1, numTrials);
 else
-    trialIncluded = ismember(eventTrials, trials);
+    trialIncluded = ismember(1:numTrials, trials);
 end
 
 goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;

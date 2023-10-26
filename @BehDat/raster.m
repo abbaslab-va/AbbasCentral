@@ -94,26 +94,25 @@ function h = raster(obj, event, neuron, varargin)
         % MATLAB Central File Exchange. Retrieved February 2, 2023. 
         label_raster(obj, h, a, true);
         if ~isempty(lineY)
-            yline(lineY + .5, 'LineWidth', 1.5)
+            yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
-        whitebg(h);
+        set(gca, 'color', 'w')
         copyobj(h.Children, a.panel)
         close(h)
     else
         h = figure;
-        whitebg(h);
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
         h = label_raster(obj, h, a, false);
         if ~isempty(lineY)
-            yline(lineY + .5, 'LineWidth', 1.5)
+            yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
-        whitebg(h);
+        set(gca, 'color', 'w')
     end
 end
 
@@ -124,8 +123,8 @@ function figH = label_raster(sessObj, figH, params, panel)
         fontWeight = 24;
         title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
     end
-    xlabel('Time From Event (sec)')
-    ylabel('Events/Trials')
+    xlabel('Time From Event (sec)', 'Color', 'k')
+    ylabel('Events/Trials', 'Color', 'k')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
     leftEdge = params.edges(1)*1000/params.binWidth;
     rightEdge = params.edges(2)*1000/params.binWidth;
@@ -135,5 +134,5 @@ function figH = label_raster(sessObj, figH, params, panel)
     xticklabels(timeLabels)
     % yticks([1 figH.Children.YLim(2) - 1])
     % yticklabels({num2str(figH.Children.YLim(1) + 1), num2str(figH.Children.YLim(2) - 1)})
-    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XColor', 'k', 'YColor', 'k', 'TickDir', 'out', 'LineWidth', 1.5);
 end

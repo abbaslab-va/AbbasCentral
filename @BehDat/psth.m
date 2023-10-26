@@ -96,7 +96,6 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
-        whitebg(h);
         label_psth(obj, h, a, true);
         if a.plotSEM
             legend(labelY)
@@ -104,6 +103,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             legend(labelY(2:2:end))
         end
 %         plot(spikesSmooth)    
+        set(gca, 'color', 'w')
         copyobj(h.Children, a.panel)
         close(h)
     else
@@ -113,13 +113,13 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
         end
-        whitebg(h);
         label_psth(obj, h, a, false);
         if a.plotSEM
             legend(labelY)
         else
             legend(labelY(2:2:end))
         end
+        set(gca, 'color', 'w')
     end
 end
 
@@ -130,8 +130,8 @@ function label_psth(sessObj, figH, params, panel)
         fontWeight = 24;
         title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
     end
-    xlabel('Time From Event (sec)')
-    ylabel('Firing Rate (hz)')
+    xlabel('Time From Event (sec)', 'Color', 'k')
+    ylabel('Firing Rate (hz)', 'Color', 'k')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
     leftEdge = params.edges(1)*1000/params.binWidth;
     rightEdge = params.edges(2)*1000/params.binWidth;
@@ -140,7 +140,7 @@ function label_psth(sessObj, figH, params, panel)
     xticks(timeTix)
     xticklabels(timeLabels)
     yticks([0 round(figH.Children.YLim(2))])
-    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XColor', 'k', 'YColor', 'k', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 
 function [lineh,shadeh]=ShadedErrorPlot(x,means,sem,linecolor,shadecolor,alpha)
