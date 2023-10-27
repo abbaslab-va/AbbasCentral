@@ -1,4 +1,4 @@
-function [lfp_all, chanPhaseMat]= lfp_align(obj, event, varargin)
+function [lfpChan, chanPhaseMat]= lfp_align(obj, event, varargin)
 
 % Calculates the power of a signal using a continuous wavelet transform
 % and returns the power and phase of the signal at the specified frequencies.
@@ -63,7 +63,7 @@ numChan = size(lfp, 1);
 
 
 % for butter
-nyquist=baud/2;
+nyquist=sf/2;
 N = 2;
 [B, A] = butter(N, a.freqLimits/(nyquist));
 
@@ -85,6 +85,7 @@ else
     lfpChan= cell(1, numChan);
     for c = 1:numChan
         lfpChan{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
+        lfpChan{c}= cellfun(@(x) filtfilt(B, A, x), lfpChan{c}, 'uni', 0);
         %disp(num2str(c));
     end
 end 

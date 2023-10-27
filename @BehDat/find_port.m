@@ -1,4 +1,4 @@
-function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adjust] = find_port(obj, event, varargin)
+function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adjust,chirpOccur] = find_port(obj, event, varargin)
 
 
 
@@ -165,6 +165,27 @@ eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrect
 
 allTrials=eventTimesCorrected;
 %% 
+% find if chirp occured withing 1 sec of port in  
+stateTimes = obj.find_bpod_state('ChirpPlay', 'outcome', outcomeField, 'trialType', trialTypeField, ...
+        'trials', trials);
+
+stateTimes=cellfun(@(x) cellfun(@(y) [y(1)-1*30000 y(2)],x,'uni',0), stateTimes,'uni',0);
+
+
+    % This double cellfun operates on withinState which contains a cell for each trial,
+    % with a cell for each state inside of that.
+    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
+    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+    eventTimesCorrectedCr = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
+
+
+chirpOccur=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedCr,'uni',0);
+
+
+
+
 
 
 % finds if C is rewarded 
@@ -200,7 +221,7 @@ cRewarded=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedC
     % due to circular shifting, and intersect logical matrices
 allTrials=currentEventTimes;
 
-    eventPrior = cellfun(@(x) circshift(x, -1),  currentEventTimes, 'uni', 0);
+    eventPrior = cellfun(@(x) circshift(x, -2),  currentEventTimes, 'uni', 0);
 %     for t = 1:numel(eventPrior)
 %         try
 %             eventPrior{t}(end) = false;
@@ -212,6 +233,17 @@ allTrials=currentEventTimes;
     %timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
     prevPort= cellfun(@(x, y) x(y), sortedNames, eventPrior, 'uni', 0);
     prevPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventPrior, 'uni', 0);
+
+% take out events where the previous event is the same 
+  for c=1:numel(prevPort)
+       prevPortLeaveOut{c}=zeros(1,length(prevPort{c}));
+        for e=numel(prevPort{c}):-1:1
+            if strcmp(prevPort{c}(e),a.event) || strcmp(prevPort{c}(e),[a.event(1:5),'Out'])
+           % prevPort{c}(e)=[];
+            prevPortLeaveOut{c}(e)=1;
+            end 
+        end 
+  end 
 
     for c=1:numel(prevPort)
         for e=1:numel(prevPort{c})
@@ -246,24 +278,6 @@ eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, event
 
 
 % finds pP rewarded
-
-    [sortedNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
-    sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
-    % Event times are now organized chronologically in sortedTimes, with a
-    % corresponding cell array for the names of the events
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) regexp(x, priorPort), sortedNames, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) cellfun(@(y) ~isempty(y), x), priorToEventTimes, 'uni', 0);
-    % Shift priorTo matrix one event to the left, eliminate the last event
-    % due to circular shifting, and intersect logical matrices
-    eventPrior = cellfun(@(x) circshift(x, -1),  currentEventTimes, 'uni', 0);
-%     for t = 1:numel(eventPrior)
-%         try
-%             eventPrior{t}(end) = false;
-%         catch
-%         end
-%     end
-
 
 
     withinStateCell={'Reward1_1', 'Reward2_1', 'Reward3_1' ,'Reward4_1' ,'Reward5_1', 'Reward'};
@@ -307,6 +321,17 @@ eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, event
     %timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
     nextPort= cellfun(@(x, y) x(y), sortedNames, eventNext, 'uni', 0);
     nextPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventNext, 'uni', 0);
+
+% take out events where the previous event is the same 
+ for c=1:numel(nextPort)
+       nextPortLeaveOut{c}=zeros(1,length(nextPort{c}));
+        for e=numel(nextPort{c}):-1:1
+            if strcmp(nextPort{c}(e),a.event) || strcmp(nextPort{c}(e),[a.event(1:5),'Out'])
+           % nextPort{c}(e)=[];
+            nextPortLeaveOut{c}(e)=1;
+            end 
+        end 
+  end 
 
     for c=1:numel(nextPort)
         for e=1:numel(nextPort{c})
@@ -375,22 +400,10 @@ nextPort=nextPort(emptyIdx);
 prevPort=prevPort(emptyIdx);
 
 
-
-
-
 trialswhereEventisfirst=cellfun(@(x) x(1),allTrials);
 trialswhereEventislast=cellfun(@(x) x(end),allTrials);
 
 %%
-
-
-
-
-
-    %adjustNp=cellfun(@(x,y) numel(x)-numel(y),eventTimesCorrected,eventTimesCorrectedNextPortTimes)
-    %adjustPp=cellfun(@(x,y) numel(x)-numel(y),eventTimesCorrected,eventTimesCorrectedPrevPortTimes)
-
-    %adjust=adjustNp+adjustPp;
 
 for c=1:numel(allTrials)
     if trialswhereEventisfirst(c)==1 
@@ -412,7 +425,11 @@ end
 adjustlogical=logical([adjustlogical{:}]);
 adjustlogicalEnd=logical([adjustlogicalEnd{:}]);
 
-adjust=adjustlogical & adjustlogicalEnd; 
+prevPortLeaveOutLogical=logical([prevPortLeaveOut{:}]);
+nextPortLeaveOutLogical=logical([nextPortLeaveOut{:}]);
+
+
+adjust=adjustlogical & adjustlogicalEnd & ~prevPortLeaveOutLogical & ~nextPortLeaveOutLogical; 
 % for c=1:numel(eventTimesCorrected)
 %     if adjust(c)==1 || adjust(c)==2
 %         eventTimesCorrected{c}=eventTimesCorrected{c}(2:end)
@@ -491,6 +508,8 @@ adjust=adjustlogical & adjustlogicalEnd;
     pPid=[prevPort{:}];
     pPid=pPid(adjust);
     pPid=[pPid{:}];
+    chirpOccur=[chirpOccur{:}];
+    chirpOccur=chirpOccur(adjust);
 
     
     
