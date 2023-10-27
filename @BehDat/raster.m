@@ -42,22 +42,34 @@ function h = raster(obj, event, neuron, varargin)
         spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
         labelY = spikeMat;
         lineY = zeros(numel(a.trialType) * numel(a.outcome), 1);
-        tickY = lineY;
+        tickY = [lineY; lineY];
         ctr = 0;
         totalSz = 0;
         for tt = 1:numel(a.trialType)
+            currentTT = a.trialType{tt};
+            if isempty(currentTT)
+                currentTTString = 'All';
+            else
+                currentTTString = currentTT;
+            end
             for o = 1:numel(a.outcome)
-                ctr = ctr + 1;
-                currentTT = a.trialType{tt};
                 currentOutcome = a.outcome{o};
+                if isempty(currentOutcome)
+                    currentOutcomeString = 'All';
+                else
+                    currentOutcomeString = currentOutcome;
+                end
+                ctr = ctr + 1;
                 spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
                 'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
                 'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
                 numRows = size(spikeMat{ctr}, 1);
                 lineY(ctr) = numRows + totalSz;
                 totalSz = lineY(ctr);
-                tickY(ctr) = totalSz - .5 * numRows;
-                labelY{ctr} = strcat(currentTT, ", ", currentOutcome);
+                tickY(ctr*2 - 1) = totalSz - .5 * numRows;
+                tickY(ctr*2) = totalSz;
+                labelY{ctr*2 - 1} = strcat(currentTTString, ", ", currentOutcomeString);
+                labelY{ctr*2} = num2str(numRows);
             end
         end
         spikeMat = cat(1, spikeMat{:});
@@ -71,44 +83,48 @@ function h = raster(obj, event, neuron, varargin)
     else
         lineY(end) = [];
     end
-    
-
-    % this function included in packages directory of Abbas-WM
-    % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
-    % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
-    % MATLAB Central File Exchange. Retrieved February 2, 2023. 
-    
+  
     
     if ~isempty(a.panel)
         h = figure('Visible', 'off');
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+        % this function included in packages directory of Abbas-WM
+        % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
+        % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
+        % MATLAB Central File Exchange. Retrieved February 2, 2023. 
+        label_raster(obj, h, a, true);
         if ~isempty(lineY)
-            yline(lineY + .5, 'LineWidth', 1.5)
+            yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
+        set(gca, 'color', 'w')
         copyobj(h.Children, a.panel)
         close(h)
     else
         h = figure;
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
+        h = label_raster(obj, h, a, false);
         if ~isempty(lineY)
-            yline(lineY + .5, 'LineWidth', 1.5)
-        end
-        label_raster(obj, h, a);
-        if ~isempty(lineY)
+            yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
             yticklabels(labelY)
             ytickangle(45)
         end
+        set(gca, 'color', 'w')
     end
 end
 
-function label_raster(sessObj, figH, params)
-    title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
-    xlabel('Time From Event (sec)')
-    ylabel('Events/Trials')
+function figH = label_raster(sessObj, figH, params, panel)
+    if panel
+        fontWeight = 16;
+    else
+        fontWeight = 24;
+        title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+    end
+    xlabel('Time From Event (sec)', 'Color', 'k')
+    ylabel('Events/Trials', 'Color', 'k')
     timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
     leftEdge = params.edges(1)*1000/params.binWidth;
     rightEdge = params.edges(2)*1000/params.binWidth;
@@ -116,6 +132,7 @@ function label_raster(sessObj, figH, params)
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
     xticks(timeTix)
     xticklabels(timeLabels)
-    yticks([1 figH.Children.YLim(2) - 1])
-    set(gca,'FontSize', 24, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
+    % yticks([1 figH.Children.YLim(2) - 1])
+    % yticklabels({num2str(figH.Children.YLim(1) + 1), num2str(figH.Children.YLim(2) - 1)})
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XColor', 'k', 'YColor', 'k', 'TickDir', 'out', 'LineWidth', 1.5);
 end

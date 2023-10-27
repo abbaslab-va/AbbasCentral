@@ -46,57 +46,9 @@ trialHasEvent = cellfun(@(x) regexp(fields(x.Events), event), rawEvents, 'uni', 
 trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);
 fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
 eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
-% Initialize trial intersect vectors
-numTrialStart = numel(trialStartTimes);
-eventTrials = 1:numTrialStart;
-eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-trialIncluded = ones(1, numel(eventTrials));
-isDesiredTT = trialIncluded;
-isDesiredOutcome = trialIncluded;
-
-if ischar(trialTypeField)
-    trialTypeField = regexprep(trialTypeField, " ", "_");
-    try
-        trialTypes = obj.info.trialTypes.(trialTypeField);
-        isDesiredTT = ismember(eventTrialTypes, trialTypes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
-        throw(mv)
-    end
-elseif iscell(trialTypeField)
-    numTT = numel(trialTypeField);
-    intersectMat = zeros(numTT, numel(eventTrials));
-    for tt = 1:numTT
-        trialTypeString = regexprep(trialTypeField{tt}, " ", "_");
-        try
-            trialTypes = obj.info.trialTypes.(trialTypeString);
-            intersectMat(tt, :) = ismember(eventTrialTypes, trialTypes);
-        catch
-            mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
-            throw(mv)
-        end
-    end
-    isDesiredTT = any(intersectMat, 1);
-end
-
-if ~isempty(outcomeField)
-    outcomeField(outcomeField == ' ') = '_';
-    try
-        outcomes = obj.info.outcomes.(outcomeField);
-        isDesiredOutcome = ismember(eventOutcomes, outcomes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-        throw(mv)
-    end
-end
-
-if ~isempty(trials)
-    trialIncluded = ismember(eventTrials, trials);
-end
 
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
+goodTrials = obj.trial_intersection(outcomeField, trialTypeField, trials);
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
@@ -175,8 +127,8 @@ bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.sampling_diff;
-eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+averageOffset = num2cell(obj.sampling_diff);
+eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffset, 'uni', 0);
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 if ischar(withinState) || isstring(withinState)

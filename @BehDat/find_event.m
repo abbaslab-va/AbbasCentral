@@ -15,10 +15,13 @@ validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTimes = @(x) all(size(x) == [1, 2]);
 
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
-addParameter(p,'trialized', false, @islogical);
+addParameter(p, 'trialized', false, @islogical);
 % Need to implement withinState as param for app - don't necesessarily need
 % to flesh it out here
 addParameter(p, 'withinState', [], validStates)
+addParameter(p, 'excludeEventsByState', [], validStates)
+addParameter(p, 'priorToState', [], validStates)
+addParameter(p, 'priorToEvent', [], validStates)
 addParameter(p, 'withinTimes', [], validTimes)
 parse(p, event, varargin{:});
 a = p.Results;
@@ -39,77 +42,18 @@ catch
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
 
-eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
-eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
-eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-trialIncluded = ones(1, numel(eventTrials));
-isDesiredTT = trialIncluded;
-isDesiredOutcome = trialIncluded;
-trialInBounds = trialIncluded;
+% trialInBounds = trialIncluded;
 
 
-if ischar(trialTypeField)
-    trialTypeField = regexprep(trialTypeField, " ", "_");
-    try
-        trialTypes = obj.info.trialTypes.(trialTypeField);
-        isDesiredTT = ismember(eventTrialTypes, trialTypes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
-        throw(mv)
-    end
-elseif iscell(trialTypeField)
-    numTT = numel(trialTypeField);
-    intersectMat = zeros(numTT, numel(eventTrials));
-    for tt = 1:numTT
-        trialTypeString = regexprep(trialTypeField{tt}, " ", "_");
-        try
-            trialTypes = obj.info.trialTypes.(trialTypeString);
-            intersectMat(tt, :) = ismember(eventTrialTypes, trialTypes);
-        catch
-            mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
-            throw(mv)
-        end
-    end
-    isDesiredTT = any(intersectMat, 1);
-end
-
-if ischar(outcomeField)
-    outcomeField = regexprep(outcomeField, " ", "_");
-    try
-        outcomes = obj.info.outcomes.(outcomeField);
-        isDesiredOutcome = ismember(eventOutcomes, outcomes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-        throw(mv)
-    end
-elseif iscell(outcomeField)
-    numOutcomes = numel(outcomeField);
-    intersectMat = zeros(numOutcomes, numel(eventTrials));
-    for o = 1:numOutcomes
-        outcomeString = regexprep(outcomeField{o}, " ", "_");
-        try
-            outcomes = obj.info.outcomes.(outcomeString);
-            intersectMat(o, :) = ismember(eventOutcomes, outcomes);
-        catch
-            mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
-            throw(mv)
-        end
-    end
-    isDesiredOutcome = any(intersectMat, 1);
-end
-
-if ~isempty(trials)
-    trialIncluded = ismember(eventTrials, trials);
-end
-
-if ~isempty(withinTimes)
-    edgesInSamples = withinTimes * obj.info.baud;
-    trialInBounds = discretize(timestamps, edgesInSamples);
-    trialInBounds = ~isnan(trialInBounds);
-end
-
-bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded & trialInBounds;
+bpodTrials = obj.trial_intersection(outcomeField, trialTypeField, trials);
+% 
+% if ~isempty(withinTimes)
+%     edgesInSamples = withinTimes * obj.info.baud;
+%     trialInBounds = discretize(timestamps, edgesInSamples);
+%     trialInBounds = ~isnan(trialInBounds);
+% end
+% 
+% bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded & trialInBounds;
 timestamps = timestamps(bpodTrials);
 
 if trialized  

@@ -55,6 +55,8 @@ classdef BehDat < handle
         h = raster(obj, event, neuron, varargin)
 
         smoothedSpikes = psth(obj, event, neuron, varargin)
+
+        h = mean_population_response(obj, event, varargin)
         
         [zMean, zCells, trialNum] = z_score(obj, event, varargin)
 
@@ -85,7 +87,7 @@ classdef BehDat < handle
 
         ITPC = itpc(obj, event, varargin)
 
-        [lfp_all chanPhase] = lfp_align(obj, event, varargin)
+        [lfp_all, chanPhase] = lfp_align(obj, event, varargin)
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
@@ -104,6 +106,8 @@ classdef BehDat < handle
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
         bpodOffset = samplingDiff(obj)
+
+        goodTrials = trial_intersection(obj, outcomes, trialTypes, trials)
 
     end
 end
