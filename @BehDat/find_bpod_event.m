@@ -47,8 +47,10 @@ trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni',
 fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
 eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
 
+numTrialStart = numel(trialStartTimes);
+eventTrials = 1:numTrialStart;
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = obj.trial_intersection(outcomeField, trialTypeField, trials);
+goodTrials = obj.trial_intersection(eventTrials, outcomeField, trialTypeField, trials);
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);

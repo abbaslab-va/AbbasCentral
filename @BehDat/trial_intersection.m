@@ -1,4 +1,4 @@
-function goodTrials = trial_intersection(obj, outcomes, trialTypes, trials)
+function goodTrials = trial_intersection(obj, trializedEvents, outcomes, trialTypes, trials)
 
 % Abstracts away some complexity from the find_event and find_bpod_event
 % functions. Calculates trial set intersections
@@ -6,13 +6,14 @@ function goodTrials = trial_intersection(obj, outcomes, trialTypes, trials)
 % OUTPUT:
 %     goodTrials - logical vector for indexing trial sets
 % INPUT:
+%     trializedEvents - discretized event trial numbers
 %     outcomes - outcomes found in config.ini
 %     trialTypes - trial types found in config.ini
 %     trials - a vector of trial numbers to include
 
-numTrials = obj.bpod.nTrials;
-eventTrialTypes = obj.bpod.TrialTypes;
-eventOutcomes = obj.bpod.SessionPerformance;
+numEvents = numel(trializedEvents);
+eventTrialTypes = obj.bpod.TrialTypes(trializedEvents);
+eventOutcomes = obj.bpod.SessionPerformance(trializedEvents);
 
 %% Trial Types
 if ischar(trialTypes)
@@ -20,10 +21,10 @@ if ischar(trialTypes)
 end
 
 if isempty(trialTypes)
-    isDesiredTT = ones(1, numTrials);
+    isDesiredTT = ones(1, numEvents);
 else
     numTT = numel(trialTypes);
-    intersectMat = zeros(numTT, numTrials);
+    intersectMat = zeros(numTT, numEvents);
     for tt = 1:numTT
         trialTypeString = regexprep(trialTypes{tt}, " ", "_");
         try
@@ -42,10 +43,10 @@ if ischar(outcomes)
 end
 
 if isempty(outcomes)
-    isDesiredOutcome = ones(1, numTrials);
+    isDesiredOutcome = ones(1, numEvents);
 else
     numOutcomes = numel(outcomes);
-    intersectMat = zeros(numOutcomes, numTrials);
+    intersectMat = zeros(numOutcomes, numEvents);
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomes{o}, " ", "_");
         try
@@ -61,9 +62,9 @@ end
 
 %% Trial numbers
 if isempty(trials)
-    trialIncluded = ones(1, numTrials);
+    trialIncluded = ones(1, numEvents);
 else
-    trialIncluded = ismember(1:numTrials, trials);
+    trialIncluded = ismember(1:numTrials, numEvents);
 end
 
 goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;

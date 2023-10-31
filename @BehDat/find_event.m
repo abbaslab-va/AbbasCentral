@@ -42,10 +42,12 @@ catch
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
 
+eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
+eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 % trialInBounds = trialIncluded;
 
 
-bpodTrials = obj.trial_intersection(outcomeField, trialTypeField, trials);
+bpodTrials = obj.trial_intersection(eventTrials, outcomeField, trialTypeField, trials);
 % 
 % if ~isempty(withinTimes)
 %     edgesInSamples = withinTimes * obj.info.baud;
