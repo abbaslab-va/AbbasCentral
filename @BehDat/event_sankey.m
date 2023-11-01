@@ -28,33 +28,9 @@ addParameter(p, 'outputEvents', defaultOutput, validField);
 addParameter(p, 'inputWithinState', [], validState);
 parse(p, varargin{:});
 a = p.Results;
-eventTrialTypes = session.TrialTypes;
-eventOutcomes = session.SessionPerformance;
-goodTT = true(1, session.nTrials);
-goodOutcomes = true(1, session.nTrials);
 
-if ~isempty(a.trialType)
-    trialTypeField = regexprep(a.trialType, " ", "_");
-    try
-        trialTypes = obj.info.trialTypes.(trialTypeField);
-        goodTT = ismember(eventTrialTypes, trialTypes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
-        throw(mv)
-    end
-end
+trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
 
-if ~isempty(a.outcome)
-    outcomeField = regexprep(a.outcome, " ", "_");
-    try
-        outcomes = obj.info.outcomes.(outcomeField);
-        goodOutcomes = ismember(eventOutcomes, outcomes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-        throw(mv)
-    end
-end
-trialsToInclude = find(goodTT & goodOutcomes);
 rawEvents2Check = obj.bpod.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
 endEvent = cell(0);

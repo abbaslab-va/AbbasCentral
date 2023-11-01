@@ -1,7 +1,12 @@
-% Base class for objects storing data collected from behavioral experiments
-% in the Abbas Lab.
-
 classdef BehDat < handle
+
+% Base class for objects storing data collected from behavioral experiments
+% in the Abbas Lab. Initially developed to interface bpod behavioral
+% sessions with recording data collected from the Cereplex Direct made by
+% Blackrock Neurotech, it can be generalized to apply to a wide range of
+% data acquisition systems. The core functionality, however, comes from the
+% integration with Bpod behavior data collected in boxes made by Sanworks.
+
     properties
         info
         spikes

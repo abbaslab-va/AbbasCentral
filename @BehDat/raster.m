@@ -93,7 +93,7 @@ function h = raster(obj, event, neuron, varargin)
         % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
         % MATLAB Central File Exchange. Retrieved February 2, 2023. 
         label_raster(obj, h, a, true);
-        if ~isempty(lineY)
+        if ~isempty(lineY) && all(diff(tickY))
             yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
             yticklabels(labelY)

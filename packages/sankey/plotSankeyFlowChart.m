@@ -1,4 +1,4 @@
-function plotSankeyFlowChart(data,options)
+function h = plotSankeyFlowChart(data,options)
 %% Load default options if not provided
 try
     color_map = options.color_map;
@@ -125,7 +125,7 @@ end
 %% Create the Figure
 % layers on horizontal axis:
 X = 0:n_layers-1;
-figure();
+h = figure();
 y1_category_points=[];
 
 for t=1:n_layers-1

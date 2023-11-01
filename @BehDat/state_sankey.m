@@ -19,47 +19,22 @@ defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input stat
 defaultOutput = defaultInput;                                   % all output states
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 
-p = parse_BehDat('outcome', 'trialType', 'trials');
+p = parse_BehDat('outcome', 'trialType', 'trials', 'panel');
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
 parse(p, varargin{:});
 a = p.Results;
-eventTrialTypes = session.TrialTypes;
-eventOutcomes = session.SessionPerformance;
 
-goodTT = true(1, session.nTrials);
-goodOutcomes = true(1, session.nTrials);
-
-if ~isempty(a.trialType)
-    trialTypeField = regexprep(a.trialType, " ", "_");
-    try
-        trialTypes = obj.info.trialTypes.(trialTypeField);
-        goodTT = ismember(eventTrialTypes, trialTypes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
-        throw(mv)
-    end
-end
-
-if ~isempty(a.outcome)
-    outcomeField = regexprep(a.outcome, " ", "_");
-    try
-        outcomes = obj.info.outcomes.(outcomeField);
-        goodOutcomes = ismember(eventOutcomes, outcomes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-        throw(mv)
-    end
-end
-trialsToInclude = find(goodTT & goodOutcomes);
+trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
 startState = cell(0);
 endState = cell(0);
+
 for trial = trialsToInclude
     stateNames = session.RawData.OriginalStateNamesByNumber{trial};
     trialEvents = session.RawData.OriginalStateData{trial};
     numStates = numel(trialEvents);
     for state = 1:numStates-1
-        if any(strcmp(a.inputStates, stateNames{trialEvents(state)})) & any(strcmp(a.outputStates, stateNames{trialEvents(state+1)}))
+        if any(strcmp(a.inputStates, stateNames{trialEvents(state)})) && any(strcmp(a.outputStates, stateNames{trialEvents(state+1)}))
             startState{end+1} = stateNames{trialEvents(state)};
             endState{end+1} = stateNames{trialEvents(state+1)};
         end
@@ -79,5 +54,12 @@ options.show_layer_labels = true;  % show layer names under the chart
 options.show_cat_labels = true;   % show categories over the blocks.
 options.show_legend = false;    
 
-plotSankeyFlowChart(t, options);
+if isempty(a.panel)
+    plotSankeyFlowChart(t, options);
+else
+    h = plotSankeyFlowChart(t, options);
+    h.Visible = 'off';
+    copyobj(h.Children, a.panel)
+    close(h)
+end
 
