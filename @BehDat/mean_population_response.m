@@ -16,17 +16,32 @@ function h = mean_population_response(obj, event, varargin)
    
     validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
     validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
+    validIndex = @(x) isempty(x) || (isvector(x) && numel(x) <= numel(obj.spikes));
+    validWindow = @(x) isempty(x) || all(size(x) == [1, 2]);
     p = parse_BehDat('event', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
     addParameter(p, 'withinState', [], validStates)
     addParameter(p, 'priorToState', [], validStates)
     addParameter(p, 'excludeEventsByState', [], validStates)
     addParameter(p, 'priorToEvent', [], validEvent)
+    addParameter(p, 'subset', [], validIndex)
+    addParameter(p, 'sortBy', [], validWindow)
     parse(p, event, varargin{:});
     a = p.Results;
 
     zMean = obj.z_score(a.event, 'eWindow', a.edges, 'binWidth', a.binWidth, ...
         'trialType', a.trialType, 'outcome', a.outcome, 'eventTrials', a.trials, ...
         'offset', a.offset, 'bpod', a.bpod);
+    if ~isempty(a.subset)
+        zMean = zMean(a.subset, :);
+    end
+    if ~isempty(a.sortBy)
+        msBins = a.edges * 1000 / a.binWidth;
+        leftEdge = floor((a.sortBy(1) - msBins(1)) * a.binWidth) + 1;
+        rightEdge = ceil((a.sortBy(2) - msBins(1)) * a.binWidth) - 1;
+        valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
+        [~, sortedIdx] = sort(valsToSort, 'descend');
+        zMean = zMean(sortedIdx, :);
+    end
     figTitle = strcat(obj.info.name, " ", a.event);
     h = plot_pop_response(zMean, a, figTitle);
 end
