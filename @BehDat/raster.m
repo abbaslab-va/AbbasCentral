@@ -15,14 +15,21 @@ function h = raster(obj, event, neuron, varargin)
     
     validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
     validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
+    validPreset = @(x) isa(x, 'PresetManager');
+
     p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
     addParameter(p, 'withinState', [], validStates)
     addParameter(p, 'priorToState', [], validStates)
     addParameter(p, 'excludeEventsByState', [], validStates)
     addParameter(p, 'priorToEvent', [], validEvent)
+    addParameter(p, 'preset', [], validPreset)
     parse(p, event, neuron, varargin{:});
     
-    a = p.Results;
+    if isempty(p.Results.preset)
+        a = p.Results;
+    else
+        a = p.Results.preset;
+    end
     
     % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
@@ -125,7 +132,7 @@ function figH = label_raster(sessObj, figH, params, panel)
     end
     xlabel('Time From Event (sec)', 'Color', 'k')
     ylabel('Events/Trials', 'Color', 'k')
-    timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
+    timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
     leftEdge = params.edges(1)*1000/params.binWidth;
     rightEdge = params.edges(2)*1000/params.binWidth;
     stepSize = .5*1000/params.binWidth;

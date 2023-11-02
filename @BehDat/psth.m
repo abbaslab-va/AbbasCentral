@@ -132,7 +132,7 @@ function label_psth(sessObj, figH, params, panel)
     end
     xlabel('Time From Event (sec)', 'Color', 'k')
     ylabel('Firing Rate (hz)', 'Color', 'k')
-    timeLabels = cellfun(@(x) num2str(x), num2cell(params.edges(1):.5:params.edges(2)), 'uni', 0);
+    timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
     leftEdge = params.edges(1)*1000/params.binWidth;
     rightEdge = params.edges(2)*1000/params.binWidth;
     stepSize = .5*1000/params.binWidth;
