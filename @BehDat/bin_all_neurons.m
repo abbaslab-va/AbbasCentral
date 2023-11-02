@@ -18,42 +18,41 @@ function binnedNeurons = bin_all_neurons(obj, event, varargin)
 
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validPreset = @(x) isa(x, 'PresetManager');
 p = parse_BehDat('event', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
 addParameter(p, 'withinState', [], validStates)
 addParameter(p, 'priorToState', [], validStates)
 addParameter(p, 'excludeEventsByState', [], validStates)
 addParameter(p, 'priorToEvent', [], validEvent)
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
 
-a = p.Results;
-event = a.event;
-edges = a.edges;
-binWidth = a.binWidth;
-trialTypeField = a.trialType;
-outcomeField = a.outcome;
-offset = a.offset;
-trials = a.trials;
-useBpod = a.bpod;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 
 baud = obj.info.baud;
-if useBpod
-    timestamps = obj.find_bpod_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'trials', trials, 'offset', offset, ...
+
+if a.bpod
+    timestamps = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'trials', a.trials, 'offset', a.offset, ...
         'priorToEvent', a.priorToEvent, 'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState);
 else
-    timestamps = obj.find_event(event, 'trialType', trialTypeField, 'outcome', outcomeField, 'trials', trials, 'offset', offset);
+    timestamps = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'trials', a.trials, 'offset', a.offset);
 end
 
 binnedNeurons = cell(1, numel(obj.spikes));
 try
-    adjustedEdges = (edges * baud) + timestamps';
+    adjustedEdges = (a.edges * baud) + timestamps';
     edgeCells = num2cell(adjustedEdges, 2);
     for neuron = 1:numel(obj.spikes)
-        binnedN = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*binWidth:x(2)),...
+        binnedN = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*a.binWidth:x(2)),...
             edgeCells, 'uni', 0);
         binnedNeurons{neuron} = cat(1, binnedN{:});
         if isfield(obj.info, 'noisyPeriods')
-            frCells=obj.remove_noisy_periods(frCells,event,'trialType', trialTypeField, ...
-            'outcome', outcomeField, 'offset', offset,'binWidth',binWidth,'edges',edges);
+            frCells=obj.remove_noisy_periods(frCells,a.event,'trialType', a.trialType, ...
+            'outcome', a.outcome, 'offset', a.offset,'binWidth',a.binWidth,'edges',a.edges);
         end
     end
 catch

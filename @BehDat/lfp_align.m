@@ -27,9 +27,15 @@ p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'phase', defaultPhase, @islogical);
 addParameter(p, 'excludeEventsByState', [], goodEvent);
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
-
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+phase = p.Results.phase;
+averaged = p.Results.averaged;
 useBpod = a.bpod;
 
 % set up filterbank and downsample signal
@@ -71,7 +77,7 @@ N = 2;
 %chanPhase = cell(1, numChan);
 
 % calculate power and phase
-if a.phase 
+if phase 
     for c = 1:numChan
         lfpChan=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
         chanPhase= cellfun(@(x) angle(hilbert(filtfilt(B, A, x))), lfpChan, 'uni', 0);
@@ -91,7 +97,7 @@ else
 end 
 %freqs = flip(f{1});
 
-if a.averaged
+if averaged
    % pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
     %phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
     lfp_all = cellfun(@(x) mean(cell2num(x)), lfpChan, 'uni', 0);

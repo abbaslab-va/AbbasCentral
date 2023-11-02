@@ -19,22 +19,24 @@ function noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
+validPreset = @(x) isa(x, 'PresetManager');
+
 p = parse_BehDat('event', 'edges', 'offset', 'binWidth', 'outcome', 'trialType', 'trials');
+addParameter(p, 'preset', [], validPreset)
+
 parse(p, event, varargin{:});
-a = p.Results;
-event = a.event;
-edges = a.edges;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 offset = round(a.offset * obj.info.baud);
-binWidth = a.binWidth;
-outcomeField = a.outcome;
-trialTypeField = a.trialType;
-trials = a.trials;
 baud = obj.info.baud;
 noiseRemoved = rawData;
 
-eventTimes = obj.find_event(event, 'offset', offset, 'outcome', outcomeField, 'trialType', trialTypeField, 'trials', trials);
-eventEdges = num2cell((edges * baud) + eventTimes', 2);
-eventBins = cellfun(@(x) x(1):baud*binWidth/1000:x(2), eventEdges, 'uni', 0);
+eventTimes = obj.find_event(a.event, 'offset', offset, 'outcome', a.outcome, 'trialType', a.trialType, 'trials', a.trials);
+eventEdges = num2cell((a.edges * baud) + eventTimes', 2);
+eventBins = cellfun(@(x) x(1):baud*a.binWidth/1000:x(2), eventEdges, 'uni', 0);
 
 noisyBins = cellfun(@(x) discretize(obj.info.noisyPeriods, x), eventBins, 'uni', 0);
 noisyBins = cellfun(@(x) unique(x(~isnan(x))), noisyBins, 'uni', 0);

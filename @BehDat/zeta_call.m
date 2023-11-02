@@ -8,16 +8,19 @@ function sigs=zeta_call(obj, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 
+validPreset = @(x) isa(x, 'PresetManager');
+
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials','bpod');
 addParameter(p,'length', 0.5, @isnumeric);
 addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'preset', [], validPreset)
 
 parse(p, event, varargin{:});
-a = p.Results;
-event = a.event;
-offset = a.offset;
-outcomeField = a.outcome;
-trialTypeField = a.trialType;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 useBpod = a.bpod;
 
 if useBpod

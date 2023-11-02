@@ -19,6 +19,7 @@ function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adj
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
+validPreset = @(x) isa(x, 'PresetManager');
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
 addParameter(p, 'excludeEventsByState', [], validEvent);
@@ -26,14 +27,19 @@ addParameter(p, 'withinState', [], validStates);
 addParameter(p, 'priorToState', [], validStates);
 addParameter(p, 'priorToEvent', [], validEvent);
 addParameter(p, 'withinStateCell', [], validStates);
+addParameter(p, 'preset', [], validPreset);
 parse(p, event, varargin{:});
-a = p.Results;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 event = a.event;
 offset = round(a.offset * obj.info.baud);
 outcomeField = a.outcome;
 trialTypeField = a.trialType;
 trials = a.trials;
-trialized = a.trialized;
+trialized = p.Results.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 rawData = obj.bpod.RawData;
 excludeEventsByState = a.excludeEventsByState;

@@ -16,15 +16,22 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     
     validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
     validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
+    validPreset = @(x) isa(x, 'PresetManager');
     p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
     addParameter(p, 'withinState', [], validStates)
     addParameter(p, 'priorToState', [], validStates)
     addParameter(p, 'excludeEventsByState', [], validStates)
     addParameter(p, 'priorToEvent', [], validEvent)
     addParameter(p, 'plotSEM', true, @islogical)
+    addParameter(p, 'preset', [], validPreset)
     parse(p, event, neuron, varargin{:});
     
-    a = p.Results;
+    if isempty(p.Results.preset)
+        a = p.Results;
+    else
+        a = p.Results.preset;
+    end
+    plotSEM = p.Results.plotSEM;
     cMap = brewermap([], 'paired');
         % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
@@ -94,10 +101,10 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         hold on
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
-            plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
+            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
         end
         label_psth(obj, h, a, true);
-        if a.plotSEM
+        if plotSEM
             legend(labelY)
         else
             legend(labelY(2:2:end))
@@ -111,10 +118,10 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         hold on
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
-            plot_all_conditions(spikesMean{i}, spikesSEM{i}, a.plotSEM, currentColor);
+            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
         end
         label_psth(obj, h, a, false);
-        if a.plotSEM
+        if plotSEM
             legend(labelY)
         else
             legend(labelY(2:2:end))

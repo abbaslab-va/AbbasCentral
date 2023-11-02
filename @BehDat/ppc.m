@@ -14,14 +14,24 @@ disp(obj.info.path)
 defaultFilter = 'butter';
 defaultScramble = 0; 
 defaultBuffer = 1; 
+validPreset = @(x) isa(x, 'PresetManager');
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'trials', 'offset', 'bpod');
 addParameter(p, 'filter', defaultFilter, @ischar);
 addParameter(p, 'scramble', defaultScramble, @isnumeric);
 addParameter(p, 'buffer', defaultBuffer, @isnumeric);
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
+
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+filter = p.Results.filter;
+scramble = p.Results.scramble;
+buffer = p.Results.buffer;
 
 baud = obj.info.baud;
 
@@ -61,7 +71,7 @@ if numEvents > 200
     numEvents = 200;
 end 
 
-if a.scramble
+if scramble
     offsetScram = zeros(1, numEvents);
     for e = 1:numEvents
         offsetScram(e) = randsample(1:0.1:defaultScramble, 1) * baud;
@@ -70,7 +80,7 @@ if a.scramble
     edgeCells=cellfun(@(x,y) x + y, offsetScram, edgeCells,'uni',0);
 end 
 
-edgeCellsLfp = cellfun(@(x) [x(1) - (a.buffer*baud) x(2) + (a.buffer*baud)], edgeCells, 'uni', 0);
+edgeCellsLfp = cellfun(@(x) [x(1) - (buffer*baud) x(2) + (buffer*baud)], edgeCells, 'uni', 0);
 timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCellsLfp, 'uni', 0);
 NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')), x), timeStrings, 'uni', 0);
 lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
@@ -80,13 +90,13 @@ spikePhase=cell(numChan,numNeurons);
 clear NS6
 
 % calculate phase
-if strcmp(a.filter, 'butter')
+if strcmp(filter, 'butter')
     chanSig = cellfun(@(x) filtfilt(B, A, x), lfp, 'uni', 0);
 else
     chanSig = cellfun(@(x) bandpass(x, a.freqLimits, baud), lfp, 'uni', 0);
 end
 chanPhase = cellfun(@(x) angle(hilbert(x)), chanSig, 'uni', 0);
-chanPhase = cellfun(@(x) x(a.buffer*baud:(end-a.buffer*baud)-1, :), chanPhase, 'uni', 0)';
+chanPhase = cellfun(@(x) x(buffer*baud:(end-buffer*baud)-1, :), chanPhase, 'uni', 0)';
 
 for n=1:length(obj.spikes)
     % find spike times around event and zero to start of event

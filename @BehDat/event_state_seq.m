@@ -29,7 +29,8 @@ defaultPlot=0;
 p = parse_BehDat('outcome', 'trialType', 'trials');
 addParameter(p, 'events', defaultEvents, validField);
 addParameter(p, 'states', defaultStates, validState);
-addParameter(p, 'plot', defaultPlot, @(x) isnumeric(x) );
+addParameter(p, 'plot', defaultPlot, @(x) isnumeric(x));
+
 parse(p, varargin{:});
 a = p.Results;
 eventTrialTypes = session.TrialTypes;

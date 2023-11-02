@@ -18,6 +18,7 @@ function h = mean_population_response(obj, event, varargin)
     validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
     validIndex = @(x) isempty(x) || (isvector(x) && numel(x) <= numel(obj.spikes));
     validWindow = @(x) isempty(x) || all(size(x) == [1, 2]);
+    validPreset = @(x) isa(x, 'PresetManager');
     p = parse_BehDat('event', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
     addParameter(p, 'withinState', [], validStates)
     addParameter(p, 'priorToState', [], validStates)
@@ -25,19 +26,24 @@ function h = mean_population_response(obj, event, varargin)
     addParameter(p, 'priorToEvent', [], validEvent)
     addParameter(p, 'subset', [], validIndex)
     addParameter(p, 'sortBy', [], validWindow)
+    addParameter(p, 'preset', [], validPreset)
     parse(p, event, varargin{:});
-    a = p.Results;
-
+    if isempty(p.Results.preset)
+        a = p.Results;
+    else
+        a = p.Results.preset;
+    end
+    sortBy = p.Results.sortBy;
     zMean = obj.z_score(a.event, 'eWindow', a.edges, 'binWidth', a.binWidth, ...
         'trialType', a.trialType, 'outcome', a.outcome, 'eventTrials', a.trials, ...
         'offset', a.offset, 'bpod', a.bpod);
     if ~isempty(a.subset)
         zMean = zMean(a.subset, :);
     end
-    if ~isempty(a.sortBy)
+    if ~isempty(sortBy)
         msBins = a.edges * 1000 / a.binWidth;
-        leftEdge = floor((a.sortBy(1) - msBins(1)) * a.binWidth) + 1;
-        rightEdge = ceil((a.sortBy(2) - msBins(1)) * a.binWidth) - 1;
+        leftEdge = floor((sortBy(1) - msBins(1)) * a.binWidth) + 1;
+        rightEdge = ceil((sortBy(2) - msBins(1)) * a.binWidth) - 1;
         valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
         [~, sortedIdx] = sort(valsToSort, 'descend');
         zMean = zMean(sortedIdx, :);

@@ -23,6 +23,7 @@ defaultPhase = false;
 defaultSF = 2000;
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
+validPreset = @(x) isa(x, 'PresetManager');
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'averaged', defaultAveraged, @islogical);
@@ -30,17 +31,23 @@ addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 addParameter(p, 'withinState', [], validStates)
 addParameter(p, 'excludeEventsByState', [], @ischar);
 addParameter(p, 'samplingFreq', defaultSF, validSF);
-parse(p, event, varargin{:});
-a = p.Results;
-withinState = a.withinState;
+addParameter(p, 'preset', [], validPreset)
+parse(p, event, varargin{:});    
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;   % Needs expansion to all params (averaged, calculatePhase, samplingFreq)
+end
+averaged = p.Results.averaged;
+calculatePhase = p.Results.calculatePhase;
+samplingFreq = p.Results.samplingFreq;
 useBpod = a.bpod;
-calculatePhase = a.calculatePhase;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
-downsampleRatio = baud/a.samplingFreq;
-sigLength = (a.edges(2) - a.edges(1)) * a.samplingFreq;
-filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',a.samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
+downsampleRatio = baud/samplingFreq;
+sigLength = (a.edges(2) - a.edges(1)) * samplingFreq;
+filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
 try
     numChan = obj.info.numChannels;
 catch 
@@ -50,7 +57,7 @@ end
 lfpAll = cell(1, numChan);
 % timestamp and trialize event times
 if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', withinState,'excludeEventsByState',a.excludeEventsByState);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', a.withinState,'excludeEventsByState',a.excludeEventsByState);
 else
     eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
@@ -93,7 +100,7 @@ parfor c = 1:numChan
     disp(num2str(c))
 end 
 freqs = freqs{1};
-if a.averaged
+if averaged
     pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
     phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
     lfpAll = cellfun(@(x) mean(cell2mat(x)), lfpAll, 'uni', 0);

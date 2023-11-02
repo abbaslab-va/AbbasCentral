@@ -21,13 +21,22 @@ defaultInput = {'Port1In', 'Port1Out', 'Port2In', 'Port2Out', 'Port3In', 'Port3O
 defaultOutput = defaultInput;                                   % all output events
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validState = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validPreset = @(x) isa(x, 'PresetManager');
 
 p = parse_BehDat('outcome', 'trialType', 'trials');
 addParameter(p, 'inputEvents', defaultInput, validField);
 addParameter(p, 'outputEvents', defaultOutput, validField);
 addParameter(p, 'inputWithinState', [], validState);
+addParameter(p, 'preset', [], validPreset)
 parse(p, varargin{:});
-a = p.Results;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+inputEvents = p.Results.inputEvents;
+outputEvents = p.Results.outputEvents;
+inputWithinState = p.Results.inputWithinState;
 
 trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
 
@@ -35,9 +44,9 @@ rawEvents2Check = obj.bpod.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
 endEvent = cell(0);
 
-if ~isempty(a.inputWithinState)
+if ~isempty(inputWithinState)
     % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) strcmp(fields(x.States), a.inputWithinState), rawEvents2Check, 'uni', 0);
+    goodStates = cellfun(@(x) strcmp(fields(x.States), inputWithinState), rawEvents2Check, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
     includeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
     % Find those state times that are nan (did not happen in the trial)
@@ -81,7 +90,7 @@ for trial = trialsToInclude
         if ~eventTimes2Check(event)
             continue
         end
-        if any(strcmp(a.inputEvents, eventNames{event})) && any(strcmp(a.outputEvents, eventNames{event+1}))
+        if any(strcmp(inputEvents, eventNames{event})) && any(strcmp(outputEvents, eventNames{event+1}))
             startEvent{end+1} = eventNames{event};
             endEvent{end+1} = eventNames{event+1};
         end

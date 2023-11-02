@@ -16,13 +16,20 @@ function filteredLFP = filter_signal(obj, event, varargin)
 % default input values
 defaultFilter = 'butter';
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validPreset = @(x) isa(x, 'PresetManager');
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
 addParameter(p, 'withinState', [], validStates)
 addParameter(p, 'filter', defaultFilter, @ischar);
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+filter = p.Results.filter;
 baud = obj.info.baud;
 
 % timestamp and trialize event times
@@ -44,7 +51,7 @@ clear NS6
 N = 2;
 [B, A] = butter(N, a.freqLimits/(baud/2));
 
-if strcmp(a.filter, 'butter')
+if strcmp(filter, 'butter')
     filteredLFP = cellfun(@(x) filtfilt(B, A, x), lfp, 'uni', 0); 
 else
     filteredLFP = cellfun(@(x) bandpass(x, a.freqLimits, baud), lfp, 'uni', 0);

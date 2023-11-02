@@ -13,13 +13,15 @@ function stateEdges = find_bpod_state(obj, stateName, varargin)
 
 p = parse_BehDat('outcome', 'trialType', 'trials');
 addRequired(p, 'stateName', @ischar);
+addParameter(p, 'preset', [], validPreset)
 
 parse(p, stateName, varargin{:});
-a = p.Results;
-stateName = a.stateName;
-trialType = a.trialType;
-outcome = a.outcome;
-trials = a.trials;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+stateName = p.Results.stateName;
 rawEvents = obj.bpod.RawEvents.Trial;
 numTrialStart = numel(obj.timestamps.trialStart);
 eventTrials = 1:numTrialStart;
@@ -29,20 +31,20 @@ eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 correctTrialType = true(1, obj.bpod.nTrials);
 correctOutcome = true(1, obj.bpod.nTrials);
 trialIncluded = true(1, obj.bpod.nTrials);
-if ~isempty(trialType)
-    trialType = regexprep(trialType, " ", "_");
-    ttToIndex = obj.info.trialTypes.(trialType);
+if ~isempty(a.trialType)
+    a.trialType = regexprep(a.trialType, " ", "_");
+    ttToIndex = obj.info.trialTypes.(a.trialType);
     correctTrialType = ismember(eventTrialTypes, ttToIndex);
 end
 
-if ~isempty(outcome)
-    outcome = regexprep(outcome, " ", "_");
-    outcomeToIndex = obj.info.outcomes.(outcome);
+if ~isempty(a.outcome)
+    a.outcome = regexprep(a.outcome, " ", "_");
+    outcomeToIndex = obj.info.outcomes.(a.outcome);
     correctOutcome = ismember(eventOutcomes, outcomeToIndex);
 end
 
-if ~isempty(trials)
-    trialIncluded = ismember(eventTrials, trials); 
+if ~isempty(a.trials)
+    trialIncluded = ismember(eventTrials, a.trials); 
 end
 
 goodTrials = correctTrialType & correctOutcome & trialIncluded;

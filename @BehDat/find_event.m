@@ -13,6 +13,7 @@ function [timestamps, bpodTrials] = find_event(obj, event, varargin)
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validTimes = @(x) all(size(x) == [1, 2]);
+validPreset = @(x) isa(x, 'PresetManager');
 
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p, 'trialized', false, @islogical);
@@ -23,21 +24,22 @@ addParameter(p, 'excludeEventsByState', [], validStates)
 addParameter(p, 'priorToState', [], validStates)
 addParameter(p, 'priorToEvent', [], validStates)
 addParameter(p, 'withinTimes', [], validTimes)
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
-event = a.event;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 offset = round(a.offset * obj.info.baud);
-outcomeField = a.outcome;
-trialTypeField = a.trialType;
-trials = a.trials;
-trialized = a.trialized;
-withinTimes = a.withinTimes;
+trialized = p.Results.trialized;
+% withinTimes = p.Results.withinTimes;
 
-event(event == ' ') = '_';
+a.event(a.event == ' ') = '_';
 try
-    timestamp = obj.timestamps.keys.(event);
+    timestamp = obj.timestamps.keys.(a.event);
 catch
-    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', event));
+    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', a.event));
     throw(mv)
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
@@ -46,8 +48,7 @@ eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples
 eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 % trialInBounds = trialIncluded;
 
-
-bpodTrials = obj.trial_intersection(eventTrials, outcomeField, trialTypeField, trials);
+bpodTrials = obj.trial_intersection(eventTrials, a.outcome, a.trialType, a.trials);
 % 
 % if ~isempty(withinTimes)
 %     edgesInSamples = withinTimes * obj.info.baud;

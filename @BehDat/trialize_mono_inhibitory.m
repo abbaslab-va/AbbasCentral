@@ -13,25 +13,28 @@ function weightsIn = trialize_mono_inhibitory(obj, event, varargin)
 %     'offset' - a number that defines the offset from the event you wish to center around.
 %     'outcome' - an outcome character array found in config.ini
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
-p = parse_BehDat('event', 'trialType', 'outcome', 'edges', 'offset', 'bpod');
-parse(p, event, varargin{:});
-a = p.Results;
+validPreset = @(x) isa(x, 'PresetManager');
 
-trialType = a.trialType;
-event = a.event;
-edges = a.edges;
-outcome = a.outcome;
-offset = a.offset;
+p = parse_BehDat('event', 'trialType', 'outcome', 'edges', 'offset', 'bpod');
+addParameter(p, 'preset', [], validPreset)
+parse(p, event, varargin{:});
+
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+
 useBpod = a.bpod;
 
 if useBpod
-    eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 else
-    eventTimes = obj.find_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
 
-edges = (edges * obj.info.baud) + eventTimes';
-edgeCells = num2cell(edges, 2);
+a.edges = (a.edges * obj.info.baud) + eventTimes';
+edgeCells = num2cell(a.edges, 2);
 inhibitID = arrayfun(@(x) ~isempty(x.inhibitOutput), obj.spikes);
 numSpikes = numel(obj.spikes);
 weightsIn = cell(numSpikes, 1);

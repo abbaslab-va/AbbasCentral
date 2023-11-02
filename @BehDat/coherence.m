@@ -20,6 +20,7 @@ function cohere = coherence(obj, event, regions, varargin)
 defaultWindow= 2000;
 defaultOverlap = 1000;
 
+validPreset = @(x) isa(x, 'PresetManager');
 
 % input validation scheme
 p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
@@ -27,9 +28,16 @@ addParameter(p, 'window', defaultWindow, @isnumeric);
 addParameter(p, 'overlap', defaultOverlap, @isnumeric);
 addRequired(p, 'regions', @iscell);
 addParameter(p, 'excludeEventsByState', [], @ischar);
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, regions, varargin{:});
-a = p.Results;
-
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;       % Needs work for this method - window, overlap, and regions not included in PresetManager yet
+end
+window = p.Results.window;
+overlap = p.Results.overlap;
+regions = p.Results.regions;
 useBpod = a.bpod;
 
 % set up filterbank and downsample signal
@@ -70,11 +78,11 @@ for c = 1:numChan
 end 
 
 
-[m,n] = ndgrid(obj.info.regions.(a.regions(1)),obj.info.regions.(a.regions(2)));
+[m,n] = ndgrid(obj.info.regions.(regions(1)),obj.info.regions.(regions(2)));
 Z = [m(:),n(:)];
     
 for combo=1:size(Z,1)
-      cxy=cellfun(@(x,y) mscohere(x,y,a.window,a.overlap,[a.freqLimits(1):a.freqLimits(2)],sf),lfp_all{Z(combo,1)},lfp_all{Z(combo,2)},'uni',0);
+      cxy=cellfun(@(x,y) mscohere(x, y, window, overlap, [a.freqLimits(1):a.freqLimits(2)],sf),lfp_all{Z(combo,1)},lfp_all{Z(combo,2)},'uni',0);
       cxy_band(combo)=mean(cellfun(@(x) mean(x),cxy,'uni',1));    
 end 
 

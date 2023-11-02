@@ -14,33 +14,35 @@ function weightsEx = trialize_mono_excitatory(obj, event, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'bpod' - a boolean that determines whether to use bpod or native timestamps
 %     'includeNeg' - a boolean that determines whether to include negative weights in the output (false to plot graph)
+validPreset = @(x) isa(x, 'PresetManager');
 
 p = parse_BehDat('event', 'trialType', 'outcome', 'edges', 'offset', 'bpod');
 addParameter(p, 'includeNeg', false, @islogical);
 addParameter(p, 'refRegion', [], @ischar)
 addParameter(p, 'targetRegion', [], @ischar)
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
-
-trialType = a.trialType;
-event = a.event;
-edges = a.edges;
-outcome = a.outcome;
-offset = a.offset;
+    
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+    
 useBpod = a.bpod;
-includeNeg = a.includeNeg;
+includeNeg = p.Results.includeNeg;
 baud = obj.info.baud;
-refRegion = a.refRegion;
-targetRegion = a.targetRegion;
+refRegion = p.Results.refRegion;
+targetRegion = p.Results.targetRegion;
 
 if useBpod
-    eventTimes = obj.find_bpod_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 else
-    eventTimes = obj.find_event(event, 'trialType', trialType, 'outcome', outcome, 'offset', offset);
+    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
 end
 
-edges = (edges * obj.info.baud) + eventTimes';
-edgeCells = num2cell(edges, 2);
+a.edges = (a.edges * obj.info.baud) + eventTimes';
+edgeCells = num2cell(a.edges, 2);
 exciteID = arrayfun(@(x) ~isempty(x.exciteOutput), obj.spikes);
 numSpikes = numel(obj.spikes);
 weightsEx = struct('weights', cell(numSpikes, 1), 'fr', cell(numSpikes, 1));

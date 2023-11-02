@@ -13,18 +13,24 @@ function stateFrames = find_state_frames(obj, stateName, varargin)
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
 defaultEOS = false;
+validPreset = @(x) isa(x, 'PresetManager');
 
 p = parse_BehDat('offset', 'outcome', 'trialType');
 addRequired(p, 'stateName', @ischar);
 addParameter(p, 'eos', defaultEOS, @islogical);
+addParameter(p, 'preset', [], validPreset)
 parse(p, stateName, varargin{:});
 
-a = p.Results;
-stateName = a.stateName;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+stateName = p.Results.stateName;
+alignToEnd = p.Results.eos;
 trialType = a.trialType;
 outcome = a.outcome;
 offset = a.offset;
-alignToEnd = a.eos;
 % stateEdge determines if frames are found from the end of a state
 % backwards by offset (2) or from the start of a state (1)
 if alignToEnd

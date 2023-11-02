@@ -17,32 +17,30 @@ function timestamps = find_bpod_event(obj, event, varargin)
 
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
+validPreset = @(x) isa(x, 'PresetManager');
 p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
 addParameter(p,'trialized', false, @islogical);
 addParameter(p, 'excludeEventsByState', [], validEvent);
 addParameter(p, 'withinState', [], validStates);
 addParameter(p, 'priorToState', [], validStates);
 addParameter(p, 'priorToEvent', [], validEvent);
+addParameter(p, 'preset', [], validPreset)
 parse(p, event, varargin{:});
-a = p.Results;
-event = a.event;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
 offset = round(a.offset * obj.info.baud);
-outcomeField = a.outcome;
-trialTypeField = a.trialType;
-trials = a.trials;
-trialized = a.trialized;
+trialized = p.Results.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 rawData = obj.bpod.RawData;
-excludeEventsByState = a.excludeEventsByState;
-withinState = a.withinState;
-priorToState = a.priorToState;
-priorToEvent = a.priorToEvent;
 
 % Find trial start times in acquisition system timestamps
 trialStartTimes = obj.find_event('Trial Start');
 % Identify trials with the event of interest
 fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
-trialHasEvent = cellfun(@(x) regexp(fields(x.Events), event), rawEvents, 'uni', 0);
+trialHasEvent = cellfun(@(x) regexp(fields(x.Events), a.event), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);
 fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
 eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
@@ -50,7 +48,7 @@ eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents,
 numTrialStart = numel(trialStartTimes);
 eventTrials = 1:numTrialStart;
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = obj.trial_intersection(eventTrials, outcomeField, trialTypeField, trials);
+goodTrials = obj.trial_intersection(eventTrials, a.outcome, a.trialType, a.trials);
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
@@ -58,9 +56,9 @@ rawData2Check = structfun(@(x) x(goodTrials), rawData, 'uni', 0);
 eventTimes2Check = eventTimes(goodTrials);
 goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
-if ~isempty(excludeEventsByState)
+if ~isempty(a.excludeEventsByState)
     % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) strcmp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
+    goodStates = cellfun(@(x) strcmp(fields(x.States), a.excludeEventsByState), rawEvents2Check, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
     excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
     % Find those state times that are nan (did not happen in the trial)
@@ -78,13 +76,13 @@ if ~isempty(excludeEventsByState)
     goodEventTimes = cellfun(@(x, y) x(~y), goodEventTimes, timesToRemove, 'uni', 0);
 end
 
-if ~isempty(priorToEvent)
+if ~isempty(a.priorToEvent)
     [sortedNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
     sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
     % Event times are now organized chronologically in sortedTimes, with a
     % corresponding cell array for the names of the events
     currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
-    priorToEventTimes = cellfun(@(x) regexp(x, priorToEvent), sortedNames, 'uni', 0);
+    priorToEventTimes = cellfun(@(x) regexp(x, a.priorToEvent), sortedNames, 'uni', 0);
     priorToEventTimes = cellfun(@(x) cellfun(@(y) ~isempty(y), x), priorToEventTimes, 'uni', 0);
     % Shift priorTo matrix one event to the left, eliminate the last event
     % due to circular shifting, and intersect logical matrices
@@ -99,7 +97,7 @@ if ~isempty(priorToEvent)
     goodEventTimes = cellfun(@(x, y) x(y), sortedTimes, timesToKeep, 'uni', 0);
 end
 
-if ~isempty(priorToState)    
+if ~isempty(a.priorToState)    
     stateNumbers = rawData2Check.OriginalStateData;
     stateNames = rawData2Check.OriginalStateNamesByNumber;
     sortedStateNames = cellfun(@(x, y) x(y), stateNames, stateNumbers, 'uni', 0);
@@ -111,7 +109,7 @@ if ~isempty(priorToState)
     [sortedCombinedTimes, sortedCombinedInds] = cellfun(@(x) sort(x), eventAndStateTimes, 'uni', 0);
     sortedEventAndStateNames = cellfun(@(x, y) x(y), eventAndStateNames, sortedCombinedInds, 'uni', 0);
     currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedCombinedTimes, goodEventTimes, 'uni', 0);
-    priorToStateTimes = cellfun(@(x) strcmp(x, priorToState), sortedEventAndStateNames, 'uni', 0);
+    priorToStateTimes = cellfun(@(x) strcmp(x, a.priorToState), sortedEventAndStateNames, 'uni', 0);
     % Shift priorTo matrix one event to the left, eliminate the last event
     % due to circular shifting, and intersect logical matrices
     eventPriorToState = cellfun(@(x) circshift(x, -1), priorToStateTimes, 'uni', 0);
@@ -134,18 +132,18 @@ averageOffset = averageOffset(goodTrials);
 eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffset, 'uni', 0);
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
-if ischar(withinState) || isstring(withinState)
-    stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials);
-elseif iscell(withinState)
-    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials), withinState, 'uni', 0);
+if ischar(a.withinState) || isstring(a.withinState)
+    stateTimes = obj.find_bpod_state(a.withinState, 'outcome', a.outcome, 'trialType', a.trialType, ...
+        'trials', a.trials);
+elseif iscell(a.withinState)
+    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', a.outcome, 'trialType', a.trialType, ...
+        'trials', a.trials), a.withinState, 'uni', 0);
     stateTimeCell = cat(1, stateTimeCell{:});
     eventIdx = num2cell(1:numel(eventTimesCorrected));
     stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
 end
 
-if ~isempty(withinState)
+if ~isempty(a.withinState)
     % This double cellfun operates on withinState which contains a cell for each trial,
     % with a cell for each state inside of that.
     goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);

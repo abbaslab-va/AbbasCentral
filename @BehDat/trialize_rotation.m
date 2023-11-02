@@ -15,6 +15,7 @@ function rotVec = trialize_rotation(obj, stateName, varargin)
 %     'outcome' - an outcome character array found in config.ini
 %     'trialType' - a trial type found in config.ini
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
+validPreset = @(x) isa(x, 'PresetManager');
 
 validVectorSize = @(x) all(size(x) == [1, 2]);
 defaultEdges = [0 1];          % seconds
@@ -23,15 +24,18 @@ p = parse_BehDat('offset', 'outcome', 'trialType');
 addRequired(p, 'stateName', @ischar);
 addParameter(p, 'edges', defaultEdges, validVectorSize);
 addParameter(p, 'eos', defaultEOS, @islogical);
+addParameter(p, 'preset', [], validPreset)
 parse(p, stateName, varargin{:});
 
-a = p.Results;
-stateName = a.stateName;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+
+stateName = p.Results.stateName;
 edges = floor(a.edges * obj.info.baud);
-trialType = a.trialType;
-outcome = a.outcome;
-offset = a.offset;
-alignToEnd = a.eos;
+alignToEnd = p.Results.eos;
 
 bodyAngles = get_body_angle(obj.coordinates);
 [firstFrame, firstTrial] = find_first_frame(obj.bpod);
@@ -40,7 +44,7 @@ framesBack = edges(1);
 framesForward = edges(2);
 
 frameIdx = obj.find_state_frames(stateName, 'offset', framesBack, ...
-    'outcome', outcome, 'trialType', trialType, 'eos', alignToEnd);
+    'outcome', a.outcome, 'trialType', a.trialType, 'eos', alignToEnd);
 % if alignToEnd || edges(1) < 0
 %     frameIdx = extract_field_frames_eof(obj.bpod, framesByTrial, framesBack, stateName);
 % else
@@ -60,7 +64,7 @@ if firstTrial == 1 && firstFrame < .1
     cameraOffset = framesEarly - firstDelayFrames;
 end
 
-frameIdx = frameIdx + floor(offset*obj.info.baud) + cameraOffset;
+frameIdx = frameIdx + floor(a.offset*obj.info.baud) + cameraOffset;
 frameIdx(frameIdx >= size(obj.coordinates, 1) - framesForward) = [];
 frameIdx = num2cell(frameIdx);
 rotVec = cellfun(@(x) bodyAngles(x:x+framesForward), frameIdx, 'uni', 0);

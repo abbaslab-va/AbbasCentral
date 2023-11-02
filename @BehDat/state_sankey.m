@@ -18,12 +18,20 @@ session = obj.bpod;
 defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input states
 defaultOutput = defaultInput;                                   % all output states
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
+validPreset = @(x) isa(x, 'PresetManager');
 
 p = parse_BehDat('outcome', 'trialType', 'trials', 'panel');
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
+addParameter(p, 'preset', [], validPreset)
 parse(p, varargin{:});
-a = p.Results;
+if isempty(p.Results.preset)
+    a = p.Results;
+else
+    a = p.Results.preset;
+end
+inputStates = p.Results.inputStates;
+outputStates = p.Results.outputStates;
 
 trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
 startState = cell(0);
@@ -34,7 +42,7 @@ for trial = trialsToInclude
     trialEvents = session.RawData.OriginalStateData{trial};
     numStates = numel(trialEvents);
     for state = 1:numStates-1
-        if any(strcmp(a.inputStates, stateNames{trialEvents(state)})) && any(strcmp(a.outputStates, stateNames{trialEvents(state+1)}))
+        if any(strcmp(inputStates, stateNames{trialEvents(state)})) && any(strcmp(outputStates, stateNames{trialEvents(state+1)}))
             startState{end+1} = stateNames{trialEvents(state)};
             endState{end+1} = stateNames{trialEvents(state+1)};
         end
