@@ -40,9 +40,9 @@ classdef PresetManager < handle
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'event', [], validEvent)
             addParameter(p, 'bpod', false, @islogical)
-            addParameter(p, 'trials', [], validTrials);
-            addParameter(p, 'trialType', [], validField);
-            addParameter(p, 'outcome', [], validField);
+            addParameter(p, 'trials', {}, validTrials);
+            addParameter(p, 'trialType', {}, validField);
+            addParameter(p, 'outcome', {}, validField);
             addParameter(p, 'offset', 0, @isnumeric);
             addParameter(p, 'edges', [-2 2], validVectorSize);
             addParameter(p, 'binWidth', 1, validNumber);

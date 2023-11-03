@@ -46,24 +46,30 @@ function h = raster(obj, event, neuron, varargin)
         if ~iscell(a.outcome)
             a.outcome = num2cell(a.outcome, [1 2]);
         end
-        spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
+        numTT = numel(a.trialType);
+        numTT(numTT == 0) = 1;
+        numOutcomes = numel(a.outcome);
+        numOutcomes(numOutcomes == 0) = 1;
+        spikeMat = cell(numTT * numOutcomes, 1);
         labelY = spikeMat;
-        lineY = zeros(numel(a.trialType) * numel(a.outcome), 1);
+        lineY = zeros(numTT * numOutcomes, 1);
         tickY = [lineY; lineY];
         ctr = 0;
         totalSz = 0;
-        for tt = 1:numel(a.trialType)
-            currentTT = a.trialType{tt};
-            if isempty(currentTT)
+        for tt = 1:numTT
+            if numel(a.trialType) == 0
+                currentTT = [];
                 currentTTString = 'All';
             else
+                currentTT = a.trialType{tt};
                 currentTTString = currentTT;
             end
-            for o = 1:numel(a.outcome)
-                currentOutcome = a.outcome{o};
-                if isempty(currentOutcome)
+            for o = 1:numOutcomes
+                if numel(a.outcome) == 0
+                    currentOutcome = [];
                     currentOutcomeString = 'All';
                 else
+                    currentOutcome = a.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
                 ctr = ctr + 1;
@@ -87,7 +93,7 @@ function h = raster(obj, event, neuron, varargin)
         lineY = -1;
         tickY = [0, size(spikeMat, 1)];
         labelY = {};
-    else
+    elseif ~isempty(lineY)
         lineY(end) = [];
     end
   

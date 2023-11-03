@@ -53,26 +53,38 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         if ~iscell(a.trials)
             a.trials = num2cell(a.trials, [1 2]);
         end
+        numTT = numel(a.trialType);
+        numTT(numTT == 0) = 1;
+        numOutcomes = numel(a.outcome);
+        numOutcomes(numOutcomes == 0) = 1;
+        numTrials = numel(a.trials);
+        numTrials(numTrials == 0) = 1;
         spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
         labelY = cell(size(spikeMat, 1) * 2, 1);
         ctr = 0;
-        for tt = 1:numel(a.trialType)
-            currentTT = a.trialType{tt};
-            if isempty(currentTT)
+        for tt = 1:numTT
+            if numel(a.trialType) == 0
+                currentTT = [];
                 currentTTString = 'All';
             else
+                currentTT = a.trialType{tt};
                 currentTTString = currentTT;
             end
-            for o = 1:numel(a.outcome)
-                currentOutcome = a.outcome{o};
-                if isempty(currentOutcome)
+            for o = 1:numOutcomes
+                if numel(a.outcome) == 0
+                    currentOutcome = [];
                     currentOutcomeString = 'All';
                 else
+                    currentOutcome = a.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
-                for tr = 1:numel(a.trials)
+                for tr = 1:numTrials
                     ctr = ctr + 1;
-                    currentTrials = a.trials{tr};
+                    if isempty(a.trials)
+                        currentTrials = [];
+                    else
+                        currentTrials = a.trials{tr};
+                    end
                     spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', currentTrials, ...
                     'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
                     'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
