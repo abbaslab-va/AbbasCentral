@@ -1,10 +1,10 @@
-function h = raster(obj, event, neuron, varargin)
+function h = raster(obj, neuron, varargin)
 
     % INPUT:
-    %     event - a string of a state named in the config file
     %     neuron - index of neuron from spike field of object
     % 
     % optional name/value pairs:
+    %     'event' - a string of a state named in the config file
     %     'edges' - 1x2 vector distance from event on either side in seconds
     %     'binWidth' - a number that defines the bin size in ms
     %     'trialType' - a trial type found in config.ini
@@ -13,42 +13,26 @@ function h = raster(obj, event, neuron, varargin)
     %     'panel' - an optional handle to a panel (in the AbbasCentral app)
     %     'bpod' - a boolean that determines whether to use bpod or native timestamps
     
-    validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-    validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
-    validPreset = @(x) isa(x, 'PresetManager');
 
-    p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
-    addParameter(p, 'withinState', [], validStates)
-    addParameter(p, 'priorToState', [], validStates)
-    addParameter(p, 'excludeEventsByState', [], validStates)
-    addParameter(p, 'priorToEvent', [], validEvent)
-    addParameter(p, 'preset', [], validPreset)
-    parse(p, event, neuron, varargin{:});
+    presets = PresetManager(varargin{:});
     
-    if isempty(p.Results.preset)
-        a = p.Results;
-    else
-        a = p.Results.preset;
-    end
     
     % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
-    if (isempty(a.trialType) && isempty(a.outcome)) || (~iscell(a.trialType) && ~iscell(a.outcome))
-        spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
-            'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
-            'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+    if (isempty(presets.trialType) && isempty(presets.outcome)) || (~iscell(presets.trialType) && ~iscell(presets.outcome))
+        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
     else
         % parse through all inputted trialTypes and outcomes to produce a
         % stacked raster plot of all combos
-        if ~iscell(a.trialType)
-            a.trialType = num2cell(a.trialType, [1 2]);
+        if ~iscell(presets.trialType)
+            presets.trialType = num2cell(presets.trialType, [1 2]);
         end
-        if ~iscell(a.outcome)
-            a.outcome = num2cell(a.outcome, [1 2]);
+        if ~iscell(presets.outcome)
+            presets.outcome = num2cell(presets.outcome, [1 2]);
         end
-        numTT = numel(a.trialType);
+        numTT = numel(presets.trialType);
         numTT(numTT == 0) = 1;
-        numOutcomes = numel(a.outcome);
+        numOutcomes = numel(presets.outcome);
         numOutcomes(numOutcomes == 0) = 1;
         spikeMat = cell(numTT * numOutcomes, 1);
         labelY = spikeMat;
@@ -57,25 +41,25 @@ function h = raster(obj, event, neuron, varargin)
         ctr = 0;
         totalSz = 0;
         for tt = 1:numTT
-            if numel(a.trialType) == 0
+            if numel(presets.trialType) == 0
                 currentTT = [];
                 currentTTString = 'All';
             else
-                currentTT = a.trialType{tt};
+                currentTT = presets.trialType{tt};
                 currentTTString = currentTT;
             end
             for o = 1:numOutcomes
-                if numel(a.outcome) == 0
+                if numel(presets.outcome) == 0
                     currentOutcome = [];
                     currentOutcomeString = 'All';
                 else
-                    currentOutcome = a.outcome{o};
+                    currentOutcome = presets.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
                 ctr = ctr + 1;
-                spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
-                'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
-                'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+                spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', presets.trials, ...
+                'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
+                'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeEventsByState', presets.excludeEventsByState));
                 numRows = size(spikeMat{ctr}, 1);
                 lineY(ctr) = numRows + totalSz;
                 totalSz = lineY(ctr);
@@ -98,14 +82,14 @@ function h = raster(obj, event, neuron, varargin)
     end
   
     
-    if ~isempty(a.panel)
+    if ~isempty(presets.panel)
         h = figure('Visible', 'off');
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
         % this function included in packages directory of Abbas-WM
         % Jeffrey Chiou (2023). Flexible and Fast Spike Raster Plotting 
         % (https://www.mathworks.com/matlabcentral/fileexchange/45671-flexible-and-fast-spike-raster-plotting), 
         % MATLAB Central File Exchange. Retrieved February 2, 2023. 
-        label_raster(obj, h, a, true);
+        label_raster(obj, neuron, h, presets, true);
         if ~isempty(lineY) && all(diff(tickY))
             yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
@@ -113,12 +97,12 @@ function h = raster(obj, event, neuron, varargin)
             ytickangle(45)
         end
         set(gca, 'color', 'w')
-        copyobj(h.Children, a.panel)
+        copyobj(h.Children, presets.panel)
         close(h)
     else
         h = figure;
         plotSpikeRaster(spikeMat, 'PlotType', 'vertline', 'VertSpikeHeight', .8);
-        h = label_raster(obj, h, a, false);
+        h = label_raster(obj, neuron, h, presets, false);
         if ~isempty(lineY)
             yline(lineY + .5, 'LineWidth', 1.5, 'Color', 'k')
             yticks(tickY + .5)
@@ -129,12 +113,12 @@ function h = raster(obj, event, neuron, varargin)
     end
 end
 
-function figH = label_raster(sessObj, figH, params, panel)
+function figH = label_raster(sessObj, neuron, figH, params, panel)
     if panel
         fontWeight = 16;
     else
         fontWeight = 24;
-        title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+        title({sessObj.info.name, ['Neuron ' num2str(neuron)]})
     end
     xlabel('Time From Event (sec)', 'Color', 'k')
     ylabel('Events/Trials', 'Color', 'k')

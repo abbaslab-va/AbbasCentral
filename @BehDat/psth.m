@@ -1,4 +1,4 @@
-function spikesSmooth=psth(obj, event, neuron, varargin)
+function spikesSmooth=psth(obj, neuron, varargin)
     % OUTPUT:
     %     smoothSpikes- a 1xT vector of smoothed spike times
     % INPUT:
@@ -13,81 +13,63 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     %     'offset' - a number that defines the offset from the alignment you wish to center around.
     %     'panel' - an optional handle to a panel (in the AbbasCentral app)
     %     'bpod' - a boolean that determines whether to use bpod or native timestamps
-    
-    validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-    validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
-    validPreset = @(x) isa(x, 'PresetManager');
-    p = parse_BehDat('event', 'neuron', 'edges', 'binWidth', 'trialType', 'outcome', 'trials', 'offset', 'panel', 'bpod');
-    addParameter(p, 'withinState', [], validStates)
-    addParameter(p, 'priorToState', [], validStates)
-    addParameter(p, 'excludeEventsByState', [], validStates)
-    addParameter(p, 'priorToEvent', [], validEvent)
-    addParameter(p, 'plotSEM', true, @islogical)
-    addParameter(p, 'preset', [], validPreset)
-    parse(p, event, neuron, varargin{:});
-    
-    if isempty(p.Results.preset)
-        a = p.Results;
-    else
-        a = p.Results.preset;
-    end
-    plotSEM = p.Results.plotSEM;
+        
+    presets = PresetManager(varargin{:});
+    plotSEM = true;     % Removed this as param because all params now have to pass to PresetManager, and if the varargin is not a valid parameter, it returns an error. Not sure how to deal with this yet
     cMap = brewermap([], 'paired');
         % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
-    if (isempty(a.trialType) && isempty(a.outcome) && isempty(a.trials)) || (~iscell(a.trialType) && ~iscell(a.outcome) && ~iscell(a.trials))
-        spikeMat = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', a.trials, ...
-            'outcome', a.outcome, 'trialType', a.trialType, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
-            'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+    if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.trials)) || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.trials))
+        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
         labelY{1} = "";
         labelY{2} = "All";
     else
         % parse through all inputted trialTypes and outcomes to produce a
         % stacked raster plot of all combos
-        if ~iscell(a.trialType)
-            a.trialType = num2cell(a.trialType, [1 2]);
+        if ~iscell(presets.trialType)
+            presets.trialType = num2cell(presets.trialType, [1 2]);
         end
-        if ~iscell(a.outcome)
-            a.outcome = num2cell(a.outcome, [1 2]);
+        if ~iscell(presets.outcome)
+            presets.outcome = num2cell(presets.outcome, [1 2]);
         end
-        if ~iscell(a.trials)
-            a.trials = num2cell(a.trials, [1 2]);
+        if ~iscell(presets.trials)
+            presets.trials = num2cell(presets.trials, [1 2]);
         end
-        numTT = numel(a.trialType);
+        numTT = numel(presets.trialType);
         numTT(numTT == 0) = 1;
-        numOutcomes = numel(a.outcome);
+        numOutcomes = numel(presets.outcome);
         numOutcomes(numOutcomes == 0) = 1;
-        numTrials = numel(a.trials);
+        numTrials = numel(presets.trials);
         numTrials(numTrials == 0) = 1;
-        spikeMat = cell(numel(a.trialType) * numel(a.outcome), 1);
+        spikeMat = cell(numTT * numOutcomes, 1);
         labelY = cell(size(spikeMat, 1) * 2, 1);
         ctr = 0;
         for tt = 1:numTT
-            if numel(a.trialType) == 0
+            if numel(presets.trialType) == 0
                 currentTT = [];
                 currentTTString = 'All';
             else
-                currentTT = a.trialType{tt};
+                currentTT = presets.trialType{tt};
                 currentTTString = currentTT;
             end
             for o = 1:numOutcomes
-                if numel(a.outcome) == 0
+                if numel(presets.outcome) == 0
                     currentOutcome = [];
                     currentOutcomeString = 'All';
                 else
-                    currentOutcome = a.outcome{o};
+                    currentOutcome = presets.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
                 for tr = 1:numTrials
                     ctr = ctr + 1;
-                    if isempty(a.trials)
+                    if isempty(presets.trials)
                         currentTrials = [];
                     else
-                        currentTrials = a.trials{tr};
+                        currentTrials = presets.trials{tr};
                     end
-                    spikeMat{ctr} = boolean(obj.bin_neuron(a.event, a.neuron, 'edges', a.edges, 'binWidth', a.binWidth, 'trials', currentTrials, ...
-                    'trialType', currentTT, 'outcome', currentOutcome, 'offset', a.offset, 'bpod', a.bpod, 'priorToEvent', a.priorToEvent, ...
-                    'priorToState', a.priorToState, 'withinState', a.withinState, 'excludeEventsByState', a.excludeEventsByState));
+                    spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
+                    'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
+                    'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeEventsByState', presets.excludeEventsByState));
                     labelY{ctr*2 - 1} = "";
                     labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString);
                 end
@@ -96,26 +78,26 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     end
     
     if ~iscell(spikeMat)
-        spikesSmooth = smoothdata(spikeMat, 2, 'Gaussian', 50)*(1000/a.binWidth);
+        spikesSmooth = smoothdata(spikeMat, 2, 'Gaussian', 50)*(1000/presets.binWidth);
         spikesSmooth = num2cell(spikesSmooth, [1 2]);
         spikesMean = mean(spikesSmooth{1}, 1);
         spikesMean = num2cell(spikesMean, [1 2]);
         spikesSEM = std(spikesSmooth{1}, 1)/sqrt(size(spikesSmooth{1}, 1));
         spikesSEM = num2cell(spikesSEM, [1 2]);
     else
-        spikesSmooth = cellfun(@(x) smoothdata(x, 2, 'Gaussian', 50)*(1000/a.binWidth), spikeMat, 'uni', 0);
+        spikesSmooth = cellfun(@(x) smoothdata(x, 2, 'Gaussian', 50)*(1000/presets.binWidth), spikeMat, 'uni', 0);
         spikesMean = cellfun(@(x) mean(x, 1), spikesSmooth, 'uni', 0);
         spikesSEM = cellfun(@(x) std(x, 1)/sqrt(size(x, 1)), spikesSmooth, 'uni', 0);
     end
     
-    if ~isempty(a.panel)
+    if ~isempty(presets.panel)
         h = figure('Visible', 'off');
         hold on
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
         end
-        label_psth(obj, h, a, true);
+        label_psth(obj, h, neuron, presets, true);
         if plotSEM
             legend(labelY)
         else
@@ -123,7 +105,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
         end
 %         plot(spikesSmooth)    
         set(gca, 'color', 'w')
-        copyobj(h.Children, a.panel)
+        copyobj(h.Children, presets.panel)
         close(h)
     else
         h = figure;
@@ -132,7 +114,7 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
             currentColor = cMap(2*i - 1:2*i, :);
             plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
         end
-        label_psth(obj, h, a, false);
+        label_psth(obj, h, neuron, presets, false);
         if plotSEM
             legend(labelY)
         else
@@ -142,12 +124,12 @@ function spikesSmooth=psth(obj, event, neuron, varargin)
     end
 end
 
-function label_psth(sessObj, figH, params, panel)
+function label_psth(sessObj, figH, neuron, params, panel)
     if panel
         fontWeight = 16;
     else
         fontWeight = 24;
-        title({sessObj.info.name, ['Neuron ' num2str(params.neuron)]})
+        title({sessObj.info.name, ['Neuron ' num2str(neuron)]})
     end
     xlabel('Time From Event (sec)', 'Color', 'k')
     ylabel('Firing Rate (hz)', 'Color', 'k')

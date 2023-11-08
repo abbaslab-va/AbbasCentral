@@ -1,4 +1,4 @@
-function [timestamps, bpodTrials] = find_event(obj, event, varargin)
+function [timestamps, bpodTrials] = find_event(obj, varargin)
 
 % OUTPUT:
 %     timestamps - a 1xE vector of timestamps from the desired event
@@ -11,35 +11,16 @@ function [timestamps, bpodTrials] = find_event(obj, event, varargin)
 %     'trials' - a vector specifying which trials to include
 %     'withinTimes' - a 1x2 vector specifying times to select events within (seconds)
 
-validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validTimes = @(x) all(size(x) == [1, 2]);
-validPreset = @(x) isa(x, 'PresetManager');
+presets = PresetManager(varargin{:});
 
-p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
-addParameter(p, 'trialized', false, @islogical);
-% Need to implement withinState as param for app - don't necesessarily need
-% to flesh it out here
-addParameter(p, 'withinState', [], validStates)
-addParameter(p, 'excludeEventsByState', [], validStates)
-addParameter(p, 'priorToState', [], validStates)
-addParameter(p, 'priorToEvent', [], validStates)
-addParameter(p, 'withinTimes', [], validTimes)
-addParameter(p, 'preset', [], validPreset)
-parse(p, event, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
-offset = round(a.offset * obj.info.baud);
-trialized = p.Results.trialized;
+offset = round(presets.offset * obj.info.baud);
 % withinTimes = p.Results.withinTimes;
 
-a.event(a.event == ' ') = '_';
+presets.event(presets.event == ' ') = '_';
 try
-    timestamp = obj.timestamps.keys.(a.event);
+    timestamp = obj.timestamps.keys.(presets.event);
 catch
-    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', a.event));
+    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', presets.event));
     throw(mv)
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
@@ -48,7 +29,7 @@ eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples
 eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 % trialInBounds = trialIncluded;
 
-bpodTrials = obj.trial_intersection(eventTrials, a.outcome, a.trialType, a.trials);
+bpodTrials = obj.trial_intersection(eventTrials, presets.outcome, presets.trialType, presets.trials);
 % 
 % if ~isempty(withinTimes)
 %     edgesInSamples = withinTimes * obj.info.baud;
@@ -59,7 +40,7 @@ bpodTrials = obj.trial_intersection(eventTrials, a.outcome, a.trialType, a.trial
 % bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded & trialInBounds;
 timestamps = timestamps(bpodTrials);
 
-if trialized  
+if presets.trialized  
     eventTrial=discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
     temp=timestamps;
     trialNo = unique(eventTrial);

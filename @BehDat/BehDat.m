@@ -37,7 +37,7 @@ classdef BehDat < handle
 
         event_sankey(obj, varargin)
 
-        timestamps = find_bpod_event(obj, event, varargin)
+        timestamps = find_bpod_event(obj, varargin)
         
         stateEdges = find_bpod_state(obj, stateName, varargin)
 
@@ -53,17 +53,17 @@ classdef BehDat < handle
 
         binnedSpikes = bin_spikes(obj, eventEdges, binSize)
 
-        binnedTrials = bin_neuron(obj, event, neuron, varargin)
+        binnedTrials = bin_neuron(obj, neuron, varargin)
 
         binnedNeurons = bin_all_neurons(obj, event, varargin)
 
-        h = raster(obj, event, neuron, varargin)
+        h = raster(obj, neuron, varargin)
 
-        smoothedSpikes = psth(obj, event, neuron, varargin)
+        smoothedSpikes = psth(obj, neuron, varargin)
 
         h = mean_population_response(obj, event, varargin)
         
-        [zMean, zCells, trialNum] = z_score(obj, event, varargin)
+        [zMean, zCells, trialNum] = z_score(obj, varargin)
 
         [corrScore, trialTypes] = xcorr(obj, event, edges)
 
