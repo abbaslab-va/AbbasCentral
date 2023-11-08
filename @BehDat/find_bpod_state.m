@@ -10,18 +10,9 @@ function stateEdges = find_bpod_state(obj, stateName, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'trials' - a vector of trial numbers to include
 
+presets = PresetManager(varargin{:});
 
-p = parse_BehDat('outcome', 'trialType', 'trials');
-addRequired(p, 'stateName', @ischar);
-addParameter(p, 'preset', [], validPreset)
 
-parse(p, stateName, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
-stateName = p.Results.stateName;
 rawEvents = obj.bpod.RawEvents.Trial;
 numTrialStart = numel(obj.timestamps.trialStart);
 eventTrials = 1:numTrialStart;
@@ -31,20 +22,20 @@ eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
 correctTrialType = true(1, obj.bpod.nTrials);
 correctOutcome = true(1, obj.bpod.nTrials);
 trialIncluded = true(1, obj.bpod.nTrials);
-if ~isempty(a.trialType)
-    a.trialType = regexprep(a.trialType, " ", "_");
-    ttToIndex = obj.info.trialTypes.(a.trialType);
+if ~isempty(presets.trialType)
+    presets.trialType = regexprep(presets.trialType, " ", "_");
+    ttToIndex = obj.info.trialTypes.(presets.trialType);
     correctTrialType = ismember(eventTrialTypes, ttToIndex);
 end
 
-if ~isempty(a.outcome)
-    a.outcome = regexprep(a.outcome, " ", "_");
-    outcomeToIndex = obj.info.outcomes.(a.outcome);
+if ~isempty(presets.outcome)
+    presets.outcome = regexprep(presets.outcome, " ", "_");
+    outcomeToIndex = obj.info.outcomes.(presets.outcome);
     correctOutcome = ismember(eventOutcomes, outcomeToIndex);
 end
 
-if ~isempty(a.trials)
-    trialIncluded = ismember(eventTrials, a.trials); 
+if ~isempty(presets.trials)
+    trialIncluded = ismember(eventTrials, presets.trials); 
 end
 
 goodTrials = correctTrialType & correctOutcome & trialIncluded;

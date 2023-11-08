@@ -22,7 +22,7 @@ rawEvents = obj.bpod.RawEvents.Trial;
 rawData = obj.bpod.RawData;
 
 % Find trial start times in acquisition system timestamps
-trialStartTimes = obj.find_event('Trial Start');
+trialStartTimes = obj.find_event('event', 'Trial Start');
 % Identify trials with the event of interest
 fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) regexp(fields(x.Events), presets.event), rawEvents, 'uni', 0);
@@ -118,11 +118,9 @@ eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffs
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 if ischar(presets.withinState) || isstring(presets.withinState)
-    stateTimes = obj.find_bpod_state(presets.withinState, 'outcome', presets.outcome, 'trialType', presets.trialType, ...
-        'trials', presets.trials);
+    stateTimes = obj.find_bpod_state(presets.withinState, 'preset', presets);
 elseif iscell(presets.withinState)
-    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', presets.outcome, 'trialType', presets.trialType, ...
-        'trials', presets.trials), presets.withinState, 'uni', 0);
+    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'preset', presets), presets.withinState, 'uni', 0);
     stateTimeCell = cat(1, stateTimeCell{:});
     eventIdx = num2cell(1:numel(eventTimesCorrected));
     stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);

@@ -47,7 +47,7 @@ classdef BehDat < handle
 
     %% Spike methods
     
-        [timestamps, bpodTrials] = find_event(obj, event, varargin)
+        [timestamps, bpodTrials] = find_event(obj, varargin)
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 
@@ -61,7 +61,7 @@ classdef BehDat < handle
 
         smoothedSpikes = psth(obj, neuron, varargin)
 
-        h = mean_population_response(obj, event, varargin)
+        h = mean_population_response(obj, varargin)
         
         [zMean, zCells, trialNum] = z_score(obj, varargin)
 
