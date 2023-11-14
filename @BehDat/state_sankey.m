@@ -14,26 +14,19 @@ function state_sankey(obj, varargin)
 %     'outputStates' - a string or cell array of strings of desired output
 %     states to visualize
 
+presets = PresetManager(varargin{:});
 session = obj.bpod;
 defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input states
 defaultOutput = defaultInput;                                   % all output states
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validPreset = @(x) isa(x, 'PresetManager');
-
-p = parse_BehDat('outcome', 'trialType', 'trials', 'panel');
+p = inputParser;
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
-addParameter(p, 'preset', [], validPreset)
 parse(p, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
 inputStates = p.Results.inputStates;
 outputStates = p.Results.outputStates;
 
-trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
+trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets.outcome, presets.trialType, presets.trials));
 startState = cell(0);
 endState = cell(0);
 
@@ -61,13 +54,15 @@ options.text_color = [0 0 0];      % text color for the percentages
 options.show_layer_labels = true;  % show layer names under the chart
 options.show_cat_labels = true;   % show categories over the blocks.
 options.show_legend = false;    
-
-if isempty(a.panel)
+if isempty(t)
+    return
+end
+if isempty(presets.panel)
     plotSankeyFlowChart(t, options);
 else
     h = plotSankeyFlowChart(t, options);
     h.Visible = 'off';
-    copyobj(h.Children, a.panel)
+    copyobj(h.Children, presets.panel)
     close(h)
 end
 

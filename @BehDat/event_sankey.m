@@ -14,31 +14,23 @@ function event_sankey(obj, varargin)
 %     'outputStates' - a string or cell array of strings of desired output
 %     states to visualize
 
+presets = PresetManager(varargin{:});
 session = obj.bpod;
 defaultInput = {'Port1In', 'Port1Out', 'Port2In', 'Port2Out', 'Port3In', 'Port3Out',...
     'Port4In', 'Port4Out', 'Port5In', 'Port5Out', 'Port6In', 'Port6Out',...
     'Port7In', 'Port7Out', 'Port8In', 'Port8Out'};              % all input events
 defaultOutput = defaultInput;                                   % all output events
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validState = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validPreset = @(x) isa(x, 'PresetManager');
-
-p = parse_BehDat('outcome', 'trialType', 'trials');
+p = inputParser;
 addParameter(p, 'inputEvents', defaultInput, validField);
 addParameter(p, 'outputEvents', defaultOutput, validField);
-addParameter(p, 'inputWithinState', [], validState);
-addParameter(p, 'preset', [], validPreset)
+addParameter(p, 'inputWithinState', [], validField);
 parse(p, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
 inputEvents = p.Results.inputEvents;
 outputEvents = p.Results.outputEvents;
 inputWithinState = p.Results.inputWithinState;
 
-trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, a.outcome, a.trialType, a.trials));
+trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets.outcome, presets.trialType, presets.trials));
 
 rawEvents2Check = obj.bpod.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
