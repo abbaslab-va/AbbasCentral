@@ -13,6 +13,7 @@ classdef BehDat < handle
         timestamps
         bpod
         coordinates
+        LabGym
     end
 
     methods
@@ -101,6 +102,8 @@ classdef BehDat < handle
         stateFrames = find_state_frames(obj, stateName, varargin)
         
         rotVec = trialize_rotation(obj, stateName, varargin)
+
+        figH = plot_LabGym_behaviors(obj, varargin)
         
         %[f, h] = rotation_surf(rotVec, panel)
 
