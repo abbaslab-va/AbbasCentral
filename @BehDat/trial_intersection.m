@@ -64,7 +64,7 @@ end
 if isempty(trials)
     trialIncluded = ones(1, numEvents);
 else
-    trialIncluded = ismember(trials, numEvents);
+    trialIncluded = ismember(trials, 1:numEvents);
 end
 
 goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;

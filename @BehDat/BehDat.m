@@ -76,7 +76,7 @@ classdef BehDat < handle
 
         G = plot_digraph(obj, trialized, panel)
     
-        weightsEx = trialize_mono_excitatory(obj, trialType, alignment, edges, varargin)
+        weightsEx = trialize_mono_excitatory(obj, varargin)
         
         weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)
 

@@ -20,6 +20,7 @@ defaultInput = session.RawData.OriginalStateNamesByNumber{1};   % all input stat
 defaultOutput = defaultInput;                                   % all output states
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p, 'inputStates', defaultInput, validField);
 addParameter(p, 'outputStates', defaultOutput, validField);
 parse(p, varargin{:});
