@@ -103,6 +103,8 @@ classdef BehDat < handle
         
         rotVec = trialize_rotation(obj, stateName, varargin)
 
+        combinedOutput = combine_LabGym_outputs(obj, metric)
+
         figH = plot_LabGym_behaviors(obj, varargin)
         
         %[f, h] = rotation_surf(rotVec, panel)
