@@ -21,13 +21,14 @@ for trialno = 1:numel(EventCells)
             case 0      %Equal number
                 BNCwidth = abs(trialEvents.BNC1High - trialEvents.BNC1Low);
             case -1     %More low timestamps
-                BNCwidth = trialEvents.BNC1High-trialEvents.BNC1Low(1:end-1);
+                % BNCwidth = trialEvents.BNC1High-trialEvents.BNC1Low(1:end-1);
+                BNCwidth = trialEvents.BNC1Low(2:end) - trialEvents.BNC1High;
         end
         if any(BNCwidth > 0.0165) % 50% duty cycle width indicates start of video recording, .0166 seconds at 30 fps
             firstFrame = find(BNCwidth > .0165, 1);
             FrameTime = trialEvents.BNC1High(firstFrame);
             FrameTrial = trialno;
-            break
+            return
         end
     end
 end

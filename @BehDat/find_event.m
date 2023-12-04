@@ -25,7 +25,7 @@ catch
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
 
-eventTrials = discretize(timestamps, [obj.timestamps.trialStart obj.info.samples]);
+eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
 eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 % trialInBounds = trialIncluded;
 

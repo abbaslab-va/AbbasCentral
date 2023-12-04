@@ -39,10 +39,11 @@ for trialno = firstTrial:numel(EventCells)
             case 0      %Equal number
                 BNCwidth = abs(trialEvents.BNC1High - trialEvents.BNC1Low);
             case -1     %More low timestamps
-                BNCwidth = trialEvents.BNC1High-trialEvents.BNC1Low(1:end-1);
+                % BNCwidth = trialEvents.BNC1High-trialEvents.BNC1Low(1:end-1);
+                BNCwidth = trialEvents.BNC1Low(2:end) - trialEvents.BNC1High;
         end
-        if any(BNCwidth > 0.0160) % 50% duty cycle width indicates start of video recording, .0166 seconds at 30 fps
-            trialFrames = find(BNCwidth > .0160);
+        if any(BNCwidth > 0.0165) % 50% duty cycle width indicates start of video recording, .0166 seconds at 30 fps
+            trialFrames = find(BNCwidth > .0165);
             FrameTimes = trialEvents.BNC1High(trialFrames);
             alignedTrials{1, trialno} = FrameTimes;
             alignedTrials{2, trialno} = frameNo:frameNo + numel(FrameTimes) - 1;
