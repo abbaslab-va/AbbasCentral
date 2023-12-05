@@ -17,6 +17,10 @@ else
     eventTimes = obj.find_event('preset', presets)';
 end
 
+if isempty(eventTimes)
+    return
+end
+
 if ~isfield(obj.info, 'frameRate')
     frameRate = 30;
 else
@@ -37,7 +41,7 @@ if ~isempty(presets.panel)
     copyobj(h.Children, presets.panel)
     close(h)
 else
-    h = figure;
+    figure;
     hold on
     cellfun(@(x) scatter(x(:, 1), x(:, 2), [], colors, 'filled'), coordCell)
     set(gca, 'color', 'w')

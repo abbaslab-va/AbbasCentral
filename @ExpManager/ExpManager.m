@@ -22,6 +22,22 @@ classdef ExpManager < handle
             sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), ...
                 obj.sessions);
         end
+
+        function get_size(obj) 
+            props = properties(obj); 
+           totSize = 0; 
+           
+           for ii=1:length(props) 
+              currentProperty = getfield(obj, char(props(ii))); 
+              s = whos('currentProperty'); 
+              totSize = totSize + s.bytes; 
+              for sess = 1:numel(obj.sessions)
+                  totSize = totSize + obj.sessions(sess).get_size;
+              end
+           end
+          
+           fprintf(1, '%d bytes\n', totSize); 
+        end
             
 
         %% Bpod methods

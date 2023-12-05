@@ -27,6 +27,17 @@ classdef BehDat < handle
                 obj.coordinates = c;
             end
         end
+        
+
+        function totSize = get_size(obj) 
+            props = properties(obj); 
+            totSize = 0; 
+            for ii=1:length(props) 
+                currentProperty = getfield(obj, char(props(ii))); 
+                s = whos('currentProperty'); 
+                totSize = totSize + s.bytes; 
+            end
+        end
 
     %% Bpod methods
         
