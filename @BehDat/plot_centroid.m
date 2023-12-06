@@ -21,13 +21,13 @@ if isempty(eventTimes)
     return
 end
 
-if ~isfield(obj.info, 'frameRate')
-    frameRate = 30;
-else
+if isfield(obj.info, 'frameRate')
     frameRate = obj.info.frameRate;
+else
+    frameRate = 30;
 end
 
-edges = presets.edges * frameRate;
+edges = round(presets.edges * frameRate);
 colors = parula(edges(2) - edges(1) + 1);
 eventCells = num2cell(edges + eventTimes, 2);
 goodEdges = cellfun(@(x) all(x>0), eventCells);

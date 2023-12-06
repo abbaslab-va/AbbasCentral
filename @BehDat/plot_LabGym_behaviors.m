@@ -2,10 +2,22 @@ function figH = plot_LabGym_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
 
-keypoints = obj.find_event('preset', presets);
-duration = [-90 90];
+if presets.bpod
+    keypoints = obj.find_bpod_event('preset', presets);
+else
+    keypoints = obj.find_event('preset', presets);
+end
+
+if isfield(obj.info, 'frameRate')
+    frameRate = obj.info.frameRate;
+else
+    frameRate = 30;
+end
+
+edges = round(presets.edges * frameRate);
 numFrames = numel(obj.LabGym);
-frameEdges = num2cell(duration + keypoints', 2);
+
+frameEdges = num2cell(edges + keypoints', 2);
 inBounds = cellfun(@(x) x(1) > 0 && x(2) <= numFrames, frameEdges);
 goodFrames = frameEdges(inBounds);
 trializedBehavior = cellfun(@(x) obj.LabGym(x(1):x(2)), goodFrames, 'uni', 0);
