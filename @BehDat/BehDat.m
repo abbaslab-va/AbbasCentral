@@ -43,7 +43,7 @@ classdef BehDat < handle
         
         [numTT, numCorrect] = outcomes(obj, val)
 
-        plot_performance(obj, outcome, panel)
+        figH = plot_performance(obj, outcome, varargin)
 
         state_sankey(obj, varargin)
 

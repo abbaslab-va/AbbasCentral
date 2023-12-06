@@ -30,7 +30,7 @@ end
 edges = round(presets.edges * frameRate);
 colors = parula(edges(2) - edges(1) + 1);
 eventCells = num2cell(edges + eventTimes, 2);
-goodEdges = cellfun(@(x) all(x>0), eventCells);
+goodEdges = cellfun(@(x) all(x>0) & all(x <= obj.info.samples), eventCells);
 eventCells = eventCells(goodEdges);
     
 coordCell = cellfun(@(x) obj.coordinates(x(1):x(2), :), eventCells, 'uni', 0);

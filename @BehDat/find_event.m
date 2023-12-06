@@ -16,9 +16,10 @@ presets = PresetManager(varargin{:});
 offset = round(presets.offset * obj.info.baud);
 % withinTimes = p.Results.withinTimes;
 
-presets.event(presets.event == ' ') = '_';
+eventField = find_closest_match(presets.event, fields(obj.timestamps.keys));
+% presets.event(presets.event == ' ') = '_';
 try
-    timestamp = obj.timestamps.keys.(presets.event);
+    timestamp = obj.timestamps.keys.(eventField);
 catch
     mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', presets.event));
     throw(mv)
