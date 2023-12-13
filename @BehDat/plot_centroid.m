@@ -39,12 +39,12 @@ if ~isempty(presets.panel)
     h = figure('Visible', 'off');
     hold on
     cellfun(@(x) scatter(x(:, 1), x(:, 2), [], colors, 'filled'), coordCell)
-    set(gca, 'color', 'w')
+    set(gca, 'color', 'w', 'ydir', 'reverse')
     copyobj(h.Children, presets.panel)
     close(h)
 else
     figure;
     hold on
     cellfun(@(x) scatter(x(:, 1), x(:, 2), [], colors, 'filled'), coordCell)
-    set(gca, 'color', 'w')
+    set(gca, 'color', 'w', 'ydir', 'reverse')
 end

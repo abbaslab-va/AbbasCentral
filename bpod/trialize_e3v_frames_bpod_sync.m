@@ -35,8 +35,8 @@ for trialNo = 1:numTrials
             timeLost = 0;
         end
         framesLost = timeLost*30;
-        % frameNo = frameNo + ceil(framesLost);    %could be responsible for drift
-        frameNo = frameNo + round(framesLost);
+        frameNo = frameNo + ceil(framesLost);    %could be responsible for drift
+        % frameNo = frameNo + round(framesLost);
     end
     if trialInVideo
         trialFrames = find(BNCwidth > .0165);
