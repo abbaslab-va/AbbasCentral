@@ -161,7 +161,7 @@ eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrect
 allTrials=eventTimesCorrected;
 %% 
 % find if chirp occured withing 1 sec of port in  
-stateTimes = obj.find_bpod_state('ChirpPlay','preset',presets)
+stateTimes = obj.find_bpod_state('ChirpPlay','preset',presets);
 
 stateTimes=cellfun(@(x) cellfun(@(y) [y(1)-1*30000 y(2)],x,'uni',0), stateTimes,'uni',0);
 
