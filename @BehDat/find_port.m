@@ -1,4 +1,4 @@
-function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adjust,chirpOccur] = find_port(obj, event, varargin)
+function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adjust,chirpOccur] = find_port(obj,varargin)
 
 
 
@@ -16,39 +16,28 @@ function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adj
 %     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
 %     'priorToState' - a character vector, string, or cell array of a state(s) to find the event prior to
 %     'priorToEvent' - a character vector of an event to find the time prior to
-
+presets=PresetManager(varargin{:});
 validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
-validPreset = @(x) isa(x, 'PresetManager');
-p = parse_BehDat('event', 'offset', 'outcome', 'trialType', 'trials');
-addParameter(p,'trialized', false, @islogical);
-addParameter(p, 'excludeEventsByState', [], validEvent);
-addParameter(p, 'withinState', [], validStates);
-addParameter(p, 'priorToState', [], validStates);
-addParameter(p, 'priorToEvent', [], validEvent);
+p=inputParser;
+p.KeepUnmatched=true;
 addParameter(p, 'withinStateCell', [], validStates);
-addParameter(p, 'preset', [], validPreset);
-parse(p, event, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
-event = a.event;
-offset = round(a.offset * obj.info.baud);
-outcomeField = a.outcome;
-trialTypeField = a.trialType;
-trials = a.trials;
-trialized = p.Results.trialized;
+parse(p, varargin{:});
+
+event = presets.event;
+offset = round(presets.offset * obj.info.baud);
+outcomeField = presets.outcome;
+trialTypeField = presets.trialType;
+trials = presets.trials;
+trialized = presets.trialized;
 rawEvents = obj.bpod.RawEvents.Trial;
 rawData = obj.bpod.RawData;
-excludeEventsByState = a.excludeEventsByState;
-withinState = a.withinState;
-priorToState = a.priorToState;
-priorToEvent = a.priorToEvent;
+excludeEventsByState = presets.excludeEventsByState;
+withinState = presets.withinState;
+priorToState = presets.priorToState;
+priorToEvent = presets.priorToEvent;
 
 % Find trial start times in acquisition system timestamps
-trialStartTimes = obj.find_event('Trial Start');
+trialStartTimes = obj.find_event('event','Trial Start');
 % Identify trials with the event of interest
 fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) regexp(fields(x.Events), event), rawEvents, 'uni', 0);
@@ -165,15 +154,14 @@ bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.sampling_diff;
-eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+averageOffset = num2cell(obj.sampling_diff(presets));
+eventOffsetCorrected = cellfun(@(x,y) round(x - x.*y), eventOffset,averageOffset, 'uni', 0);
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 allTrials=eventTimesCorrected;
 %% 
 % find if chirp occured withing 1 sec of port in  
-stateTimes = obj.find_bpod_state('ChirpPlay', 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials);
+stateTimes = obj.find_bpod_state('ChirpPlay','preset',presets)
 
 stateTimes=cellfun(@(x) cellfun(@(y) [y(1)-1*30000 y(2)],x,'uni',0), stateTimes,'uni',0);
 
@@ -244,7 +232,7 @@ allTrials=currentEventTimes;
   for c=1:numel(prevPort)
        prevPortLeaveOut{c}=zeros(1,length(prevPort{c}));
         for e=numel(prevPort{c}):-1:1
-            if strcmp(prevPort{c}(e),a.event) || strcmp(prevPort{c}(e),[a.event(1:5),'Out'])
+            if strcmp(prevPort{c}(e),event) || strcmp(prevPort{c}(e),[event(1:5),'Out'])
            % prevPort{c}(e)=[];
             prevPortLeaveOut{c}(e)=1;
             end 
@@ -275,8 +263,8 @@ allTrials=currentEventTimes;
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, prevPortTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.sampling_diff;
-eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+
+
 eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);      
 
 
@@ -332,7 +320,7 @@ eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, event
  for c=1:numel(nextPort)
        nextPortLeaveOut{c}=zeros(1,length(nextPort{c}));
         for e=numel(nextPort{c}):-1:1
-            if strcmp(nextPort{c}(e),a.event) || strcmp(nextPort{c}(e),[a.event(1:5),'Out'])
+            if strcmp(nextPort{c}(e),event) || strcmp(nextPort{c}(e),[event(1:5),'Out'])
            % nextPort{c}(e)=[];
             nextPortLeaveOut{c}(e)=1;
             end 
@@ -363,8 +351,8 @@ eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, event
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, nextPortTimes, bpodStartTimes, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
-averageOffset = obj.sampling_diff;
-eventOffsetCorrected = cellfun(@(x) round(x - x.*averageOffset), eventOffset, 'uni', 0);
+
+
 eventTimesCorrectedNextPortTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);      
 
 

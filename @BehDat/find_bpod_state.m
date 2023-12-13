@@ -57,7 +57,6 @@ stateOffset = cellfun(@(x, y) cellfun(@(z) round((z - y) * obj.info.baud), x, 'u
 stateOffset = cellfun(@(x) cat(1, x{:}), stateOffset, 'uni', 0);
 % subtract the factor by which bpod outpaces the blackrock system
 averageOffset = num2cell(obj.sampling_diff(presets));
-averageOffset = averageOffset(goodTrials);
 stateOffsetCorrected = cellfun(@(x, y) round(x - x.*y), stateOffset, averageOffset, 'uni', 0);
 trialStartTimes = num2cell(obj.timestamps.trialStart(goodTrials));
 stateTimes = cellfun(@(x, y) x + y, trialStartTimes, stateOffsetCorrected, 'uni', 0);

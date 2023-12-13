@@ -56,6 +56,9 @@ classdef BehDat < handle
         adjust_vip_trialTypes(obj)
 
         add_focus_trialTypes(obj)
+        
+        [cPortTimes3,cReward3,pPortTimes3,pReward3,pPid3r,nPortTimes3,nReward3,nPid3r,adjustlogical3,chirpOccur3]=find_port(obj,varargin);
+
 
     %% Spike methods
     
