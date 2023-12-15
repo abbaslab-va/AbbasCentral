@@ -69,11 +69,15 @@ Incorrect = 0
     
     `trializedSpikes = obj.trialize_spikes('Trial Start');`
 
-    `ts = obj.find_event('Forage', 'trialType', 'Left', 'outcomes', 'Correct');`
+    `ts = obj.find_event('event', Forage', 'trialType', 'Left', 'outcomes', 'Correct');`
 
 * The [regions] section indicates the relationship between electrode channels and implanted regions, which can be used to examine neurons from a certain region or specific relationships between one or more regions. 
 * [trialTypes] is used to indicate the type of trial you wish to investigate. The name assigned to a trial type or a collection of trial types is arbitrary and is to assist the researcher in making explicit their desired subset of data. This is extracted from the Bpod session file, in the 'TrialTypes' field.
 * [outcomes] details the meaning of the trial outcomes saved to the Bpod session file in the field 'SessionPerformance'. Again, these serve as a way to allow the researcher to subdivide the data using explicit and obvious mapping to english "macros".
+
+# BpodParser Class
+
+This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the Bpod SessionData file. It may be helpful to create a new class that is able to parse bpod objects and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync.
 
 # BehDat Class
 
@@ -162,7 +166,7 @@ or from a certain state.
 * 'outputStates' - a string or cell array of strings of desired output
 states to visualize
 
-`timestamps = find_bpod_event(obj, event, varargin)`
+`timestamps = find_bpod_event(obj, varargin)`
 
 Finds the timestamps in the sampling rate of the neural acquisition system corresponding to a bpod event.
 
@@ -170,9 +174,8 @@ Finds the timestamps in the sampling rate of the neural acquisition system corre
 * timestamps - a 1xE vector of timestamps from the desired event
 
 **INPUT:**
-* event -  an event character vector from the bpod SessionData
-
 ***optional name/value pairs:***
+* 'event' -  an event character vector from the bpod SessionData
 * 'offset' - a number that defines the offset from the alignment you wish to center around.
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
@@ -198,7 +201,7 @@ Returns the start and end timestamps of a bpod state per trial in the sampling r
 
 ### ***Spikes***
 
-`timestamps = find_event(obj, event, varargin)`
+`timestamps = find_event(obj, varargin)`
 
 Returns the timestamps in the sampling rate of the neural acquisition system corresponding to a wire TTL signal recieved by the system during recording.
 
@@ -206,9 +209,8 @@ Returns the timestamps in the sampling rate of the neural acquisition system cor
 * timestamps - a 1xE vector of timestamps from the desired event
 
 **INPUT:**
-* event -  an event character vector found in the config.ini file
-
 ***optional name/value pairs:***
+* 'event' -  an event character vector found in the config.ini file
 * 'offset' - a number that defines the offset from the alignment you wish to center around.
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
@@ -232,31 +234,31 @@ Returns a Nx1 cell array, where N is the number of neurons in the session. Each 
 * eventEdges - a 1x2 vector specifying the edges to bin between
 * binSize - the size of the bins in ms
 
-`binnedTrials = bin_neuron(obj, event, neuron, varargin)`
+`binnedTrials = bin_neuron(obj, neuron, varargin)`
 
 **OUTPUT:**
 * binnedTrials - an E x T binary matrix of spike times for a neuron, where E is the number of events and T is the number of bins
 
 **INPUT:**
-* event - an event character vector found in the config.ini file
 * neuron - number to index a neuron as organized in the spikes field
 
 ***optional name/value pairs:***
+* 'event' - an event character vector found in the config.ini file
 * 'offset' - a number that defines the offset from the alignment you wish to center around.
 * 'edges' - 1x2 vector distance from event on either side in seconds
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
 * 'binSize' - an optional parameter to specify the bin width, in ms. default value is 1
 
-`raster(obj, event, neuron, varargin)`
+`raster(obj, neuron, varargin)`
 
 Plots a spike raster in a new figure according to the input parameters.
 
 **INPUT:**
-* event - a string of a state named in the config file
 * neuron - index of neuron from spike field of object
 
 ***optional name/value pairs:***
+* 'event' - a string of a state named in the config file
 * 'edges' - 1x2 vector distance from event on either side in seconds
 * 'binSize' - a number that defines the bin size in ms
 * 'trialType' - a trial type found in config.ini
@@ -265,7 +267,7 @@ Plots a spike raster in a new figure according to the input parameters.
 * 'panel' - an optional handle to a panel (in the AbbasCentral app)
 * 'bpod' - a boolean that determines whether to use bpod or native timestamps
 
-`smoothSpikes=psth(obj, event, neuron, varargin)`
+`smoothSpikes=psth(obj, neuron, varargin)`
 
 Plots a smoothed psth for a neuron around an event according to the input parameters. This function accepts the same arguments as raster.
 
@@ -344,7 +346,7 @@ Plots a figure for each cross-correlation between neurons in the BehDat object. 
 
 ### LFP
 
-`[pwr, freqs, phase] = cwt_power(obj, event, varargin)`
+`[pwr, freqs, phase] = cwt_power(obj, varargin)`
 
 Calculates power, frequency, and phase using the continuous wavelet transform.
 
@@ -354,9 +356,8 @@ Calculates power, frequency, and phase using the continuous wavelet transform.
 * phase - a 1xC cell array of phases where C is the number of channels
 
 **INPUT:**
-* event - a string of a state named in the config file (required)
-
 ***optional name-value pairs:***
+* 'event' - a string of a state named in the config file (default is TrialStart)
 * 'edges' - 2x2 vector distance from event on either side in seconds (default = [-2 2])
 * 'trialType' - a trial type found in config.ini
 * 'outcome' - an outcome character array found in config.ini
@@ -441,6 +442,24 @@ This function will return a matrix where time points corresponding to periods th
 # ExpManager Class
 
 The ExpManager class' responsibility is to call the BehDat functions on specific collections of sessions from an experiment and return aggregated results that can be used for population-based statistical analyses. 
+Furthermore, the ExpManager is the class whose objects' functionality enable the operations of the AbbasCentral app. An ExpManager object is required to use the app, which is described below.
+
+## ExpManager Properties
+
+    sessions - An array of BehDat objects, one per session
+    metadata - A structure containing experimental metadata with the following fields:
+        > subjects - A cell array of strings that name the subjects with associated sessions
+        > path - The root path to the data directory where the project is housed
+        > experimenter - The name of the primary experimenter(s)
+
+## ExpManager Methods
+
+`get_size(obj)`
+
+This function calculates the size of the ExpManager object and prints it to the command line.
+
+# AbbasCentral.mlapp
+
 
 # Example workflow
 The following example demonstrates how a researcher may use this package to set up a data pipeline, from collection and spike sorting, to synchronization with parallel data streams, to data analysis, visualization and storage. 
@@ -458,7 +477,7 @@ Collect all files related to individual behavioral sessions in separate director
 
 ## B) Sort spikes with kilosort
 
-## C) Run deeplabcut on video files 
+## C) Run LabGym on video files 
 
 ## D) Select experiment
 
