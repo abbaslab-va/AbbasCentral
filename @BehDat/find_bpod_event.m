@@ -10,7 +10,7 @@ function timestamps = find_bpod_event(obj, varargin)
 %     'trialType' - a trial type found in config.ini
 %     'trials' - a vector of trial numbers to include
 %     'trialized' - a logical that determines whether to return a cell array of timestamps for each trial or a vector of all timestamps
-%     'excludeEventsByState' - a character vector of a state to exclude trials from
+%     'excludeState' - a character vector of a state to exclude trials from
 %     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
 %     'priorToState' - a character vector, string, or cell array of a state(s) to find the event prior to
 %     'priorToEvent' - a character vector of an event to find the time prior to
@@ -41,9 +41,9 @@ rawData2Check = structfun(@(x) x(goodTrials), rawData, 'uni', 0);
 eventTimes2Check = eventTimes(goodTrials);
 goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
-if ~isempty(presets.excludeEventsByState)
+if ~isempty(presets.excludeState)
     % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) strcmp(fields(x.States), presets.excludeEventsByState), rawEvents2Check, 'uni', 0);
+    goodStates = cellfun(@(x) strcmp(fields(x.States), presets.excludeState), rawEvents2Check, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
     excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
     % Find those state times that are nan (did not happen in the trial)
