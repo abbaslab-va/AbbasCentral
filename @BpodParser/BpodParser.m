@@ -15,6 +15,7 @@ classdef BpodParser < handle
         end
 
         %% Event Methods
+        
         eventTimes = event_times_real(obj, varargin)
 
         eventTimes = event_times(obj, varargin)
@@ -26,6 +27,12 @@ classdef BpodParser < handle
         goodTimes = event_exclude_state(obj, varargin)
 
         goodTimes = event_prior_to_state(obj, varargin)
+
+        goodTimes = event_after_state(obj, varargin)
+
+        goodTimes = event_prior_to_event(obj, varargin)
+
+        goodTimes = event_after_event(obj, varargin)
 
         %% State Methods
 

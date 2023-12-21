@@ -27,7 +27,7 @@ parse(p, varargin{:});
 inputStates = p.Results.inputStates;
 outputStates = p.Results.outputStates;
 
-trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets.outcome, presets.trialType, presets.trials));
+trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets));
 startState = cell(0);
 endState = cell(0);
 

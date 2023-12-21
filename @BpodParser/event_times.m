@@ -1,18 +1,12 @@
 function eventTimes = event_times(obj, varargin)
 
 % OUTPUT:
-%     eventTimes - a 1xE vector of timestamps from the desired event
+%     eventTimes - a 1xT cell array of 1xE timestamps from the desired
+%     event, where T is the number of trials and E is the number of events
+%     in the given trial.
 % INPUT:
-%     event -  an event character vector from the bpod SessionData
 % optional name/value pairs:
-%     'outcome' - an outcome character array found in config.ini
-%     'trialType' - a trial type found in config.ini
-%     'trials' - a vector of trial numbers to include
-%     'trialized' - a logical that determines whether to return a cell array of timestamps for each trial or a vector of all timestamps
-%     'excludeEventsByState' - a character vector of a state to exclude trials from
-%     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
-%     'priorToState' - a character vector, string, or cell array of a state(s) to find the event prior to
-%     'priorToEvent' - a character vector of an event to find the time prior to
+%     'event' -  a PortIn or PortOut event or regular expression
 
 presets = PresetManager(varargin{:});
 
@@ -24,7 +18,7 @@ trialHasEvent = cellfun(@(x) regexp(fields(x.Events), presets.event), rawEvents,
 trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);
 fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
 eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
-eventTimes = cellfun(@(x) cat(2, x{:}), eventTimes, 'uni', 0);
+eventTimes = cellfun(@(x) cat(1, x{:}), eventTimes, 'uni', 0);
 
 if ~isempty(presets.excludeEventsByState)
     % Get cell array of all state times to exclude events within
