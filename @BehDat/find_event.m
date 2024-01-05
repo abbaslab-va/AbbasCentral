@@ -30,7 +30,7 @@ eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.t
 eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
 % trialInBounds = trialIncluded;
 
-bpodTrials = obj.trial_intersection(eventTrials, presets.outcome, presets.trialType, presets.trials);
+bpodTrials = obj.trial_intersection(eventTrials, presets);
 % 
 % if ~isempty(withinTimes)
 %     edgesInSamples = withinTimes * obj.info.baud;

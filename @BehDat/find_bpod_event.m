@@ -33,7 +33,7 @@ eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents,
 numTrialStart = numel(trialStartTimes);
 eventTrials = 1:numTrialStart;
 % Intersect all logical matrices to index bpod trial cells with
-goodTrials = obj.trial_intersection(eventTrials, presets.outcome, presets.trialType, presets.trials);
+goodTrials = obj.trial_intersection(eventTrials, presets);
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);

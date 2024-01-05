@@ -1,4 +1,4 @@
-function goodTrials = trial_intersection(obj, trializedEvents, outcomes, trialTypes, trials)
+function goodTrials = trial_intersection(obj, trializedEvents, presets)
 
 % Abstracts away some complexity from the find_event and find_bpod_event
 % functions. Calculates trial set intersections
@@ -14,6 +14,10 @@ function goodTrials = trial_intersection(obj, trializedEvents, outcomes, trialTy
 numEvents = numel(trializedEvents);
 eventTrialTypes = obj.bpod.TrialTypes(trializedEvents);
 eventOutcomes = obj.bpod.SessionPerformance(trializedEvents);
+trialTypes = presets.trialType;
+outcomes = presets.outcome;
+trials = presets.trials;
+
 
 %% Trial Types
 if ischar(trialTypes)

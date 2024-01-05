@@ -133,7 +133,7 @@ classdef BehDat < handle
 
         bpodOffset = samplingDiff(obj)
 
-        goodTrials = trial_intersection(obj, trializedEvents, outcomes, trialTypes, trials)
+        goodTrials = trial_intersection(obj, trializedEvents, presets)
 
     end
 end
