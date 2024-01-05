@@ -1,7 +1,8 @@
 function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adjust,chirpOccur] = find_port(obj,varargin)
 
 
-
+% This method produces port times and reward times in the sampling rate of
+% the neural acquisition system. 
 % OUTPUT:
 %     timestamps - a 1xE vector of timestamps from the desired event
 % INPUT:
@@ -16,19 +17,15 @@ function [cPortTimes,cReward,pPortTimes,pReward,pPid,nPortTimes,nReward,nPid,adj
 %     'withinState' - a character vector, string, or cell array of a state(s) to find the event within
 %     'priorToState' - a character vector, string, or cell array of a state(s) to find the event prior to
 %     'priorToEvent' - a character vector of an event to find the time prior to
-presets=PresetManager(varargin{:});
-validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-p=inputParser;
-p.KeepUnmatched=true;
-addParameter(p, 'withinStateCell', [], validStates);
-parse(p, varargin{:});
+
+presets = PresetManager(varargin{:});
 
 event = presets.event;
 offset = round(presets.offset * obj.info.baud);
 outcomeField = presets.outcome;
 trialTypeField = presets.trialType;
 trials = presets.trials;
-trialized = presets.trialized;
+presets.trialized = true;
 rawEvents = obj.bpod.RawEvents.Trial;
 rawData = obj.bpod.RawData;
 excludeEventsByState = presets.excludeEventsByState;
@@ -47,54 +44,9 @@ eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents,
 % Initialize trial intersect vectors
 numTrialStart = numel(trialStartTimes);
 eventTrials = 1:numTrialStart;
-eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
-trialIncluded = ones(1, numel(eventTrials));
-isDesiredTT = trialIncluded;
-isDesiredOutcome = trialIncluded;
 
-if ischar(trialTypeField)
-    trialTypeField = regexprep(trialTypeField, " ", "_");
-    try
-        trialTypes = obj.info.trialTypes.(trialTypeField);
-        isDesiredTT = ismember(eventTrialTypes, trialTypes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeField));
-        throw(mv)
-    end
-elseif iscell(trialTypeField)
-    numTT = numel(trialTypeField);
-    intersectMat = zeros(numTT, numel(eventTrials));
-    for tt = 1:numTT
-        trialTypeString = regexprep(trialTypeField{tt}, " ", "_");
-        try
-            trialTypes = obj.info.trialTypes.(trialTypeString);
-            intersectMat(tt, :) = ismember(eventTrialTypes, trialTypes);
-        catch
-            mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
-            throw(mv)
-        end
-    end
-    isDesiredTT = any(intersectMat, 1);
-end
 
-if ~isempty(outcomeField)
-    outcomeField(outcomeField == ' ') = '_';
-    try
-        outcomes = obj.info.outcomes.(outcomeField);
-        isDesiredOutcome = ismember(eventOutcomes, outcomes);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeField));
-        throw(mv)
-    end
-end
-
-if ~isempty(trials)
-    trialIncluded = ismember(eventTrials, trials);
-end
-
-% Intersect all logical matrices to index bpod trial cells with
-goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
+goodTrials = obj.trial_intersection(eventTrials, presets);
 
 trialStartTimes = num2cell(trialStartTimes(goodTrials));
 rawEvents2Check = rawEvents(goodTrials);
@@ -102,50 +54,6 @@ rawData2Check = structfun(@(x) x(goodTrials), rawData, 'uni', 0);
 eventTimes2Check = eventTimes(goodTrials);
 goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
-if ~isempty(excludeEventsByState)
-    % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) strcmp(fields(x.States), excludeEventsByState), rawEvents2Check, 'uni', 0);
-    trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
-    excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
-    % Find those state times that are nan (did not happen in the trial)
-    nanStates = cellfun(@(x) isnan(x(1)), excludeStateTimes);
-    % This replaces all the times that were nans with negative state edges
-    % since that's something that will never happen in a bpod state and
-    % it's easier than removing those trials
-    for i = find(nanStates)
-        excludeStateTimes{i} = [-2 -1];
-    end
-    excludeStateTimes = cellfun(@(x) num2cell(x, 2), excludeStateTimes, 'uni', 0);
-    timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), goodEventTimes, excludeStateTimes, 'uni', 0);
-    timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
-    timesToRemove = cellfun(@(x) any(x == 1, 1), timesToRemove, 'uni', 0);
-    goodEventTimes = cellfun(@(x, y) x(~y), goodEventTimes, timesToRemove, 'uni', 0);
-end
-
-
-
-if ~isempty(priorToState)    
-    stateNumbers = rawData2Check.OriginalStateData;
-    stateNames = rawData2Check.OriginalStateNamesByNumber;
-    sortedStateNames = cellfun(@(x, y) x(y), stateNames, stateNumbers, 'uni', 0);
-    sortedStateTimes = cellfun(@(x) x(1:end-1), rawData2Check.OriginalStateTimestamps, 'uni', 0);
-    [sortedEventNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
-    sortedEventTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
-    eventAndStateTimes = cellfun(@(x, y) [x y], sortedEventTimes, sortedStateTimes, 'uni', 0);
-    eventAndStateNames = cellfun(@(x, y) [x y], sortedEventNames, sortedStateNames, 'uni', 0);
-    [sortedCombinedTimes, sortedCombinedInds] = cellfun(@(x) sort(x), eventAndStateTimes, 'uni', 0);
-    sortedEventAndStateNames = cellfun(@(x, y) x(y), eventAndStateNames, sortedCombinedInds, 'uni', 0);
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedCombinedTimes, goodEventTimes, 'uni', 0);
-    priorToStateTimes = cellfun(@(x) strcmp(x, priorToState), sortedEventAndStateNames, 'uni', 0);
-    % Shift priorTo matrix one event to the left, eliminate the last event
-    % due to circular shifting, and intersect logical matrices
-    eventPriorToState = cellfun(@(x) circshift(x, -1), priorToStateTimes, 'uni', 0);
-    for t = 1:numel(eventPriorToState)
-        eventPriorToState{t}(end) = false;
-    end
-    timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPriorToState, 'uni', 0);
-    goodEventTimes = cellfun(@(x, y) x(y), sortedCombinedTimes, timesToKeep, 'uni', 0);
-end
 
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
@@ -156,7 +64,8 @@ eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStart
 % subtract the factor by which bpod outpaces the blackrock system
 averageOffset = num2cell(obj.sampling_diff(presets));
 eventOffsetCorrected = cellfun(@(x,y) round(x - x.*y), eventOffset,averageOffset, 'uni', 0);
-eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
+
+eventTimesCorrected = obj.find_bpod_event('preset', presets);
 
 % eventTimesCorrected=  a cell array of trials, each cell has events in
 % them in blackrock sampling time 
@@ -361,6 +270,7 @@ nextPortLeaveOutLogical=logical([nextPortLeaveOut{:}]);
 adjust=adjustlogical & adjustlogicalEnd & ~prevPortLeaveOutLogical & ~nextPortLeaveOutLogical; 
 
 
+
 %%
 
 
@@ -387,7 +297,9 @@ adjust=adjustlogical & adjustlogicalEnd & ~prevPortLeaveOutLogical & ~nextPortLe
     chirpOccur=[chirpOccur{:}];
     chirpOccur=chirpOccur(adjust);
 
-    
-    
+    portTimes = struct('previous', pPortTimes, 'current', cPortTimes, 'next', nPortTimes);
+    portRewards = struct('previous', pReward, 'current', cReward, 'next', nReward);
+    portID = struct('previous', pPid, 'next', nPid);
+    outputStruct = struct('times', portTimes, 'reward', portRewards, 'identity', portID, 'chirp', chirpOccur);
 
 end 

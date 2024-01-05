@@ -15,14 +15,28 @@ classdef BpodParser < handle
         end
 
         %% Event Methods
+        
+        eventTimes = event_times_real(obj, varargin)
 
-        eventTimes = trialized_event_times(varargin)
+        eventTimes = event_times(obj, varargin)
 
-        frameTimes = e3v_bpod_sync(varargin)
+        frameTimes = e3v_bpod_sync(obj, varargin)
+        
+        goodTimes = event_within_state(obj, varargin)
+
+        goodTimes = event_exclude_state(obj, varargin)
+
+        goodTimes = event_prior_to_state(obj, varargin)
+
+        goodTimes = event_after_state(obj, varargin)
+
+        goodTimes = event_prior_to_event(obj, varargin)
+
+        goodTimes = event_after_event(obj, varargin)
 
         %% State Methods
 
-        stateTimes = trialized_state_times(varargin)
+        stateEdges = state_times(obj, varargin)
 
     end
 end

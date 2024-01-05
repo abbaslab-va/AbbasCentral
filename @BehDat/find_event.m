@@ -17,7 +17,6 @@ offset = round(presets.offset * obj.info.baud);
 % withinTimes = p.Results.withinTimes;
 
 eventField = find_closest_match(presets.event, fields(obj.timestamps.keys));
-% presets.event(presets.event == ' ') = '_';
 try
     timestamp = obj.timestamps.keys.(eventField);
 catch

@@ -15,9 +15,12 @@ classdef PresetManager < handle
         offset          % Amount to slide the output (seconds)
         binWidth        % Output granularity (ms)
         withinState     % Only return events within certain bpod states
-        excludeEventsByState    % Opposite behavior from withinState (should get renamed excludeState)
-        priorToState    % Return the last (bpod) event prior to a bpod state
-        priorToEvent    % Return the last (bpod) event prior to a bpod event
+        excludeState    % Opposite behavior from withinState (should get renamed excludeState)
+        priorToState    % Return the last (bpod) event(s) prior to a bpod state
+        priorToEvent    % Return the last (bpod) event(s) prior to a bpod event
+        afterState      % Return the first event(s) after a bpod state
+        afterEvent      % Return the first event(s) after a bpod event
+        ignoreRepeats   % If true, afterEvent and priorToEvent ignore duplicate events
         freqLimits      % Edges for calculating frequency-domain props
         panel           % Allows for plotting to app
     end
@@ -49,9 +52,12 @@ classdef PresetManager < handle
             addParameter(p, 'edges', [-2 2], validVectorSize);
             addParameter(p, 'binWidth', 1, validNumber);
             addParameter(p, 'withinState', [], validField)
-            addParameter(p, 'excludeEventsByState', [], validField)
+            addParameter(p, 'excludeState', [], validField)
             addParameter(p, 'priorToState', [], validField)
             addParameter(p, 'priorToEvent', [], validField)
+            addParameter(p, 'afterState', [], validField);
+            addParameter(p, 'afterEvent', [], validField);
+            addParameter(p, 'ignoreRepeats', true, @islogical);
             addParameter(p, 'freqLimits', [1 120], validVectorSize);
             addParameter(p, 'panel', []);
             addParameter(p, 'preset', [], validPreset)  % Overwrites all other presets
@@ -70,9 +76,12 @@ classdef PresetManager < handle
             obj.edges = a.edges;
             obj.binWidth = a.binWidth;
             obj.withinState = a.withinState;
-            obj.excludeEventsByState = a.excludeEventsByState;
+            obj.excludeState = a.excludeState;
             obj.priorToState = a.priorToState;
             obj.priorToEvent = a.priorToEvent;
+            obj.afterState = a.afterState;
+            obj.afterEvent = a.afterEvent;
+            obj.ignoreRepeats = a.ignoreRepeats;
             obj.freqLimits = a.freqLimits;
             obj.panel = a.panel;
             if ~isempty(a.preset)
