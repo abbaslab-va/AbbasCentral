@@ -19,4 +19,4 @@ stateTimesBpod = cellfun(@(x, y) x(y), trialCells, fieldsToIndex, 'uni', 0);
 stateTimes = cellfun(@(x) cat(1, x{:}), stateTimesBpod, 'uni', 0);
 stateEdges = cellfun(@(x) x(all(~isnan(x), 2), :), stateTimes, 'uni', 0);
 stateEdges = cellfun(@(x) num2cell(x, 2), stateEdges, 'uni', 0);
-stateEdges = cat(2, stateEdges{:});
+%stateEdges = cat(1, stateEdges{:});
