@@ -158,229 +158,164 @@ averageOffset = num2cell(obj.sampling_diff(presets));
 eventOffsetCorrected = cellfun(@(x,y) round(x - x.*y), eventOffset,averageOffset, 'uni', 0);
 eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
-allTrials=eventTimesCorrected;
+% eventTimesCorrected=  a cell array of trials, each cell has events in
+% them in blackrock sampling time 
+allTrials=eventTimesCorrected;  
+
 %% 
-% find if chirp occured withing 1 sec of port in  
+% find if chirp occured withing 1 sec of port in event  
 stateTimes = obj.find_bpod_state('ChirpPlay','preset',presets);
 
 stateTimes=cellfun(@(x) cellfun(@(y) [y(1)-1*30000 y(2)],x,'uni',0), stateTimes,'uni',0);
 
 
-    % This double cellfun operates on withinState which contains a cell for each trial,
-    % with a cell for each state inside of that.
-    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
-    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
-    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-    eventTimesCorrectedCr = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
+% This double cellfun operates on withinState which contains a cell for each trial,
+% with a cell for each state inside of that.
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
+includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+eventTimesCorrectedChirp = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
 
 
-chirpOccur=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedCr,'uni',0);
+chirpOccur=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedChirp,'uni',0);
 
 
+%% finds if Current port is rewarded 
+%find state times of reward port 3 ports 
+stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField,'trials', trials);
 
+% This double cellfun operates on withinState which contains a cell for each trial,
+% with a cell for each state inside of that.
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
+includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+eventTimesCorrectedCurrentR = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
 
+cRewarded=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedCurrentR,'uni',0);
 
+%% find previous port 
 
-% finds if C is rewarded 
-if ischar(withinState) 
-    stateTimes = obj.find_bpod_state(withinState, 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials);
+[sortedNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
+sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
+% Event times are now organized chronologically in sortedTimes, with a
+% corresponding cell array for the names of the events
+currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
+eventPrior = cellfun(@(x) circshift(x, -2),  currentEventTimes, 'uni', 0);
+prevPort= cellfun(@(x, y) x(y), sortedNames, eventPrior, 'uni', 0);
+prevPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventPrior, 'uni', 0);
+
+% take out events where the previous event is the same, this is made here
+% but done later
+for c=1:numel(prevPort)
+    prevPortLeaveOut{c}=zeros(1,length(prevPort{c}));
+    for e=numel(prevPort{c}):-1:1
+        if strcmp(prevPort{c}(e),event) || strcmp(prevPort{c}(e),[event(1:5),'Out'])
+            prevPortLeaveOut{c}(e)=1;
+        end 
+    end 
 end 
 
+%just changing from srtrings to numbers 
+for c=1:numel(prevPort)
+    for e=1:numel(prevPort{c})
+        if strcmp(prevPort{c}(e),'Port1Out') || strcmp(prevPort{c}(e),'Port1In')
+            prevPort{c}{e}=1;
+        elseif strcmp(prevPort{c}(e),'Port2Out') || strcmp(prevPort{c}(e),'Port2In')
+            prevPort{c}{e}=2;
+        elseif strcmp(prevPort{c}(e),'Port3Out') || strcmp(prevPort{c}(e),'Port3In')
+            prevPort{c}{e}=3;
+        elseif strcmp(prevPort{c}(e),'Port4Out') || strcmp(prevPort{c}(e),'Port4In')
+            prevPort{c}{e}=4;
+        elseif strcmp(prevPort{c}(e),'Port5Out') || strcmp(prevPort{c}(e),'Port5In')
+            prevPort{c}{e}=5;
+        elseif strcmp(prevPort{c}(e),'Port7Out') || strcmp(prevPort{c}(e),'Port7In')
+            prevPort{c}{e}=7;
+        end 
+    end
+end 
 
-if ~isempty(withinState)
-    % This double cellfun operates on withinState which contains a cell for each trial,
-    % with a cell for each state inside of that.
-    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrected, 'uni', 0);
-    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
-    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-    eventTimesCorrectedCr = cellfun(@(x, y) x(y), eventTimesCorrected, includeTimes, 'uni', 0);
-end
-
-cRewarded=cellfun(@(x,y) ismember(x,y), eventTimesCorrected,eventTimesCorrectedCr,'uni',0);
-
-
-
-% finds pP
-    [sortedNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
-    sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
-    % Event times are now organized chronologically in sortedTimes, with a
-    % corresponding cell array for the names of the events
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) regexp(x, priorPort), sortedNames, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) cellfun(@(y) ~isempty(y), x), priorToEventTimes, 'uni', 0);
-    % Shift priorTo matrix one event to the left, eliminate the last event
-    % due to circular shifting, and intersect logical matrices
-allTrials=currentEventTimes;
-
-    eventPrior = cellfun(@(x) circshift(x, -2),  currentEventTimes, 'uni', 0);
-%     for t = 1:numel(eventPrior)
-%         try
-%             eventPrior{t}(end) = false;
-%         catch
-%         end
-%     end
+% convert prevPorttimes (in bpod time) to blackrocktime 
+eventOffsetPrev = cellfun(@(x, y) (x - y) * obj.info.baud, prevPortTimes, bpodStartTimes, 'uni', 0);
+eventOffsetCorrectedPrev = cellfun(@(x,y) round(x - x.*y), eventOffsetPrev,averageOffset, 'uni', 0);
+eventTimesCorrectedPrevPortTimes= cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrectedPrev, 'uni', 0);
 
 
-    %timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
-    prevPort= cellfun(@(x, y) x(y), sortedNames, eventPrior, 'uni', 0);
-    prevPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventPrior, 'uni', 0);
+
+%% find if Previous port is rewarded 
+withinStateCell={'Reward1_1', 'Reward2_1', 'Reward3_1' ,'Reward4_1' ,'Reward5_1', 'Reward'};
+stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField,'trials', trials), withinStateCell, 'uni', 0);
+stateTimeCell = cat(1, stateTimeCell{:});
+eventIdx = num2cell(1:numel(eventTimesCorrectedPrevPortTimes));
+stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
+
+% This double cellfun operates on withinState which contains a cell for each trial,
+% with a cell for each state inside of that.
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrectedPrevPortTimes, 'uni', 0);
+includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+eventTimesCorrectedPrevPortR = cellfun(@(x, y) x(y), eventTimesCorrectedPrevPortTimes, includeTimes, 'uni', 0);
+eventTimesCorrectedPrevPortR=cellfun(@(x, y) ismember(x,y), eventTimesCorrectedPrevPortTimes,eventTimesCorrectedPrevPortR,'UniformOutput',0);
+
+
+%%  finds Next port  
+eventNext= cellfun(@(x) circshift(x, +2),  currentEventTimes, 'uni', 0);
+nextPort= cellfun(@(x, y) x(y), sortedNames, eventNext, 'uni', 0);
+nextPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventNext, 'uni', 0);
 
 % take out events where the previous event is the same 
-  for c=1:numel(prevPort)
-       prevPortLeaveOut{c}=zeros(1,length(prevPort{c}));
-        for e=numel(prevPort{c}):-1:1
-            if strcmp(prevPort{c}(e),event) || strcmp(prevPort{c}(e),[event(1:5),'Out'])
-           % prevPort{c}(e)=[];
-            prevPortLeaveOut{c}(e)=1;
-            end 
+for c=1:numel(nextPort)
+   nextPortLeaveOut{c}=zeros(1,length(nextPort{c}));
+    for e=numel(nextPort{c}):-1:1
+        if strcmp(nextPort{c}(e),event) || strcmp(nextPort{c}(e),[event(1:5),'Out'])
+        nextPortLeaveOut{c}(e)=1;
         end 
-  end 
-
-    for c=1:numel(prevPort)
-        for e=1:numel(prevPort{c})
-            if strcmp(prevPort{c}(e),'Port1Out') || strcmp(prevPort{c}(e),'Port1In')
-                prevPort{c}{e}=1;
-            elseif strcmp(prevPort{c}(e),'Port2Out') || strcmp(prevPort{c}(e),'Port2In')
-                prevPort{c}{e}=2;
-            elseif strcmp(prevPort{c}(e),'Port3Out') || strcmp(prevPort{c}(e),'Port3In')
-                prevPort{c}{e}=3;
-            elseif strcmp(prevPort{c}(e),'Port4Out') || strcmp(prevPort{c}(e),'Port4In')
-                prevPort{c}{e}=4;
-            elseif strcmp(prevPort{c}(e),'Port5Out') || strcmp(prevPort{c}(e),'Port5In')
-                prevPort{c}{e}=5;
-            elseif strcmp(prevPort{c}(e),'Port7Out') || strcmp(prevPort{c}(e),'Port7In')
-                prevPort{c}{e}=7;
-            end 
-        end
     end 
-          
- bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
-% bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
-% Calculate differences between bpod event times and trial start times and
-% convert to sampling rate of acquisition system
-eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, prevPortTimes, bpodStartTimes, 'uni', 0);
-% subtract the factor by which bpod outpaces the blackrock system
+end 
 
-
-eventTimesCorrectedPrevPortTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);      
-
-
-
-
-
-% finds pP rewarded
-
-
-    withinStateCell={'Reward1_1', 'Reward2_1', 'Reward3_1' ,'Reward4_1' ,'Reward5_1', 'Reward'};
-    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials), withinStateCell, 'uni', 0);
-    stateTimeCell = cat(1, stateTimeCell{:});
-    eventIdx = num2cell(1:numel(eventTimesCorrected));
-    stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
-
-    % This double cellfun operates on withinState which contains a cell for each trial,
-    % with a cell for each state inside of that.
-    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrectedPrevPortTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
-    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-    eventTimesCorrectedPrevPortR = cellfun(@(x, y) x(y), eventTimesCorrectedPrevPortTimes, includeTimes, 'uni', 0);
-
-
-    eventTimesCorrectedPrevPortR=cellfun(@(x, y) ismember(x,y), eventTimesCorrectedPrevPortTimes,eventTimesCorrectedPrevPortR,'UniformOutput',0);
-
-
-% finds nP
-
-    [sortedNames, eventInds] = cellfun(@(x) map_bpod_events(x), rawData2Check.OriginalEventData, 'uni', 0);
-    sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, eventInds, 'uni', 0); 
-    % Event times are now organized chronologically in sortedTimes, with a
-    % corresponding cell array for the names of the events
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) regexp(x, priorPort), sortedNames, 'uni', 0);
-    %priorToEventTimes = cellfun(@(x) cellfun(@(y) ~isempty(y), x), priorToEventTimes, 'uni', 0);
-    % Shift priorTo matrix one event to the left, eliminate the last event
-    % due to circular shifting, and intersect logical matrices
-    eventNext= cellfun(@(x) circshift(x, +2),  currentEventTimes, 'uni', 0);
-%     for t = 1:numel(eventNext)
-%         try
-%             eventNext{t}(1,2) = false;
-%         catch
-%         end
-%     end
-
-    %timesToKeep = cellfun(@(x, y) x & y, currentEventTimes, eventPrior, 'uni', 0);
-    nextPort= cellfun(@(x, y) x(y), sortedNames, eventNext, 'uni', 0);
-    nextPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventNext, 'uni', 0);
-
-% take out events where the previous event is the same 
- for c=1:numel(nextPort)
-       nextPortLeaveOut{c}=zeros(1,length(nextPort{c}));
-        for e=numel(nextPort{c}):-1:1
-            if strcmp(nextPort{c}(e),event) || strcmp(nextPort{c}(e),[event(1:5),'Out'])
-           % nextPort{c}(e)=[];
-            nextPortLeaveOut{c}(e)=1;
-            end 
+for c=1:numel(nextPort)
+    for e=1:numel(nextPort{c})
+        if strcmp(nextPort{c}(e),'Port1In')|| strcmp(nextPort{c}(e),'Port1Out')
+            nextPort{c}{e}=1;
+        elseif strcmp(nextPort{c}(e),'Port2In') || strcmp(nextPort{c}(e),'Port2Out')
+            nextPort{c}{e}=2;
+        elseif strcmp(nextPort{c}(e),'Port3In') || strcmp(nextPort{c}(e),'Port3Out')
+            nextPort{c}{e}=3;
+        elseif strcmp(nextPort{c}(e),'Port4In') || strcmp(nextPort{c}(e),'Port4Out')
+            nextPort{c}{e}=4;
+        elseif strcmp(nextPort{c}(e),'Port5In') || strcmp(nextPort{c}(e),'Port5Out')
+            nextPort{c}{e}=5;
+        elseif strcmp(nextPort{c}(e),'Port7In') || strcmp(nextPort{c}(e),'Port7Out')
+            nextPort{c}{e}=7;
         end 
-  end 
-
-    for c=1:numel(nextPort)
-        for e=1:numel(nextPort{c})
-            if strcmp(nextPort{c}(e),'Port1In')|| strcmp(nextPort{c}(e),'Port1Out')
-                nextPort{c}{e}=1;
-            elseif strcmp(nextPort{c}(e),'Port2In') || strcmp(nextPort{c}(e),'Port2Out')
-                nextPort{c}{e}=2;
-            elseif strcmp(nextPort{c}(e),'Port3In') || strcmp(nextPort{c}(e),'Port3Out')
-                nextPort{c}{e}=3;
-            elseif strcmp(nextPort{c}(e),'Port4In') || strcmp(nextPort{c}(e),'Port4Out')
-                nextPort{c}{e}=4;
-            elseif strcmp(nextPort{c}(e),'Port5In') || strcmp(nextPort{c}(e),'Port5Out')
-                nextPort{c}{e}=5;
-            elseif strcmp(nextPort{c}(e),'Port7In') || strcmp(nextPort{c}(e),'Port7Out')
-                nextPort{c}{e}=7;
-            end 
-        end
-    end 
+    end
+end 
           
- bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
-% bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
-% Calculate differences between bpod event times and trial start times and
-% convert to sampling rate of acquisition system
-eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, nextPortTimes, bpodStartTimes, 'uni', 0);
-% subtract the factor by which bpod outpaces the blackrock system
 
 
-eventTimesCorrectedNextPortTimes = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);      
+% convert prevPorttimes (in bpod time) to blackrocktime 
+eventOffsetNext = cellfun(@(x, y) (x - y) * obj.info.baud, nextPortTimes, bpodStartTimes, 'uni', 0);
+eventOffsetCorrectedNext = cellfun(@(x,y) round(x - x.*y), eventOffsetNext,averageOffset, 'uni', 0);
+eventTimesCorrectedNextPortTimes= cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrectedNext, 'uni', 0);
+
+
+%%  finds next port rewarded
+eventIdx = num2cell(1:numel(eventTimesCorrectedNextPortTimes));
+stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
+
+% This double cellfun operates on withinState which contains a cell for each trial,
+% with a cell for each state inside of that.
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrectedNextPortTimes, 'uni', 0);
+includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
+includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
+eventTimesCorrectedNextPortR = cellfun(@(x, y) x(y), eventTimesCorrectedNextPortTimes, includeTimes, 'uni', 0);
+eventTimesCorrectedNextPortR=cellfun(@(x, y) ismember(x,y), eventTimesCorrectedNextPortTimes,eventTimesCorrectedNextPortR,'UniformOutput',0);
 
 
 
-
-
-% finds nP rewarded
-
-    withinState={'Reward1_1', 'Reward2_1', 'Reward3_1' ,'Reward4_1' ,'Reward5_1', 'Reward'};
-    stateTimeCell = cellfun(@(x) obj.find_bpod_state(x, 'outcome', outcomeField, 'trialType', trialTypeField, ...
-        'trials', trials), withinState, 'uni', 0);
-    stateTimeCell = cat(1, stateTimeCell{:});
-    eventIdx = num2cell(1:numel(eventTimesCorrected));
-    stateTimes = cellfun(@(x) cat(1, stateTimeCell{:, x}), eventIdx, 'uni', 0);
-
-    % This double cellfun operates on withinState which contains a cell for each trial,
-    % with a cell for each state inside of that.
-    goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(y, z), x, 'uni', 0), stateTimes, eventTimesCorrectedNextPortTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
-    includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
-    includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-    eventTimesCorrectedNextPortR = cellfun(@(x, y) x(y), eventTimesCorrectedNextPortTimes, includeTimes, 'uni', 0);
-
-
-    eventTimesCorrectedNextPortR=cellfun(@(x, y) ismember(x,y), eventTimesCorrectedNextPortTimes,eventTimesCorrectedNextPortR,'UniformOutput',0);
-
-
-%% cR,pP,pR,nP,nR
 %% if case there are emptys where no events happened 
 emptyIdx=~cellfun(@isempty,eventTimesCorrected);
 
@@ -424,59 +359,6 @@ nextPortLeaveOutLogical=logical([nextPortLeaveOut{:}]);
 
 
 adjust=adjustlogical & adjustlogicalEnd & ~prevPortLeaveOutLogical & ~nextPortLeaveOutLogical; 
-% for c=1:numel(eventTimesCorrected)
-%     if adjust(c)==1 || adjust(c)==2
-%         eventTimesCorrected{c}=eventTimesCorrected{c}(2:end)
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(eventTimesCorrectedNextPortTimes)
-%     if adjustPp(c)==1 || adjust(c)==2
-%         eventTimesCorrectedNextPortTimes{c}=eventTimesCorrectedNextPortTimes{c}(2:end);
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(eventTimesCorrectedPrevPortTimes)
-%     if adjustNp(c)==1 || adjust(c)==2
-%         eventTimesCorrectedPrevPortTimes{c}=eventTimesCorrectedPrevPortTimes{c}(2:end);
-%     end 
-% end 
-% 
-% for c=1:numel(cRewarded)
-%     if adjust(c)==1 || adjust(c)==2
-%         cRewarded{c}=cRewarded{c}(2:end);
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(eventTimesCorrectedNextPortR)
-%     if adjustPp(c)==1 || adjust(c)==2
-%         eventTimesCorrectedNextPortR{c}=eventTimesCorrectedNextPortR{c}(2:end);
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(eventTimesCorrectedPrevPortTimes)
-%     if adjustNp(c)==1 || adjust(c)==2
-%         eventTimesCorrectedPrevPortR{c}=eventTimesCorrectedPrevPortR{c}(2:end);
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(nextPort)
-%     if adjustPp(c)==1 || adjust(c)==2
-%         nextPort{c}=nextPort{c}(2:end);
-%     end 
-% end 
-% 
-% 
-% for c=1:numel(prevPort)
-%     if adjustNp(c)==1 || adjust(c)==2
-%         prevPort{c}=prevPort{c}(2:end);
-%     end 
-% end 
 
 
 %%
