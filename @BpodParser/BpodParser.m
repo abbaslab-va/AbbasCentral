@@ -16,8 +16,6 @@ classdef BpodParser < handle
 
         %% Event Methods
         
-        eventTimes = event_times_real(obj, varargin)
-
         eventTimes = event_times(obj, varargin)
 
         frameTimes = e3v_bpod_sync(obj, varargin)
