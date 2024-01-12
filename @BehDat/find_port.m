@@ -65,7 +65,7 @@ eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, goodEventTimes, bpodStart
 averageOffset = num2cell(obj.sampling_diff(presets));
 eventOffsetCorrected = cellfun(@(x,y) round(x - x.*y), eventOffset,averageOffset, 'uni', 0);
 
-eventTimesCorrected = obj.find_bpod_event('preset', presets);
+eventTimesCorrected = obj.find_bpod_event('event', presets.event, 'trialized', true, 'trialType', presets.trialType);
 
 % eventTimesCorrected=  a cell array of trials, each cell has events in
 % them in blackrock sampling time 
