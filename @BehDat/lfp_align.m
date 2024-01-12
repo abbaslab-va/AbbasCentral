@@ -1,4 +1,4 @@
-function [lfpChan, chanPhaseMat]= lfp_align(obj, event, varargin)
+function [lfpChan, chanPhaseMat]= lfp_align(obj, varargin)
 
 % Calculates the power of a signal using a continuous wavelet transform
 % and returns the power and phase of the signal at the specified frequencies.
@@ -19,42 +19,42 @@ function [lfpChan, chanPhaseMat]= lfp_align(obj, event, varargin)
 
 % default input values
 goodEvent = @(x) isempty(x) || ischar(x);
+validPreset = @(x) isempty(x) || isa(x, 'PresetManager');
 defaultAveraged = false;
 defaultPhase = false;
 
 % input validation scheme
-p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
+presets=PresetManager(varargin{:})
+%p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
+p=inputParser()
+p.KeepUnmatched=true;
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'phase', defaultPhase, @islogical);
-addParameter(p, 'excludeEventsByState', [], goodEvent);
-addParameter(p, 'preset', [], validPreset)
-parse(p, event, varargin{:});
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
+%addParameter(p, 'excludeEventsByState', [], goodEvent);
+%addParameter(p, 'preset', [], validPreset)
+parse(p, varargin{:});
+
 phase = p.Results.phase;
 averaged = p.Results.averaged;
-useBpod = a.bpod;
+useBpod = presets.bpod;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
 sf = 2000;
 downsampleRatio = baud/sf;
-%sigLength = (a.edges(2) - a.edges(1)) * baud/downsampleRatio;
-%filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
+%sigLength = (presets.edges(2) - presets.edges(1)) * baud/downsampleRatio;
+%filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times
 if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset,'excludeEventsByState',a.excludeEventsByState);
+    eventTimes = obj.find_bpod_event('preset',presets);
 else
-    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
+    eventTimes = obj.find_event('preset',presets);
 end
 
 try
-    a.edges = (a.edges * baud) + eventTimes';
-    edgeCells = num2cell(a.edges, 2);
+    presets.edges = (presets.edges * baud) + eventTimes';
+    edgeCells = num2cell(presets.edges, 2);
 catch
     return
 end
@@ -71,7 +71,7 @@ numChan = size(lfp, 1);
 % for butter
 nyquist=sf/2;
 N = 2;
-[B, A] = butter(N, a.freqLimits/(nyquist));
+[B, A] = butter(N, presets.freqLimits/(nyquist));
 
 %pwr = cell(1, numChan);
 %chanPhase = cell(1, numChan);
