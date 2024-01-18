@@ -12,16 +12,20 @@ function stateEdges = find_bpod_state(obj, stateName, varargin)
 
 presets = PresetManager(varargin{:});
 
-
-rawEvents = obj.bpod.RawEvents.Trial;
+if isa(obj.bpod, 'BpodParser')
+    bpodSess = obj.bpod.session;
+else
+    bpodSess = obj.bpod;
+end
+rawEvents = bpodSess.RawEvents.Trial;
 numTrialStart = numel(obj.timestamps.trialStart);
 eventTrials = 1:numTrialStart;
-eventTrialTypes = obj.bpod.TrialTypes(eventTrials);
-eventOutcomes = obj.bpod.SessionPerformance(eventTrials);
+eventTrialTypes = bpodSess.TrialTypes(eventTrials);
+eventOutcomes = bpodSess.SessionPerformance(eventTrials);
 
-correctTrialType = true(1, obj.bpod.nTrials);
-correctOutcome = true(1, obj.bpod.nTrials);
-trialIncluded = true(1, obj.bpod.nTrials);
+correctTrialType = true(1, bpodSess.nTrials);
+correctOutcome = true(1, bpodSess.nTrials);
+trialIncluded = true(1, bpodSess.nTrials);
 if ~isempty(presets.trialType)
     presets.trialType = regexprep(presets.trialType, " ", "_");
     ttToIndex = obj.info.trialTypes.(presets.trialType);

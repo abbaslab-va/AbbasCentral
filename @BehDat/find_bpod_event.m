@@ -18,12 +18,21 @@ function timestamps = find_bpod_event(obj, varargin)
 presets = PresetManager(varargin{:});
 
 offset = round(presets.offset * obj.info.baud);
-rawEvents = obj.bpod.RawEvents.Trial;
-rawData = obj.bpod.RawData;
+if isa(obj.bpod, 'BpodParser')
+    bpodStruct = obj.bpod.session;
+else
+    bpodStruct = obj.bpod;
+end
+rawEvents = bpodStruct.RawEvents.Trial;
+rawData = bpodStruct.RawData;
 
 % Find trial start times in acquisition system timestamps
-trialStartTimes = obj.find_event('event', 'Trial Start');
-% Identify trials with the event of interest
+try
+    trialStartTimes = obj.timestamps.trialStart;
+catch
+    trialStartTimes = obj.find_event('event', 'Trial Start');
+end
+    % Identify trials with the event of interest
 fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) regexp(fields(x.Events), presets.event), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);

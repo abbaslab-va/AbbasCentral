@@ -26,7 +26,13 @@ end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
 
 eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
-eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
+%This logic is here while transitioning to using BpodParser in the BehDat
+%class instead of a BpodSession struct.
+try
+    eventTrials = eventTrials(eventTrials <= obj.bpod.nTrials);
+catch
+    eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
+end
 % trialInBounds = trialIncluded;
 
 bpodTrials = obj.trial_intersection(eventTrials, presets);
