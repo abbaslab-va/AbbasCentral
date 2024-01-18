@@ -107,7 +107,12 @@ classdef BehDat < handle
 
         ITPC = itpc(obj, event, varargin)
 
-        [lfp_all, chanPhase] = lfp_align(obj, event, varargin)
+        [lfp_all, chanPhase] = lfp_align(obj, varargin)
+
+        [gcx] = gc(obj, varargin)
+
+   
+
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
