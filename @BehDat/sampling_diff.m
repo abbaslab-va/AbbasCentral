@@ -5,9 +5,14 @@ function bpodOffset = sampling_diff(obj, presets)
 % OUTPUT: 
 %     bpodOffset - the difference between the two systems expressed as (bpodTime - blackrockTime)/blackrockTime
 
-goodTrials = obj.trial_intersection(1:obj.bpod.nTrials, presets);
+if isa(obj.bpod, 'BpodParser')
+    bpodSess = obj.bpod.session;
+else
+    bpodSess = obj.bpod;
+end
+goodTrials = obj.trial_intersection(1:bpodSess.nTrials, presets);
 acqDiff = diff(obj.timestamps.trialStart);
-bpodDiff = diff(obj.bpod.TrialStartTimestamp .* obj.info.baud);
+bpodDiff = diff(bpodSess.TrialStartTimestamp .* obj.info.baud);
 acqDiff = acqDiff(1:numel(bpodDiff));
 % if numel(acqDiff) ~= numel(bpodDiff)
 %     bpodOffset = 0;

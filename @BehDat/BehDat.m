@@ -49,6 +49,8 @@ classdef BehDat < handle
 
         event_sankey(obj, varargin)
 
+        timestamps = find_bpod_event_BpodParser(obj, varargin)
+
         timestamps = find_bpod_event(obj, varargin)
         
         stateEdges = find_bpod_state(obj, stateName, varargin)

@@ -12,8 +12,13 @@ function goodTrials = trial_intersection(obj, trializedEvents, presets)
 %     trials - a vector of trial numbers to include
 
 numEvents = numel(trializedEvents);
-eventTrialTypes = obj.bpod.TrialTypes(trializedEvents);
-eventOutcomes = obj.bpod.SessionPerformance(trializedEvents);
+try
+    eventTrialTypes = obj.bpod.TrialTypes(trializedEvents);
+    eventOutcomes = obj.bpod.SessionPerformance(trializedEvents);
+catch
+    eventTrialTypes = obj.bpod.session.TrialTypes(trializedEvents);
+    eventOutcomes = obj.bpod.session.SessionPerformance(trializedEvents);
+end
 trialTypes = presets.trialType;
 outcomes = presets.outcome;
 trials = presets.trials;
