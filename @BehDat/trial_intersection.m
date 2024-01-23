@@ -30,7 +30,7 @@ if ischar(trialTypes)
 end
 
 if isempty(trialTypes)
-    isDesiredTT = ones(1, numEvents);
+    isDesiredTT = true(1, numEvents);
 else
     numTT = numel(trialTypes);
     intersectMat = zeros(numTT, numEvents);
@@ -52,7 +52,7 @@ if ischar(outcomes)
 end
 
 if isempty(outcomes)
-    isDesiredOutcome = ones(1, numEvents);
+    isDesiredOutcome = true(1, numEvents);
 else
     numOutcomes = numel(outcomes);
     intersectMat = zeros(numOutcomes, numEvents);
@@ -73,7 +73,7 @@ end
 if isempty(trials)
     trialIncluded = ones(1, numEvents);
 else
-    trialIncluded = ismember(trials, 1:numEvents);
+    trialIncluded = ismember(trializedEvents, trials);
 end
 
 goodTrials = isDesiredTT & isDesiredOutcome & trialIncluded;
