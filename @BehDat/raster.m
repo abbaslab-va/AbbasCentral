@@ -59,7 +59,7 @@ function h = raster(obj, neuron, varargin)
                 ctr = ctr + 1;
                 spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', presets.trials, ...
                 'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
-                'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeEventsByState', presets.excludeEventsByState));
+                'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
                 numRows = size(spikeMat{ctr}, 1);
                 lineY(ctr) = numRows + totalSz;
                 totalSz = lineY(ctr);

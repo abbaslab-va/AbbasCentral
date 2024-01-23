@@ -11,9 +11,18 @@ classdef BpodParser < handle
 
         % Constructor
         function obj = BpodParser(bpodSession)
-            obj.session = bpodSession;
+            if exist("bpodSession", 'var')
+                obj.session = bpodSession;
+            end
         end
 
+        function copy(obj, copyObj)
+            propNames = properties(obj);
+            for prop = 1:numel(propNames)
+                currentProp = propNames{prop};
+                obj.(currentProp) = copyObj.(currentProp);
+            end
+        end
         %% Event Methods
         
         eventTimes = event_times(obj, varargin)

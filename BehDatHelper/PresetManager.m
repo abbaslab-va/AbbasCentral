@@ -85,11 +85,11 @@ classdef PresetManager < handle
             obj.freqLimits = a.freqLimits;
             obj.panel = a.panel;
             if ~isempty(a.preset)
-                copy_presets(obj, a.preset);
+                copy(obj, a.preset);
             end
         end
 
-        function copy_presets(obj, copyObj)
+        function copy(obj, copyObj)
             propNames = properties(obj);
             for prop = 1:numel(propNames)
                 currentProp = propNames{prop};

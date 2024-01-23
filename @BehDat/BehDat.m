@@ -17,7 +17,7 @@ classdef BehDat < handle
     end
 
     methods
-        %Constructor
+        %Constructor and copy methods
         function obj = BehDat(i, s, ts, beh, c)
             if nargin == 5
                 obj.info = i;
@@ -30,15 +30,27 @@ classdef BehDat < handle
         
 
         function totSize = get_size(obj) 
-            props = properties(obj); 
+            propNames = properties(obj); 
             totSize = 0; 
-            for ii=1:length(props) 
-                currentProperty = getfield(obj, char(props(ii))); 
+            for prop=1:length(propNames) 
+                currentProperty = getfield(obj, char(props(propNames))); 
                 s = whos('currentProperty'); 
                 totSize = totSize + s.bytes; 
             end
         end
 
+        function copy(obj, copyObj)
+            propNames = properties(obj);
+            for prop = 1:numel(propNames)
+                currentProp = propNames{prop};
+                if isa(copyObj.(currentProp), 'handle')
+                    obj.(currentProp) = eval(class(copyObj.(currentProp)));
+                    obj.(currentProp).copy(copyObj.(currentProp));
+                else
+                    obj.(currentProp) = copyObj.(currentProp);
+                end
+            end
+        end
     %% Bpod methods
         
         [numTT, numCorrect] = outcomes(obj, val)

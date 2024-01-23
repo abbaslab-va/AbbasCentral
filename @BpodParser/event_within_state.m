@@ -33,11 +33,11 @@ includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
 eventCell = cell(size(goodTrials));
 [eventCell{goodTrials}] = deal(includeTimes{:});
 emptyIdx=cellfun(@(x) isempty(x),includeTimes);
-numEvents=cellfun(@(x) numel(x),a.eventTimes,'UniformOutput',false)
-fuckShitStack= cellfun(@(x) deal(zeros(1,x)),numEvents(emptyIdx),UniformOutput=false);
+numEvents=cellfun(@(x) numel(x),a.eventTimes, 'uni', 0);
+falseIdx = cellfun(@(x) deal(zeros(1,x)), numEvents(emptyIdx), 'uni', 0);
 count=1;
 for f=find(emptyIdx)
-    eventCell{f}=fuckShitStack{count};
+    eventCell{f}=falseIdx{count};
     count=count+1;
 end 
 
