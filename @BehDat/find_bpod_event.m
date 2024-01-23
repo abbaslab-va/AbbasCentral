@@ -51,23 +51,28 @@ eventTimes2Check = eventTimes(goodTrials);
 goodEventTimes = cellfun(@(x) [x{:}], eventTimes2Check, 'uni', 0);
 
 if ~isempty(presets.excludeState)
+    if ~iscell(presets.excludeState)
+        presets.excludeState=mat2cell(presets.excludeState,1);
+    end 
     % Get cell array of all state times to exclude events within
-    goodStates = cellfun(@(x) strcmp(fields(x.States), presets.excludeState), rawEvents2Check, 'uni', 0);
+    goodStates = cellfun(@(x) cellfun(@(y)strcmp(fields(y.States),x),rawEvents2Check,'uni',0), presets.excludeState, 'uni', 0);
     trialCells = cellfun(@(x) struct2cell(x.States), rawEvents2Check, 'uni', 0);
-    excludeStateTimes = cellfun(@(x, y) x(y), trialCells, goodStates);
+    excludeStateTimes = cellfun(@(z) cellfun(@(x, y) x(y), trialCells, z),goodStates,'uni',0);
     % Find those state times that are nan (did not happen in the trial)
-    nanStates = cellfun(@(x) isnan(x(1)), excludeStateTimes);
+    nanStates = cellfun(@(w) cellfun(@(x) isnan(x(1)), w),excludeStateTimes,'uni',0);
     % This replaces all the times that were nans with negative state edges
     % since that's something that will never happen in a bpod state and
     % it's easier than removing those trials
-    for i = find(nanStates)
-        excludeStateTimes{i} = [-2 -1];
-    end
-    excludeStateTimes = cellfun(@(x) num2cell(x, 2), excludeStateTimes, 'uni', 0);
-    timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), goodEventTimes, excludeStateTimes, 'uni', 0);
-    timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
-    timesToRemove = cellfun(@(x) any(x == 1, 1), timesToRemove, 'uni', 0);
-    goodEventTimes = cellfun(@(x, y) x(~y), goodEventTimes, timesToRemove, 'uni', 0);
+    for c=1:numel(presets.excludeState)
+        for i = find(nanStates{c})
+            excludeStateTimes{c}{i} = [-2 -1];
+        end
+        excludeStateTimes{c} = cellfun(@(x) num2cell(x, 2), excludeStateTimes{c}, 'uni', 0);
+        timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), goodEventTimes, excludeStateTimes{c}, 'uni', 0);
+        timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
+        timesToRemove = cellfun(@(x) any(x == 1, 1), timesToRemove, 'uni', 0);
+        goodEventTimes = cellfun(@(x, y) x(~y), goodEventTimes, timesToRemove, 'uni', 0);
+    end 
 end
 
 if ~isempty(presets.priorToEvent)
