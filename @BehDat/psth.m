@@ -69,7 +69,7 @@ function spikesSmooth=psth(obj, neuron, varargin)
                     end
                     spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
                     'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
-                    'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeEventsByState', presets.excludeEventsByState));
+                    'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
                     labelY{ctr*2 - 1} = "";
                     labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString);
                 end
