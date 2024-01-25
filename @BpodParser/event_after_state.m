@@ -10,7 +10,7 @@ addParameter(p, 'selectionMode', 'nearest', validSelection);
 parse(p, varargin{:})
 a = p.Results;
 if isempty(a.stateName)
-    goodTimes = cellfun(@(x) ones(size(x)), a.eventTimes, 'uni', 0);
+    goodTimes = cellfun(@(x) true(size(x)), a.eventTimes, 'uni', 0);
     return
 end
 

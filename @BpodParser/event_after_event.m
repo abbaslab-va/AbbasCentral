@@ -7,7 +7,7 @@ addParameter(p, 'eventTimes', [], validField);
 parse(p, varargin{:})
 a = p.Results;
 if isempty(a.eventName)
-    goodTimes = cellfun(@(x) ones(size(x)), a.eventTimes, 'uni', 0);
+    goodTimes = cellfun(@(x) true(size(x)), a.eventTimes, 'uni', 0);
     return
 end
 

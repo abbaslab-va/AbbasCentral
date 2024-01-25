@@ -25,20 +25,16 @@ end
 
 % This double cellfun operates on withinState which contains a cell for each trial,
 % with a cell for each state inside of that.
-goodTrials = cellfun(@(x) ~isempty(x), a.eventTimes);
-goodTimesAll = cellfun(@(x, y) cellfun(@(z)discretize(x, z),y,'uni',0),a.eventTimes(goodTrials), stateTimes(goodTrials), 'uni', 0);
+trialContainsState = cellfun(@(x) ~isempty(x), stateTimes);
+trialContainsEvent = cellfun(@(x) ~isempty(x), a.eventTimes);
+trialsToIgnore = ~trialContainsState | ~trialContainsEvent;
+trialsToCheck = ~trialsToIgnore;
+eventCell = cell(size(trialsToCheck));
+eventCell(trialsToIgnore) = cellfun(@(x) false(1, numel(x)), a.eventTimes(trialsToIgnore), 'uni', 0);
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y,'uni',0), a.eventTimes(trialsToCheck), stateTimes(trialsToCheck), 'uni', 0);
 includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
 includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
 includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-eventCell = cell(size(goodTrials));
-[eventCell{goodTrials}] = deal(includeTimes{:});
-emptyIdx=cellfun(@(x) isempty(x),includeTimes);
-numEvents=cellfun(@(x) numel(x),a.eventTimes, 'uni', 0);
-falseIdx = cellfun(@(x) deal(zeros(1,x)), numEvents(emptyIdx), 'uni', 0);
-count=1;
-for f=find(emptyIdx)
-    eventCell{f}=falseIdx{count};
-    count=count+1;
-end 
+eventCell(trialsToCheck) = includeTimes;
 
 goodTimes = eventCell;
