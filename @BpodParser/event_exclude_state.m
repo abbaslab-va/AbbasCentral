@@ -13,19 +13,27 @@ end
 
 
 
-
-% Get cell array of all state times to exclude events within
-excludeStateTimes = obj.state_times(a.stateName);
-% Find those state times that are nan (did not happen in the trial)
-nanStates = cellfun(@(x) isnan(x{1}(1)), excludeStateTimes);
-% This replaces all the times that were nans with negative state edges
-% since that's something that will never happen in a bpod state and
-% it's easier than removing those trials
-for i = find(nanStates)
-    excludeStateTimes{i}{1} = [-2 -1];
+if ischar(a.stateName) || isstring(a.stateName)
+    stateTimes = obj.state_times(a.stateName);
+elseif iscell(a.stateName)
+    stateTimeCell = cellfun(@(x) obj.state_times(x), a.stateName, 'uni', 0);
+    stateTimeCell = cat(1, stateTimeCell{:});
+    eventIdx = num2cell(1:numel(a.eventTimes));
+    stateTimes = cellfun(@(x) cat(1, stateTimeCell{:,x}),  eventIdx, 'uni', 0);
 end
-excludeStateTimes = cellfun(@(x) num2cell(x, 2), excludeStateTimes, 'uni', 0);
-timesToRemove = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y, 'uni', 0), a.eventTimes, excludeStateTimes, 'uni', 0);
-timesToRemove = cellfun(@(x) cat(1, x{:}), timesToRemove, 'uni', 0);
-goodTimes = cellfun(@(x) ~any(x == 1, 1), timesToRemove, 'uni', 0);
-% eventTimes = cellfun(@(x, y) x(~y), eventTimes, timesToRemove, 'uni', 0);
+
+% This double cellfun operates on excludeState which contains a cell for each trial,
+% with a cell for each state inside of that.
+trialContainsState = cellfun(@(x) ~isempty(x), stateTimes);
+trialContainsEvent = cellfun(@(x) ~isempty(x), a.eventTimes);
+trialsToIgnore = ~trialContainsState | ~trialContainsEvent;
+trialsToCheck = ~trialsToIgnore;
+eventCell = cell(size(trialsToCheck));
+eventCell(trialsToIgnore) = cellfun(@(x) true(1, numel(x)), a.eventTimes(trialsToIgnore), 'uni', 0);
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y,'uni',0), a.eventTimes(trialsToCheck), stateTimes(trialsToCheck), 'uni', 0);
+includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
+includeTimes = cellfun(@(x) isnan(x), includeTimes, 'uni', 0);
+includeTimes = cellfun(@(x) all(x, 1), includeTimes, 'uni', 0);
+eventCell(trialsToCheck) = includeTimes;
+
+goodTimes = eventCell;
