@@ -10,6 +10,7 @@ classdef PresetManager < handle
         trialized       % Bool to output each trial in separate cells or all as one vector
         trials          % Indices of which bpod trials to include
         trialType       % Sets of bpod trialTypes
+        stimType        % Sets of bpod stimTypes
         outcome         % Sets of bpod outcomes
         edges           % Distance from alignment(seconds)
         offset          % Amount to slide the output (seconds)
@@ -47,6 +48,7 @@ classdef PresetManager < handle
             addParameter(p, 'trialized', false, @islogical);
             addParameter(p, 'trials', {}, validTrials);
             addParameter(p, 'trialType', {}, validField);
+            addParameter(p, 'stimType', {}, validField);
             addParameter(p, 'outcome', {}, validField);
             addParameter(p, 'offset', 0, @isnumeric);
             addParameter(p, 'edges', [-2 2], validVectorSize);
@@ -71,6 +73,7 @@ classdef PresetManager < handle
             obj.trialized = a.trialized;
             obj.trials = a.trials;
             obj.trialType = a.trialType;
+            obj.stimType = a.stimType;
             obj.outcome = a.outcome;
             obj.offset = a.offset;
             obj.edges = a.edges;
