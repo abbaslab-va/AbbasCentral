@@ -25,10 +25,9 @@ eventOutcomes = bpodStruct.SessionPerformance(trializedEvents);
 
 if isfield(bpodStruct, 'StimTypes')
     eventStimTypes = bpodStruct.StimTypes(trializedEvents);
-    hasStimType = true;
     stimTypes = presets.stimType;
 else
-    hasStimType = false;
+    stimTypes = [];
 end
     
 trialTypes = presets.trialType;
@@ -64,7 +63,7 @@ if ischar(stimTypes)
     stimTypes = {stimTypes};
 end
 
-if isempty(stimTypes) || ~hasStimType
+if isempty(stimTypes)
     isDesiredStimType = true(1, numEvents);
 else
     numStimTypes = numel(stimTypes);

@@ -41,10 +41,10 @@ baseTimes = obj.find_event('event', baseline, 'trialType', presets.trialType, 't
     'outcome', presets.outcome, 'offset', presets.offset);
 if presets.bpod
     eventTimes = obj.find_bpod_event('event', presets.event, 'trialType', presets.trialType, 'trials', eventTrials, ...
-    'outcome', presets.outcome, 'offset', presets.offset);
+    'outcome', presets.outcome, 'stimType', presets.stimType, 'offset', presets.offset);
 else
     eventTimes = obj.find_event('event', presets.event, 'trialType', presets.trialType, 'trials', eventTrials, ...
-    'outcome', presets.outcome, 'offset', presets.offset);
+    'outcome', presets.outcome, 'stimType', presets.stimTypes, 'offset', presets.offset);
 end
 % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
