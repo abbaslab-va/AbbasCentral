@@ -42,7 +42,7 @@ if ~isempty(presets.trials)
     trialIncluded = ismember(eventTrials, presets.trials); 
 end
 
-goodTrials = correctTrialType & correctOutcome & trialIncluded;
+goodTrials = obj.trial_intersection(eventTrials, presets);
 rawEvents2Check = rawEvents(goodTrials);
 
 fieldNames = cellfun(@(x) fields(x.States), rawEvents2Check, 'uni', 0);
