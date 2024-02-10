@@ -18,6 +18,7 @@ else
 end
 
 if isempty(eventTimes)
+    coordCell = cell(0, 1);
     return
 end
 
@@ -26,6 +27,12 @@ if isfield(obj.info, 'frameRate')
 else
     frameRate = 30;
 end
+p = inputParser;
+p.KeepUnmatched = true;
+addParameter(p, 'plot', true, @islogical);
+parse(p, varargin{:});
+doPlot = p.Results.plot;
+
 
 edges = round(presets.edges * frameRate);
 colors = parula(edges(2) - edges(1) + 1);
@@ -34,6 +41,9 @@ goodEdges = cellfun(@(x) all(x>0) & all(x <= obj.info.samples), eventCells);
 eventCells = eventCells(goodEdges);
     
 coordCell = cellfun(@(x) obj.coordinates(x(1):x(2), :), eventCells, 'uni', 0);
+if ~doPlot
+    return
+end
 
 if ~isempty(presets.panel)
     h = figure('Visible', 'off');
