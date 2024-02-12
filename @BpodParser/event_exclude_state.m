@@ -1,4 +1,15 @@
 function goodTimes = event_exclude_state(obj, varargin)
+% 
+% This method is not intended for use outside the BpodParser class: it is an
+% internal method for the excludeState param in event_times.
+% 
+% OUTPUT: 
+%     goodTimes - a 1xT cell array of 1xE logical vectors, where T is the number of trials
+%     in the session and E is the number of events in a given trial. Ones indicate
+%     times that are not within the inputted stateName.
+% INPUT:
+%     stateName - a named Bpod State in the State Machine.
+%     eventTimes - the times from a call to event_times
 
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;

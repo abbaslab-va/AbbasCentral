@@ -1,4 +1,17 @@
 function goodTimes = event_after_state(obj, varargin)
+% 
+% This method is not intended for use outside the BpodParser class: it is an
+% internal method for the afterState param in event_times.
+% 
+% OUTPUT: 
+%     goodTimes - a 1xT cell array of 1xE logical vectors, where T is the number of trials
+%     in the session and E is the number of events in a given trial. Ones indicate
+%     times that occur after the inputted stateName.
+% INPUT:
+%     stateName - a named Bpod State in the State Machine.
+%     eventTimes - the times from a call to event_times
+%     selectionMode - 'nearest' finds only the event after the given state, 'all' finds everything after the last occurrence
+
 
 selectionOpts = {'nearest', 'all'};
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);

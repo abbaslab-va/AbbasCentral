@@ -1,4 +1,15 @@
 function eventTimes = event_times(obj, varargin)
+% 
+% OUTPUT:
+%     eventTimes - a 1xT cell array of event times from a BpodSession, where T is the number of trials
+% INPUT: optional name/value pairs
+%     'event' - a named Bpod event ('Port1In', regular expressions ('Port[123]Out'))
+%     'withinState' - Only return events within certain bpod states
+%     'excludeState' - Opposite behavior from withinState
+%     'priorToState' - Return the last (bpod) event(s) prior to a bpod state
+%     'afterState' - Return the first event(s) after a bpod state
+%     'priorToEvent' - Return the last (bpod) event(s) prior to a bpod event
+%     'afterEvent' - Return the first event(s) after a bpod event
 
 presets = PresetManager(varargin{:});
 
