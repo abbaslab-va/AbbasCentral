@@ -86,7 +86,49 @@ Delay 2 = 4
 
 # BpodParser Class
 
-This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the Bpod SessionData file. It may be helpful to create a new class that is able to parse bpod objects and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync.
+This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the only property of this class, a Bpod SessionData file. A BpodParser object is able to parse bpod session structures and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync. Ultimately, the bpod property in a BehDat object (described below) will be replaced with a BpodParser object, massively simplifying the existing find_bpod_event methodology.
+
+## BpodParser Methods
+
+### User-facing methods
+
+`eventTimes = event_times(obj, varargin)`
+
+**OUTPUT:**
+
+* eventTimes - a 1xT cell array of event times from a BpodSession, where T is the number of trials
+
+**INPUT:** 
+
+* 'event' - a named Bpod event ('Port1In', regular expressions ('Port[123]Out'))
+
+*optional name/value pairs*
+
+* 'withinState' - Only return events within certain bpod states
+* 'excludeState' - Opposite behavior from withinState
+* 'priorToState' - Return the last (bpod) event(s) prior to a bpod state
+* 'afterState' - Return the first event(s) after a bpod state
+* 'priorToEvent' - Return the last (bpod) event(s) prior to a bpod event
+* 'afterEvent' - Return the first event(s) after a bpod event
+
+`stateEdges = state_times(obj, stateName)`
+
+**OUTPUT:**
+
+* stateEdges - a 1xN cell array of state edges where N is the number of trials
+
+**INPUT:**
+
+* stateName - a name of a bpod state to find edges for
+
+`frameTimes = e3v_bpod_sync(obj)`
+
+Returns frame times relative to the Bpod State Machine internal clock for a video recorded using the e3vision watchtower on the whitematter PC.
+
+**OUTPUT:**
+
+*frameTimes - a 1xF vector of frame times, where F is the number of frames
+
 
 # BehDat Class
 

@@ -16,7 +16,7 @@ classdef PresetManager < handle
         offset          % Amount to slide the output (seconds)
         binWidth        % Output granularity (ms)
         withinState     % Only return events within certain bpod states
-        excludeState    % Opposite behavior from withinState (should get renamed excludeState)
+        excludeState    % Opposite behavior from withinState
         priorToState    % Return the last (bpod) event(s) prior to a bpod state
         priorToEvent    % Return the last (bpod) event(s) prior to a bpod event
         afterState      % Return the first event(s) after a bpod state
