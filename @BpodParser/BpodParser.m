@@ -32,16 +32,18 @@ classdef BpodParser < handle
         
         eventTimes = event_times(obj, varargin)
 
-        figH = event_sankey(obj, varargin)
-
-        frameTimes = e3v_bpod_sync(obj, varargin)
+        event_sankey(obj, varargin)
         
         %%% State Methods
 
         stateEdges = state_times(obj, stateName)
 
-        figH = state_sankey(obj, varargin)
+        state_sankey(obj, varargin)
 
+        %%% Video Methods
+
+        frameTimes = e3v_bpod_sync(obj, varargin)
+        
     end
     
     %% Internal Methods

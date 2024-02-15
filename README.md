@@ -86,11 +86,19 @@ Delay 2 = 4
 
 # BpodParser Class
 
-This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the only property of this class, a Bpod SessionData file. A BpodParser object is able to parse bpod session structures and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync. Ultimately, the bpod property in a BehDat object (described below) will be replaced with a BpodParser object, massively simplifying the existing find_bpod_event methodology.
+This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the session property of this class, a Bpod SessionData file. A BpodParser object is able to parse bpod session structures and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync. Ultimately, the bpod property in a BehDat object (described below) will be replaced with a BpodParser object, massively simplifying the existing find_bpod_event methodology.
 
-## BpodParser Methods
+## BpodParser Properties
 
-### User-facing methods
+    session - a BpodSession structure
+    info - a structure containing subfields:
+        > path - Path to the experimental session data
+        > name - The subject's name
+        > trialTypes - structure containing key-value pairs from config.ini
+        > outcomes - structure containing key-value pairs from config.ini
+        > startState - the name of the bpod state that starts each trial
+
+## BpodParser user-facing methods
 
 `eventTimes = event_times(obj, varargin)`
 
@@ -111,6 +119,20 @@ This class is in development as an experimental alternative to the current way b
 * 'priorToEvent' - Return the last (bpod) event(s) prior to a bpod event
 * 'afterEvent' - Return the first event(s) after a bpod event
 
+`event_sankey(obj, varargin)`
+
+This function outputs a sankey plot showing the transitions between bpod
+events. By default, it displays all event transitions from all trial
+types, but users can use name-value pairs to only analyze certain
+combinations of trial types and outcomes, as well as only transitions to
+or from a certain event.
+
+***optional name/value pairs:***
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'inputEvents' - a string or cell array of strings of desired input events to visualize
+* 'outputEvents' - a string or cell array of strings of desired output events to visualize
+
 `stateEdges = state_times(obj, stateName)`
 
 **OUTPUT:**
@@ -120,6 +142,22 @@ This class is in development as an experimental alternative to the current way b
 **INPUT:**
 
 * stateName - a name of a bpod state to find edges for
+
+`state_sankey(obj, varargin)`
+
+This function outputs a sankey plot showing the transitions between bpod
+states. By default, it displays all state transitions from all trial
+types, but users can use name-value pairs to only analyze certain
+combinations of trial types and outcomes, as well as only transitions to
+or from a certain state.
+
+***optional name/value pairs:***
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'inputStates' - a string or cell array of strings of desired input
+* states to visualize
+* 'outputStates' - a string or cell array of strings of desired output states to visualize
+
 
 `frameTimes = e3v_bpod_sync(obj)`
 
@@ -202,7 +240,7 @@ Plots bpod performance bar chart by trial type.
 * outcome - the outcome whose percentage is being visualized
 * panel - a panel handle from AbbasCentral (optional)
 
-`sankey(obj, varargin)`
+`state_sankey(obj, varargin)`
 
 This function outputs a sankey plot showing the transitions between bpod
 states. By default, it displays all state transitions from all trial
@@ -215,8 +253,21 @@ or from a certain state.
 * 'trialType' - a trial type found in config.ini
 * 'inputStates' - a string or cell array of strings of desired input
 * states to visualize
-* 'outputStates' - a string or cell array of strings of desired output
-states to visualize
+* 'outputStates' - a string or cell array of strings of desired output states to visualize
+
+`event_sankey(obj, varargin)`
+
+This function outputs a sankey plot showing the transitions between bpod
+events. By default, it displays all event transitions from all trial
+types, but users can use name-value pairs to only analyze certain
+combinations of trial types and outcomes, as well as only transitions to
+or from a certain event.
+
+***optional name/value pairs:***
+* 'outcome' - an outcome character array found in config.ini
+* 'trialType' - a trial type found in config.ini
+* 'inputEvents' - a string or cell array of strings of desired input events to visualize
+* 'outputEvents' - a string or cell array of strings of desired output events to visualize
 
 `timestamps = find_bpod_event(obj, varargin)`
 

@@ -1,10 +1,10 @@
-function figH = event_sankey(obj, varargin)
+function event_sankey(obj, varargin)
 % 
 % This function outputs a sankey plot showing the transitions between bpod
-% events. By default, it displays all state transitions from all trial
+% events. By default, it displays all event transitions from all trial
 % types, but users can use name-value pairs to only analyze certain
 % combinations of trial types and outcomes, as well as only transitions to
-% or from a certain state.
+% or from a certain event.
 % 
 % optional name/value pairs:
 %     'outcome' - an outcome character array found in config.ini
