@@ -22,6 +22,7 @@ defaultInput = {'Port1In', 'Port1Out', 'Port2In', 'Port2Out', 'Port3In', 'Port3O
 defaultOutput = defaultInput;                                   % all output events
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p, 'inputEvents', defaultInput, validField);
 addParameter(p, 'outputEvents', defaultOutput, validField);
 addParameter(p, 'inputWithinState', [], validField);
