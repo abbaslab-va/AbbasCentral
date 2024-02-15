@@ -21,7 +21,7 @@ function spikesSmooth=psth(obj, neuron, varargin)
     % as one matrix
     if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.trials) && isempty(presets.stimType)) ...
             || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.trials) && ~iscell(presets.stimType))
-        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
+        spikeMat = logical(obj.bin_neuron(neuron, 'preset', presets));
         labelY{1} = "";
         labelY{2} = "All";
     else
@@ -81,7 +81,7 @@ function spikesSmooth=psth(obj, neuron, varargin)
                         else
                             currentTrials = presets.trials{tr};
                         end
-                        spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
+                        spikeMat{ctr} = logical(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
                         'trialType', currentTT, 'outcome', currentOutcome, 'stimType', currentStim, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
                         'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
                         labelY{ctr*2 - 1} = "";
