@@ -1,4 +1,15 @@
 function goodTimes = event_within_state(obj, varargin)
+% 
+% This method is not intended for use outside the BpodParser class: it is an
+% internal method for the withinState param in event_times.
+% 
+% OUTPUT: 
+%     goodTimes - a 1xT cell array of 1xE logical vectors, where T is the number of trials
+%     in the session and E is the number of events in a given trial. Ones indicate
+%     times that are within the inputted stateName.
+% INPUT:
+%     stateName - a named Bpod State in the State Machine.
+%     eventTimes - the times from a call to event_times
 
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;
@@ -25,20 +36,16 @@ end
 
 % This double cellfun operates on withinState which contains a cell for each trial,
 % with a cell for each state inside of that.
-goodTrials = cellfun(@(x) ~isempty(x), a.eventTimes);
-goodTimesAll = cellfun(@(x, y) cellfun(@(z)discretize(x, z),y,'uni',0),a.eventTimes(goodTrials), stateTimes(goodTrials), 'uni', 0);
+trialContainsState = cellfun(@(x) ~isempty(x), stateTimes);
+trialContainsEvent = cellfun(@(x) ~isempty(x), a.eventTimes);
+trialsToIgnore = ~trialContainsState | ~trialContainsEvent;
+trialsToCheck = ~trialsToIgnore;
+eventCell = cell(size(trialsToCheck));
+eventCell(trialsToIgnore) = cellfun(@(x) false(1, numel(x)), a.eventTimes(trialsToIgnore), 'uni', 0);
+goodTimesAll = cellfun(@(x, y) cellfun(@(z) discretize(x, z), y,'uni',0), a.eventTimes(trialsToCheck), stateTimes(trialsToCheck), 'uni', 0);
 includeTimes = cellfun(@(x) cat(1, x{:}), goodTimesAll, 'uni', 0);
 includeTimes = cellfun(@(x) ~isnan(x), includeTimes, 'uni', 0);
 includeTimes = cellfun(@(x) any(x, 1), includeTimes, 'uni', 0);
-eventCell = cell(size(goodTrials));
-[eventCell{goodTrials}] = deal(includeTimes{:});
-emptyIdx=cellfun(@(x) isempty(x),includeTimes);
-numEvents=cellfun(@(x) numel(x),a.eventTimes, 'uni', 0);
-falseIdx = cellfun(@(x) deal(zeros(1,x)), numEvents(emptyIdx), 'uni', 0);
-count=1;
-for f=find(emptyIdx)
-    eventCell{f}=falseIdx{count};
-    count=count+1;
-end 
+eventCell(trialsToCheck) = includeTimes;
 
 goodTimes = eventCell;

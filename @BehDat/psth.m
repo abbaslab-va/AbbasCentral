@@ -19,8 +19,9 @@ function spikesSmooth=psth(obj, neuron, varargin)
     cMap = brewermap([], 'paired');
         % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
-    if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.trials)) || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.trials))
-        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
+    if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.trials) && isempty(presets.stimType)) ...
+            || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.trials) && ~iscell(presets.stimType))
+        spikeMat = logical(obj.bin_neuron(neuron, 'preset', presets));
         labelY{1} = "";
         labelY{2} = "All";
     else
@@ -32,6 +33,9 @@ function spikesSmooth=psth(obj, neuron, varargin)
         if ~iscell(presets.outcome)
             presets.outcome = num2cell(presets.outcome, [1 2]);
         end
+        if ~iscell(presets.stimType)
+            presets.stimType = num2cell(presets.stimType, [1 2]);
+        end
         if ~iscell(presets.trials)
             presets.trials = num2cell(presets.trials, [1 2]);
         end
@@ -39,9 +43,11 @@ function spikesSmooth=psth(obj, neuron, varargin)
         numTT(numTT == 0) = 1;
         numOutcomes = numel(presets.outcome);
         numOutcomes(numOutcomes == 0) = 1;
+        numStim = numel(presets.stimType);
+        numStim(numStim == 0) = 1;
         numTrials = numel(presets.trials);
         numTrials(numTrials == 0) = 1;
-        spikeMat = cell(numTT * numOutcomes, 1);
+        spikeMat = cell(numTT * numOutcomes * numStim * numTrials, 1);
         labelY = cell(size(spikeMat, 1) * 2, 1);
         ctr = 0;
         for tt = 1:numTT
@@ -60,18 +66,27 @@ function spikesSmooth=psth(obj, neuron, varargin)
                     currentOutcome = presets.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
-                for tr = 1:numTrials
-                    ctr = ctr + 1;
-                    if isempty(presets.trials)
-                        currentTrials = [];
+                for s = 1:numStim
+                    if numel(presets.stimType) == 0
+                        currentStim = [];
+                        currentStimString = 'All';
                     else
-                        currentTrials = presets.trials{tr};
+                        currentStim = presets.stimType{s};
+                        currentStimString = currentStim;
                     end
-                    spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
-                    'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
-                    'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
-                    labelY{ctr*2 - 1} = "";
-                    labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString);
+                    for tr = 1:numTrials
+                        ctr = ctr + 1;
+                        if isempty(presets.trials)
+                            currentTrials = [];
+                        else
+                            currentTrials = presets.trials{tr};
+                        end
+                        spikeMat{ctr} = logical(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
+                        'trialType', currentTT, 'outcome', currentOutcome, 'stimType', currentStim, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
+                        'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
+                        labelY{ctr*2 - 1} = "";
+                        labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString, ", ", currentStimString);
+                    end
                 end
             end
         end

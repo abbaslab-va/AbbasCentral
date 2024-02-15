@@ -141,6 +141,8 @@ classdef BehDat < handle
         figH = plot_LabGym_behaviors(obj, varargin)
 
         figH = plot_centroid(obj, varargin)
+
+        figH = plot_centroid_and_behaviors(obj, varargin)
         
         %[f, h] = rotation_surf(rotVec, panel)
 

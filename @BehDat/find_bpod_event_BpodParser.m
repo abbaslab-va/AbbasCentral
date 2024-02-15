@@ -31,10 +31,8 @@ eventTrials = 1:numTrialStart;
 goodTrials = obj.trial_intersection(eventTrials, presets);
 rawEvents = obj.bpod.session.RawEvents.Trial;
 rawEvents2Check = rawEvents(goodTrials);
-
 % Find bpod intra-trial times for Trial Start timestamp
 bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
-% bpodEventTimes = cellfun(@(x) x.Events.(event)(1, :), rawEvents2Check, 'uni', 0);
 % Calculate differences between bpod event times and trial start times and
 % convert to sampling rate of acquisition system
 eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, eventTimes, bpodStartTimes, 'uni', 0);

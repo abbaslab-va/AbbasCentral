@@ -1,4 +1,15 @@
 function goodTimes = event_prior_to_event(obj, varargin)
+% 
+% This method is not intended for use outside the BpodParser class: it is an
+% internal method for the priorToEvent param in event_times.
+% 
+% OUTPUT: 
+%     goodTimes - a 1xT cell array of 1xE logical vectors, where T is the number of trials
+%     in the session and E is the number of events in a given trial. Ones indicate
+%     times that occur prior to the inputted eventName.
+% INPUT:
+%     eventName - a named Bpod event
+%     eventTimes - the times from a call to event_times
 
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;
@@ -7,7 +18,7 @@ addParameter(p, 'eventTimes', [], validField);
 parse(p, varargin{:})
 a = p.Results;
 if isempty(a.eventName)
-    goodTimes = cellfun(@(x) ones(size(x)), a.eventTimes, 'uni', 0);
+    goodTimes = cellfun(@(x) true(size(x)), a.eventTimes, 'uni', 0);
     return
 end
 

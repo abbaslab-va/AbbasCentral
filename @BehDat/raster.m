@@ -19,8 +19,8 @@ function h = raster(obj, neuron, varargin)
     
     % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
-    if (isempty(presets.trialType) && isempty(presets.outcome)) || (~iscell(presets.trialType) && ~iscell(presets.outcome))
-        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
+    if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.stimType)) || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.stimType))
+        spikeMat = logical(obj.bin_neuron(neuron, 'preset', presets));
     else
         % parse through all inputted trialTypes and outcomes to produce a
         % stacked raster plot of all combos
@@ -30,13 +30,18 @@ function h = raster(obj, neuron, varargin)
         if ~iscell(presets.outcome)
             presets.outcome = num2cell(presets.outcome, [1 2]);
         end
+        if ~iscell(presets.stimType)
+            presets.stimType = num2cell(presets.stimType, [1 2]);
+        end
         numTT = numel(presets.trialType);
         numTT(numTT == 0) = 1;
         numOutcomes = numel(presets.outcome);
         numOutcomes(numOutcomes == 0) = 1;
-        spikeMat = cell(numTT * numOutcomes, 1);
+        numStim = numel(presets.stimType);
+        numStim(numStim == 0) = 1;
+        spikeMat = cell(numTT * numOutcomes * numStim, 1);
         labelY = spikeMat;
-        lineY = zeros(numTT * numOutcomes, 1);
+        lineY = zeros(numTT * numOutcomes * numStim, 1);
         tickY = [lineY; lineY];
         ctr = 0;
         totalSz = 0;
@@ -56,17 +61,28 @@ function h = raster(obj, neuron, varargin)
                     currentOutcome = presets.outcome{o};
                     currentOutcomeString = currentOutcome;
                 end
-                ctr = ctr + 1;
-                spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', presets.trials, ...
-                'trialType', currentTT, 'outcome', currentOutcome, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
-                'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
-                numRows = size(spikeMat{ctr}, 1);
-                lineY(ctr) = numRows + totalSz;
-                totalSz = lineY(ctr);
-                tickY(ctr*2 - 1) = totalSz - .5 * numRows;
-                tickY(ctr*2) = totalSz;
-                labelY{ctr*2 - 1} = strcat(currentTTString, ", ", currentOutcomeString);
-                labelY{ctr*2} = num2str(numRows);
+                for s = 1:numStim
+                    if numel(presets.stimType) == 0
+                        currentStim = [];
+                        currentStimString = 'All';
+                    else
+                        currentStim = presets.stimType{s};
+                        currentStimString = currentStim;
+                    end
+                    ctr = ctr + 1;
+                    spikeMat{ctr} = logical(obj.bin_neuron(neuron, 'event', presets.event, ...
+                        'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', presets.trials, ...
+                        'trialType', currentTT, 'stimType', currentStim, 'outcome', currentOutcome, ...
+                        'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
+                        'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
+                    numRows = size(spikeMat{ctr}, 1);
+                    lineY(ctr) = numRows + totalSz;
+                    totalSz = lineY(ctr);
+                    tickY(ctr*2 - 1) = totalSz - .5 * numRows;
+                    tickY(ctr*2) = totalSz;
+                    labelY{ctr*2 - 1} = strcat(currentTTString, ", ", currentOutcomeString, ", ", currentStimString);
+                    labelY{ctr*2} = num2str(numRows);
+                end
             end
         end
         spikeMat = cat(1, spikeMat{:});

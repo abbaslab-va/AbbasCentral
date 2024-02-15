@@ -1,4 +1,4 @@
-function goodTrials = trial_intersection(obj, trializedEvents, presets)
+function goodTrials = trial_intersection_BpodParser(obj, trializedEvents, presets)
 
 % Abstracts away some complexity from the find_event and find_bpod_event
 % functions. Calculates trial set intersections
@@ -12,14 +12,7 @@ function goodTrials = trial_intersection(obj, trializedEvents, presets)
 %     trials - a vector of trial numbers to include
 
 numEvents = numel(trializedEvents);
-
-
-if isa(obj.bpod, 'BpodParser')
-    bpodStruct = obj.bpod.session;
-else
-    bpodStruct = obj.bpod;
-end
-
+bpodStruct = obj.session;
 eventTrialTypes = bpodStruct.TrialTypes(trializedEvents);
 eventOutcomes = bpodStruct.SessionPerformance(trializedEvents);
 

@@ -8,7 +8,8 @@ It contains functions for analyzing performance and positional data during behav
 Below you can find guidelines to adhere to when writing new methods or changing existing ones that, when followed, will help to keep this codebase as readable and consistent as possible.
 
 ### Class interfaces
-* All methods should have a function header in the class interface. Methods should be defined in separate files
+* All methods should have a function header in the class interface. 
+* Methods should be defined in separate files for large classes where it would be unwieldy to define them all in the class interface file
 * Maintain single line spacing between methods and keep them organized by function
 * "Friend" functions like plots can be kept in the class interface, commented out
 
@@ -16,7 +17,7 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Variables should be named in camel case (i.e. myVariable)
 * Functions should be all lower case with underscores (i.e. my_function())
 * Classes should use pascal case (i.e. MyClass)
-* Dot syntax is preferred for object methods in BehDat (i.e. myObject.my_method())
+* Dot syntax is preferred for object methods (i.e. myObject.my_method())
 
 ### Documentation
 * All functions should have a function header with a description of the function, inputs, and outputs
@@ -24,16 +25,16 @@ Below you can find guidelines to adhere to when writing new methods or changing 
 * Comments should be used to explain the reasoning behind any non-obvious code
 
 ## Data organization
-This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality:
+This software package makes several fundamental assumptions about your data organization that must be followed if you want full functionality for the BehDat and ExpManager classes:
 
-1) Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments.
+1) Data is organized heirarchically, with a single parent directory housing folders for each animal recorded during an experiment, each containing subfolders that house all of the data from individual experiments. Within each individual session folder, there should be at minimum a .NS6, .NEV, cluster_info.tsv, and spike_times.npy file.
 
-2) A file called "config.ini" must be present in the root directory of your data folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking. 
+2) A file called "config.ini" must be present in the root directory of your experiment folder that you select when you call the function select_experiment. This file is used to indicate the relationship between the timestamp recieved by your acquisition system and the experimental time points they are marking, as well as information about electrode regions and task-specific information like trial types, outcomes, and stim types for experiments with optogenetics.
 
-3) The experiment is trialized, with a trial start timestamp sent by the Bpod system at the beginning of each trial. This timestamp should be called "Trial Start" in the config.ini file (no quotes - see example below).
+3) The experiment is trialized, with a trial start timestamp sent by the Bpod system at the beginning of each trial. This timestamp should be called "Trial Start" in the config.ini file (no quotes - see example below). Open-field experiments with no trials are also supported, although it is recommended to at least use TTL inputs to the Blackrock acquisition system to timestamp points of interest in the experiment. 
 
 ### config.ini   
-An example layout for this file is shown below:
+An example layout for this file is shown below. While there must be a timestamp called Trial Start for trialized experiments, the remaining information in this example should be rewritten in your experiment to match those parameters.
 
 ```
 [info]
@@ -63,6 +64,13 @@ Right = 2
 [outcomes]
 Correct = 1
 Incorrect = 0
+
+[stimTypes]
+No Stim = 0
+Sample 1 = 1
+Delay 1 = 2
+Sample 2 = 3
+Delay 2 = 4
 ```
 
 * The above [timestamps] section contains key-value pairs, giving names to the numbered timestamps that can be used for indexing functions such as trialize_spikes or find_event. An example call:
@@ -74,10 +82,53 @@ Incorrect = 0
 * The [regions] section indicates the relationship between electrode channels and implanted regions, which can be used to examine neurons from a certain region or specific relationships between one or more regions. 
 * [trialTypes] is used to indicate the type of trial you wish to investigate. The name assigned to a trial type or a collection of trial types is arbitrary and is to assist the researcher in making explicit their desired subset of data. This is extracted from the Bpod session file, in the 'TrialTypes' field.
 * [outcomes] details the meaning of the trial outcomes saved to the Bpod session file in the field 'SessionPerformance'. Again, these serve as a way to allow the researcher to subdivide the data using explicit and obvious mapping to english "macros".
+* [stimTypes] indicates the laser stimulation parameters for each trial, from the Bpod field 'StimTypes'.
 
 # BpodParser Class
 
-This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the Bpod SessionData file. It may be helpful to create a new class that is able to parse bpod objects and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync.
+This class is in development as an experimental alternative to the current way bpod objects are parsed. As it stands, the BehDat class methods contain the necessary logic to extract task-specific components and variables from the only property of this class, a Bpod SessionData file. A BpodParser object is able to parse bpod session structures and return information that is aligned with the clock from the bpod session, enabling functionality when no neural recording is present. This output can then be aligned to neural data using the trial start timestamps that should be present in every session where neural data is recorded, or to video data that is synchronized through the state machine, like the e3v BNC TTL sync. Ultimately, the bpod property in a BehDat object (described below) will be replaced with a BpodParser object, massively simplifying the existing find_bpod_event methodology.
+
+## BpodParser Methods
+
+### User-facing methods
+
+`eventTimes = event_times(obj, varargin)`
+
+**OUTPUT:**
+
+* eventTimes - a 1xT cell array of event times from a BpodSession, where T is the number of trials
+
+**INPUT:** 
+
+* 'event' - a named Bpod event ('Port1In', regular expressions ('Port[123]Out'))
+
+*optional name/value pairs*
+
+* 'withinState' - Only return events within certain bpod states
+* 'excludeState' - Opposite behavior from withinState
+* 'priorToState' - Return the last (bpod) event(s) prior to a bpod state
+* 'afterState' - Return the first event(s) after a bpod state
+* 'priorToEvent' - Return the last (bpod) event(s) prior to a bpod event
+* 'afterEvent' - Return the first event(s) after a bpod event
+
+`stateEdges = state_times(obj, stateName)`
+
+**OUTPUT:**
+
+* stateEdges - a 1xN cell array of state edges where N is the number of trials
+
+**INPUT:**
+
+* stateName - a name of a bpod state to find edges for
+
+`frameTimes = e3v_bpod_sync(obj)`
+
+Returns frame times relative to the Bpod State Machine internal clock for a video recorded using the e3vision watchtower on the whitematter PC.
+
+**OUTPUT:**
+
+*frameTimes - a 1xF vector of frame times, where F is the number of frames
+
 
 # BehDat Class
 
@@ -85,7 +136,7 @@ This class is intended to abstract behavioral sessions and their accompanying da
 
 `[sessions, metadata] = select_experiment;`
 
-which brings up an interactive directory selection menu. If your data is properly organized according to the above specifications, this function will initialize an array of BehDat objects that is equal in length to the total number of subfolders across all subjects in the parent directory.
+which brings up an interactive directory selection menu. If your data is properly organized according to the above specifications, this function will initialize an array of BehDat objects that is equal in length to the total number of session subfolders across all subjects within the parent directory.
 
 ## Experiment metadata
 
@@ -124,6 +175,7 @@ This is a structure that accompanies the BehDat object array generated from sele
         > trialStart - a 1xT vector of timestamps denoting the start of trials. Generated during populate_BehDat
     bpod - a SessionData file from a Bpod session
     coordinates - x and y coordinates from DeepLabCut, imported from csv
+    LabGym - an Fx1 cell array of behaviors from LabGym, where F is the number of video frames in the recording. These frames must be somehow synchronized to the experiment, either through input to the Bpod State Machine or to the neural acquisition system. 
 
 ## BehDat Methods
 
@@ -457,6 +509,27 @@ Furthermore, the ExpManager is the class whose objects' functionality enable the
 `get_size(obj)`
 
 This function calculates the size of the ExpManager object and prints it to the command line.
+
+
+# PresetManager Class
+
+This class exists to standardize variable arguments that are accepted by many methods across the BpodParser, BehDat, and ExpManager classes. Some of the most common arguments are 'event', 'trialType', 'outcome', 'stimType', 'trials', 'edges', 'offset', and 'binWidth'. These properties and more are described within the class interface for the PresetManager class, located in the BehDatHelper folder. 
+
+There are several advantages to this strategy - one of the first is the massive reduction in boilerplate code that was previously necessary across many class methods in order to parse variable inputs. The second main advantage is the consistency achieved across classes, eliminating the need to change parameters in many files when the central logic is altered. The most common parameters are now stored in a single place that can also be instantiated outside of a function call. For example, you could create a preset variable for calls you commonly make during analysis, eliminating the need to type long lists of name-value pairs in every function call. 
+
+While it is still supported to call a function as follows:
+
+`eventTimes = obj.find_event('event', 'Forage', 'trialType', 'Laser On', 'outcome', 'Correct', 'stimType', 'Sample1', 'offset', 0.5)`
+
+it may be apparent that this can quickly become cumbersome when switching between sets of parameters. You could instead create a PresetManager object using the same parameters as above:
+
+`presetExample = PresetManager('event', 'Forage', 'trialType', 'Laser On', 'outcome', 'Correct', 'stimType', 'Sample1', 'offset', 0.5)`
+
+This variable can then be passed into methods from the BehDat class (and eventually the ExpManager and BpodParser classes as well) using a single argument:
+
+`eventTimes = obj.find_event('preset', presetExample)`
+
+This is also advantageous in the AbbasCentral app, as it allows the user to save combinations of parameters when analyzing data to rapidly switch between presets rather than manually filling out the fields every time, or even visualize two presets on the same graph to compare data.
 
 # AbbasCentral.mlapp
 

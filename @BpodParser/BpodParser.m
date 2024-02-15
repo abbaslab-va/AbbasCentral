@@ -5,14 +5,18 @@ classdef BpodParser < handle
 
     properties
         session
+        info
     end
 
-    methods
+    methods (Access = public)
 
         % Constructor
-        function obj = BpodParser(bpodSession)
-            if exist("bpodSession", 'var')
+        function obj = BpodParser(bpodSession, info)
+            if nargin == 1
                 obj.session = bpodSession;
+            elseif nargin == 2
+                obj.session = bpodSession;
+                obj.info = info;
             end
         end
 
@@ -23,12 +27,27 @@ classdef BpodParser < handle
                 obj.(currentProp) = copyObj.(currentProp);
             end
         end
-        %% Event Methods
+
+        %%% Event Methods
         
         eventTimes = event_times(obj, varargin)
 
+        figH = event_sankey(obj, varargin)
+
         frameTimes = e3v_bpod_sync(obj, varargin)
         
+        %%% State Methods
+
+        stateEdges = state_times(obj, stateName)
+
+        figH = state_sankey(obj, varargin)
+
+    end
+    
+    %% Internal Methods
+
+    methods (Access = private)
+
         goodTimes = event_within_state(obj, varargin)
 
         goodTimes = event_exclude_state(obj, varargin)
@@ -41,9 +60,7 @@ classdef BpodParser < handle
 
         goodTimes = event_after_event(obj, varargin)
 
-        %% State Methods
-
-        stateEdges = state_times(obj, varargin)
+        goodTrials = trial_intersection_BpodParser(obj, trializedEvents, presets)
 
     end
 end

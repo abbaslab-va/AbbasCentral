@@ -1,4 +1,16 @@
 function goodTimes = event_prior_to_state(obj, varargin)
+% 
+% This method is not intended for use outside the BpodParser class: it is an
+% internal method for the priorToState param in event_times.
+% 
+% OUTPUT: 
+%     goodTimes - a 1xT cell array of 1xE logical vectors, where T is the number of trials
+%     in the session and E is the number of events in a given trial. Ones indicate
+%     times that occur prior to the inputted stateName.
+% INPUT:
+%     stateName - a named Bpod State in the State Machine.
+%     eventTimes - the times from a call to event_times
+%     selectionMode - 'nearest' finds only the event before the given state, 'all' finds everything before the first occurrence
 
 selectionOpts = {'nearest', 'all'};
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
@@ -10,7 +22,7 @@ addParameter(p, 'selectionMode', 'nearest', validSelection);
 parse(p, varargin{:})
 a = p.Results;
 if isempty(a.stateName)
-    goodTimes = cellfun(@(x) ones(size(x)), a.eventTimes, 'uni', 0);
+    goodTimes = cellfun(@(x) true(size(x)), a.eventTimes, 'uni', 0);
     return
 end
 
