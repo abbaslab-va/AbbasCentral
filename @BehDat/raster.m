@@ -20,7 +20,7 @@ function h = raster(obj, neuron, varargin)
     % bin spikes in 1 ms bins. If no trialType or outcome param, return all
     % as one matrix
     if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.stimType)) || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.stimType))
-        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
+        spikeMat = logical(obj.bin_neuron(neuron, 'preset', presets));
     else
         % parse through all inputted trialTypes and outcomes to produce a
         % stacked raster plot of all combos

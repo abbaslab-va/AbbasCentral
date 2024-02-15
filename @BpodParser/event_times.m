@@ -37,3 +37,5 @@ intersectMat = squeeze(intersectMat)';
 intersectMat = cellfun(@(x) vertcat(x{:}), num2cell(intersectMat, 1), 'uni', 0);
 goodEvents = cellfun(@(x) all(x, 1), intersectMat, 'uni', 0);
 eventTimes = cellfun(@(x, y) x(y), eventTimes, goodEvents, 'uni', 0);
+goodTrials = obj.trial_intersection_BpodParser(1:numel(rawEvents), presets);
+eventTimes = eventTimes(goodTrials);

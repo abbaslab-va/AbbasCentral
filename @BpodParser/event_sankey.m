@@ -1,10 +1,10 @@
-function event_sankey(obj, varargin)
-
+function figH = event_sankey(obj, varargin)
+% 
 % This function outputs a sankey plot showing the transitions between bpod
-% events. By default, it displays all event transitions from all trial
+% events. By default, it displays all state transitions from all trial
 % types, but users can use name-value pairs to only analyze certain
 % combinations of trial types and outcomes, as well as only transitions to
-% or from a certain event.
+% or from a certain state.
 % 
 % optional name/value pairs:
 %     'outcome' - an outcome character array found in config.ini
@@ -15,7 +15,7 @@ function event_sankey(obj, varargin)
 %     states to visualize
 
 presets = PresetManager(varargin{:});
-session = obj.bpod;
+session = obj.session;
 defaultInput = {'Port1In', 'Port1Out', 'Port2In', 'Port2Out', 'Port3In', 'Port3Out',...
     'Port4In', 'Port4Out', 'Port5In', 'Port5Out', 'Port6In', 'Port6Out',...
     'Port7In', 'Port7Out', 'Port8In', 'Port8Out'};              % all input events
@@ -30,9 +30,9 @@ inputEvents = p.Results.inputEvents;
 outputEvents = p.Results.outputEvents;
 inputWithinState = p.Results.inputWithinState;
 
-trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets));
+trialsToInclude = find(obj.trial_intersection_BpodParser(1:obj.session.nTrials, presets));
 
-rawEvents2Check = obj.bpod.RawEvents.Trial(trialsToInclude);
+rawEvents2Check = obj.session.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
 endEvent = cell(0);
 
