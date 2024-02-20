@@ -447,7 +447,7 @@ Plots a figure for each cross-correlation between neurons in the BehDat object. 
 
 `weightsIn = trialize_mono_inhibitory(obj, trialType, alignment, edges, varargin)`
 
-### LFP
+### ***LFP***
 
 `[pwr, freqs, phase] = cwt_power(obj, varargin)`
 
@@ -487,7 +487,7 @@ Calculates power, frequency, and phase using the continuous wavelet transform.
 * 'bpod' - a boolean specifying if the bpod event should be used (default = false)
 * 'filter' - a string specifying the type of filter to use (default = 'bandpass', alternate = 'butter')
 
-### Video
+### ***Video***
 
 `stateFrames = find_state_frames(obj, stateName, varargin)`
 
@@ -522,7 +522,7 @@ Trializes the zeroed rotation of a subject around a particular bpod event. By de
 * 'trialType' - a trial type found in config.ini
 * 'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
-### Other methods
+### ***Other***
 
 `noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)`
 
@@ -541,6 +541,17 @@ This function will return a matrix where time points corresponding to periods th
 * 'offset' - a number that defines the offset from the alignment you wish to center around.
 * 'outcome' - an outcome character array found in config.ini
 * 'trialType' - a trial type found in config.ini
+
+`goodTrials = trial_intersection(obj, trializedEvents, presets)`
+
+Abstracts away some complexity from the find_event and find_bpod_event functions. Calculates trial set intersections based on the presets.
+
+**OUTPUT**
+* goodTrials - logical vector for indexing trial sets
+
+**INPUT**
+* trializedEvents - discretized event trial numbers
+* presets - a PresetManager object
 
 # ExpManager Class
 

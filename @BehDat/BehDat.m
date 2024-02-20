@@ -125,9 +125,6 @@ classdef BehDat < handle
 
         [gcx] = gc(obj, varargin)
 
-   
-
-
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 
     %% Video methods

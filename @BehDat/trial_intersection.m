@@ -7,9 +7,7 @@ function goodTrials = trial_intersection(obj, trializedEvents, presets)
 %     goodTrials - logical vector for indexing trial sets
 % INPUT:
 %     trializedEvents - discretized event trial numbers
-%     outcomes - outcomes found in config.ini
-%     trialTypes - trial types found in config.ini
-%     trials - a vector of trial numbers to include
+%     presets - a PresetManager object
 
 numEvents = numel(trializedEvents);
 
