@@ -10,12 +10,12 @@ classdef ConfigProxy < handle
         trialTypes
         stimTypes
         startState
-        regions
     end
 
     methods
         goodTrials = trial_intersection(obj, presets, trializedEvents)
 
+        
     end
 
 end
