@@ -22,7 +22,10 @@ addParameter(p, 'includeNeg', false, @islogical);
 addParameter(p, 'refRegion', [], @ischar)
 addParameter(p, 'targetRegion', [], @ischar)
 parse(p, varargin{:});
-    
+ 
+if ~isfield(obj.spikes, 'exciteOutput')
+    obj.find_mono
+end   
     
 includeNeg = p.Results.includeNeg;
 refRegion = p.Results.refRegion;
