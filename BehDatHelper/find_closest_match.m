@@ -1,4 +1,4 @@
-function closestMatch = find_closest_match(inputStr, cellArray)
+function [closestMatch, valueChanged] = find_closest_match(inputStr, cellArray)
     % Remove non-alphanumeric characters from the input string
     inputStr = regexprep(inputStr, '[^a-zA-Z0-9]', '');
 
@@ -19,6 +19,11 @@ function closestMatch = find_closest_match(inputStr, cellArray)
             minDistance = distance;
             closestMatch = cellArray{i};
         end
+    end
+    if ~strcmp(closestMatch, inputStr)
+        valueChanged = true;
+    else
+        valueChanged = false;
     end
 end
 

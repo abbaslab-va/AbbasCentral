@@ -13,7 +13,10 @@ function [timestamps, bpodTrials] = find_event(obj, varargin)
 
 presets = PresetManager(varargin{:});
 offset = round(presets.offset * obj.info.baud);
-eventField = find_closest_match(presets.event, fields(obj.timestamps.keys));
+[eventField, eventEdited] = find_closest_match(presets.event, fields(obj.timestamps.keys));
+if eventEdited
+    sprintf("Closest match found to %s: '%s'", presets.event, eventField)
+end
 
 try
     timestamp = obj.timestamps.keys.(eventField);
