@@ -1,4 +1,4 @@
-function goodTrials = trial_intersection_BpodParser(obj, varargin)
+function goodTrials = trial_intersection(obj, presets)
 
 % Abstracts away some complexity from the find_event and find_bpod_event
 % functions. Calculates trial set intersections
@@ -10,15 +10,14 @@ function goodTrials = trial_intersection_BpodParser(obj, varargin)
 %     outcomes - outcomes found in config.ini
 %     trialTypes - trial types found in config.ini
 %     trials - a vector of trial numbers to include
-presets = PresetManager(varargin{:});
 
+numTrials = numel(trializedEvents);
 bpodStruct = obj.session;
-numTrials = bpodStruct.nTrials;
-eventTrialTypes = bpodStruct.TrialTypes;
-eventOutcomes = bpodStruct.SessionPerformance;
+eventTrialTypes = bpodStruct.TrialTypes(trializedEvents);
+eventOutcomes = bpodStruct.SessionPerformance(trializedEvents);
 
 if isfield(bpodStruct, 'StimTypes')
-    eventStimTypes = bpodStruct.StimTypes;
+    eventStimTypes = bpodStruct.StimTypes(trializedEvents);
     stimTypes = presets.stimType;
 else
     stimTypes = [];
@@ -27,7 +26,6 @@ end
 trialTypes = presets.trialType;
 outcomes = presets.outcome;
 trials = presets.trials;
-delayLength = presets.delayLength;
 
 
 %% Trial Types
@@ -36,14 +34,14 @@ if ischar(trialTypes)
 end
 
 if isempty(trialTypes)
-    isDesiredTT = true(1, numTrials);
+    isDesiredTT = true(1, numEvents);
 else
     numTT = numel(trialTypes);
-    intersectMatTT = zeros(numTT, numTrials);
+    intersectMatTT = zeros(numTT, numEvents);
     for tt = 1:numTT
         trialTypeString = regexprep(trialTypes{tt}, " ", "_");
         try
-            trialTypeVal = obj.config.trialTypes.(trialTypeString);
+            trialTypeVal = obj.info.trialTypes.(trialTypeString);
             intersectMatTT(tt, :) = ismember(eventTrialTypes, trialTypeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
@@ -59,14 +57,14 @@ if ischar(stimTypes)
 end
 
 if isempty(stimTypes)
-    isDesiredStimType = true(1, numTrials);
+    isDesiredStimType = true(1, numEvents);
 else
     numStimTypes = numel(stimTypes);
-    intersectMatST = zeros(numStimTypes, numTrials);
+    intersectMatST = zeros(numStimTypes, numEvents);
     for s = 1:numStimTypes
         stimTypeString = regexprep(stimTypes{s}, " ", "_");
         try
-            stimTypeVal = obj.config.stimTypes.(stimTypeString);
+            stimTypeVal = obj.info.stimTypes.(stimTypeString);
             intersectMatST(s, :) = ismember(eventStimTypes, stimTypeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No StimType %s found. Please edit config file and recreate object', stimTypeString));
@@ -82,14 +80,14 @@ if ischar(outcomes)
 end
 
 if isempty(outcomes)
-    isDesiredOutcome = true(1, numTrials);
+    isDesiredOutcome = true(1, numEvents);
 else
     numOutcomes = numel(outcomes);
-    intersectMatO = zeros(numOutcomes, numTrials);
+    intersectMatO = zeros(numOutcomes, numEvents);
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomes{o}, " ", "_");
         try
-            outcomeVal = obj.config.outcomes.(outcomeString);
+            outcomeVal = obj.info.outcomes.(outcomeString);
             intersectMatO(o, :) = ismember(eventOutcomes, outcomeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
@@ -99,22 +97,11 @@ else
     isDesiredOutcome = any(intersectMatO, 1);
 end
 
-%% Delay Length
-if isempty(delayLength)
-    isDesiredDelay = ones(1, numTrials);
-else
-    try
-        delayTimes = extractfield(bpodStruct.GUI, 'DelayHoldTime');
-        isDesiredDelay = discretize(delayTimes, delayLength);
-        isDesiredDelay = ~isnan(isDesiredDelay);
-    end
-end
-
 %% Trial numbers
 if isempty(trials)
-    trialIncluded = ones(1, numTrials);
+    trialIncluded = ones(1, numEvents);
 else
     trialIncluded = ismember(trializedEvents, trials);
 end
 
-goodTrials = isDesiredTT & isDesiredStimType & isDesiredOutcome & isDesiredDelay & trialIncluded;
+goodTrials = isDesiredTT & isDesiredStimType & isDesiredOutcome & trialIncluded;

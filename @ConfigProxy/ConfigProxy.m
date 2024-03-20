@@ -13,7 +13,17 @@ classdef ConfigProxy < handle
     end
 
     methods
-        goodTrials = trial_intersection(obj, presets, trializedEvents)
+
+        function obj = ConfigProxy(iniPath)
+            I = INI;
+            I.read(iniPath)
+            obj.outcomes = I.outcomes;
+            obj.trialTypes = I.trialTypes;
+            obj.stimTypes = I.stimTypes;
+            obj.startState = I.info.StartState;
+        end
+
+        goodTrials = trial_intersection(obj, presets)
 
         
     end

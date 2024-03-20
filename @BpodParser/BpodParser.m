@@ -6,6 +6,7 @@ classdef BpodParser < handle
     properties
         session
         info
+        config
     end
 
     methods (Access = public)
@@ -43,7 +44,13 @@ classdef BpodParser < handle
         %%% Video Methods
 
         frameTimes = e3v_bpod_sync(obj, varargin)
-        
+
+        %%% Other
+
+        [numTT, numCorrect] = performance(obj, varargin)
+
+        goodTrials = trial_intersection_BpodParser(obj, varargin)
+
     end
     
     %% Internal Methods
@@ -62,7 +69,6 @@ classdef BpodParser < handle
 
         goodTimes = event_after_event(obj, varargin)
 
-        goodTrials = trial_intersection_BpodParser(obj, trializedEvents, presets)
 
     end
 end
