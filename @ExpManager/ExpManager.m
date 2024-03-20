@@ -25,24 +25,25 @@ classdef ExpManager < handle
 
         function get_size(obj) 
             props = properties(obj); 
-           totSize = 0; 
+            totSize = 0; 
            
-           for ii=1:length(props) 
-              currentProperty = getfield(obj, char(props(ii))); 
-              s = whos('currentProperty'); 
-              totSize = totSize + s.bytes; 
-              for sess = 1:numel(obj.sessions)
-                  totSize = totSize + obj.sessions(sess).get_size;
-              end
-           end
+            for ii=1:length(props) 
+                s = whos('currentProperty'); 
+                totSize = totSize + s.bytes; 
+                for sess = 1:numel(obj.sessions)
+                    totSize = totSize + obj.sessions(sess).get_size;
+                end
+            end
           
-           fprintf(1, '%d bytes\n', totSize); 
+            fprintf(1, '%d bytes\n', totSize); 
         end
             
 
         %% Bpod methods
         
-        plot_performance(obj, varargin);
+        plot_performance(obj, varargin)
+
+        [numTT, numCorrect] = calculate_performance(obj, varargin)
 
         %% Spike methods
 

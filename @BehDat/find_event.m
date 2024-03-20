@@ -15,7 +15,7 @@ presets = PresetManager(varargin{:});
 offset = round(presets.offset * obj.info.baud);
 [eventField, eventEdited] = find_closest_match(presets.event, fields(obj.timestamps.keys));
 if eventEdited
-    sprintf("Closest match found to %s: '%s'", presets.event, eventField)
+    disp(sprintf("Closest match found to %s: '%s'", presets.event, eventField))
 end
 
 try

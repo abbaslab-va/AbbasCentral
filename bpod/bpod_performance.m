@@ -22,9 +22,10 @@ end
 %Must have the SessionPerformance variable saved to the Bpod structure to use this function
 perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerformance variable found in bpodSession');
 %User can enter an integer value as the second argument to change the default outcome evaluation
+
 nTrials = bpodSession.nTrials;
 trialTypes = bpodSession.TrialTypes;
-nTT = max(trialTypes);
+nTT = numel(unique(trialTypes));
 if ~isfield(bpodSession, 'SessionPerformance')
     throw(perfException)
 end

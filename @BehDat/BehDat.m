@@ -53,7 +53,7 @@ classdef BehDat < handle
         end
     %% Bpod methods
         
-        [numTT, numCorrect] = outcomes(obj, val)
+        [numTT, numCorrect] = outcomes(obj, varargin)
 
         figH = plot_performance(obj, outcome, varargin)
 
