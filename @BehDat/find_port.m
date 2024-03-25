@@ -111,6 +111,10 @@ sortedTimes = cellfun(@(x, y) x(y), rawData2Check.OriginalEventTimestamps, event
 % Event times are now organized chronologically in sortedTimes, with a
 % corresponding cell array for the names of the events
 currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, goodEventTimes, 'uni', 0);
+for e=1:length(currentEventTimes)
+    currentEventTimes{e}(end-1:end)=0;
+    currentEventTimes{e}(1:2)=0;
+end 
 eventPrior = cellfun(@(x) circshift(x, -2),  currentEventTimes, 'uni', 0);
 prevPort= cellfun(@(x, y) x(y), sortedNames, eventPrior, 'uni', 0);
 prevPortTimes= cellfun(@(x, y) x(y), sortedTimes, eventPrior, 'uni', 0);
@@ -238,38 +242,37 @@ nextPort=nextPort(emptyIdx);
 prevPort=prevPort(emptyIdx);
 
 
-trialswhereEventisfirst=cellfun(@(x) x(1),allTrials);
-trialswhereEventislast=cellfun(@(x) x(end),allTrials);
+%trialswhereEventisfirst=cellfun(@(x) x(1),allTrials);
+%trialswhereEventislast=cellfun(@(x) x(end),allTrials);
 
 %%
 
-for c=1:numel(allTrials)
-    if trialswhereEventisfirst(c)==1 
-        adjustlogical{c}=[0 ones(1,numel(eventTimesCorrected{c}(2:end)))];
-    else 
-        adjustlogical{c}=ones(1,numel(eventTimesCorrected{c}));
-    end 
-end 
+% for c=1:numel(allTrials)
+%     if goodEventTimes{c}(1)==sortedTimes{c}(1)
+%         adjustlogical{c}=[0 ones(1,numel(eventTimesCorrected{c}(2:end)))];
+%     else 
+%         adjustlogical{c}=ones(1,numel(eventTimesCorrected{c}));
+%     end 
+% end 
+% 
+% 
+% 
+% for c=1:numel(allTrials)
+%     if goodEventTimes{c}(end)==sortedTimes{c}(end)
+%         adjustlogicalEnd{c}=[ones(1,numel(eventTimesCorrected{c}(1:end-1))) 0];
+%     else 
+%         adjustlogicalEnd{c}=ones(1,numel(eventTimesCorrected{c}));
+%     end 
+% end 
 
-
-for c=1:numel(allTrials)
-    if trialswhereEventislast(c)==1 
-        adjustlogicalEnd{c}=[ones(1,numel(eventTimesCorrected{c}(1:end-1))) 0];
-    else 
-        adjustlogicalEnd{c}=ones(1,numel(eventTimesCorrected{c}));
-    end 
-end 
-
-adjustlogical=logical([adjustlogical{:}]);
-adjustlogicalEnd=logical([adjustlogicalEnd{:}]);
+%adjustlogical=logical([adjustlogical{:}]);
+%adjustlogicalEnd=logical([adjustlogicalEnd{:}]);
 
 prevPortLeaveOutLogical=logical([prevPortLeaveOut{:}]);
 nextPortLeaveOutLogical=logical([nextPortLeaveOut{:}]);
 
 
-adjust=adjustlogical & adjustlogicalEnd & ~prevPortLeaveOutLogical & ~nextPortLeaveOutLogical; 
-
-
+adjust= ~prevPortLeaveOutLogical & ~nextPortLeaveOutLogical; 
 
 %%
 
