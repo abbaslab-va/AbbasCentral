@@ -19,6 +19,10 @@ else
     h = figure;
 end
 
+if ~isfield(obj.spikes, 'exciteOutput')
+    obj.find_mono
+end
+
 numNeurons = numel(obj.spikes);
 animalName = obj.info.name;
 connGraphEx = {[], []};

@@ -14,10 +14,26 @@ function [numTT, numCorrect] = outcomes(obj, varargin)
 %     of trial types with the outcome specified by varargin. If no argument
 %     is given, the default outcome returned by numCorrect is for 1.
 
-p = inputParser;
-addParameter(p, 'outcome', 1, @isnumeric);
-parse(p, varargin{:});
-a = p.Results;
-outcome = a.outcome;
+presets = PresetManager(varargin{:});
+if isempty(presets.outcome)
+    outcome = 1;
+end
 
-[numTT, numCorrect] = bpod_performance(obj.bpod, outcome);
+if isa(obj.bpod, 'BpodParser')
+    bpodStruct = obj.bpod.session;
+else
+    bpodStruct = obj.bpod;
+end
+
+if isempty(presets.trialType)
+    [numTT, numCorrect] = bpod_performance(obj.bpod.session, outcome);
+    return
+elseif isa(obj.bpod, 'BpodParser')
+    trialType = obj.bpod.config.trialTypes.(presets.trialType);
+else
+    trialType = obj.info.trialTypes.(presets.trialType);
+end
+
+[numTT, numCorrect] = bpod_performance(bpodStruct, outcome);
+numTT = numTT(trialType);
+numCorrect = numCorrect(trialType);

@@ -53,7 +53,7 @@ classdef BehDat < handle
         end
     %% Bpod methods
         
-        [numTT, numCorrect] = outcomes(obj, val)
+        [numTT, numCorrect] = outcomes(obj, varargin)
 
         figH = plot_performance(obj, outcome, varargin)
 
@@ -80,7 +80,7 @@ classdef BehDat < handle
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 
-        binnedSpikes = bin_spikes(obj, eventEdges, binSize)
+        binnedSpikes = bin_spikes(obj, eventEdges, binSize, neuronNo)
 
         binnedTrials = bin_neuron(obj, neuron, varargin)
 
@@ -124,9 +124,6 @@ classdef BehDat < handle
         [lfp_all, chanPhase] = lfp_align(obj, varargin)
 
         [gcx] = gc(obj, varargin)
-
-   
-
 
         %plot_cwt(pwr, channel, panel)    panel is an optional arg
 

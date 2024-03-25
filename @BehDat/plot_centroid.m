@@ -17,7 +17,7 @@ else
     eventTimes = obj.find_event('preset', presets)';
 end
 
-if isempty(eventTimes)
+if isempty(eventTimes) || isempty(obj.coordinates)
     coordCell = cell(0, 1);
     return
 end

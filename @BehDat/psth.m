@@ -21,7 +21,7 @@ function spikesSmooth=psth(obj, neuron, varargin)
     % as one matrix
     if (isempty(presets.trialType) && isempty(presets.outcome) && isempty(presets.trials) && isempty(presets.stimType)) ...
             || (~iscell(presets.trialType) && ~iscell(presets.outcome) && ~iscell(presets.trials) && ~iscell(presets.stimType))
-        spikeMat = boolean(obj.bin_neuron(neuron, 'preset', presets));
+        spikeMat = logical(obj.bin_neuron(neuron, 'preset', presets));
         labelY{1} = "";
         labelY{2} = "All";
     else
@@ -81,7 +81,7 @@ function spikesSmooth=psth(obj, neuron, varargin)
                         else
                             currentTrials = presets.trials{tr};
                         end
-                        spikeMat{ctr} = boolean(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
+                        spikeMat{ctr} = logical(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
                         'trialType', currentTT, 'outcome', currentOutcome, 'stimType', currentStim, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
                         'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
                         labelY{ctr*2 - 1} = "";
@@ -159,22 +159,9 @@ function label_psth(sessObj, figH, neuron, params, panel)
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XColor', 'k', 'YColor', 'k', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 
-function [lineh,shadeh]=ShadedErrorPlot(x,means,sem,linecolor,shadecolor,alpha)
-    x=reshape(x,length(x),1);
-    means=reshape(means,length(means),1);
-    sem=reshape(sem,length(sem),1);
-    shadeh=fill([x;x(end:-1:1)],[means-sem;means(end:-1:1)+sem(end:-1:1)],shadecolor,'edgecolor',shadecolor,'facealpha',alpha,'edgealpha',alpha);hold on
-    if alpha <= .3
-        lineStyle = '-';
-    else
-        lineStyle = '--';
-    end
-    lineh=semilogx(x,means,'color',linecolor,'LineWidth',1.5, 'LineStyle', lineStyle);hold on
-end
-
 function plot_all_conditions(means, sem, addShade, color)
     if addShade
-        ShadedErrorPlot(1:numel(means), means, sem, color(2, :), color(1, :), .3);
+        shaded_error_plot(1:numel(means), means, sem, color(2, :), color(1, :), .3);
     else
         plot(means, 'color', color(2, :), 'LineWidth', 1.5);
     end

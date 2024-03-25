@@ -1,4 +1,4 @@
-function goodTrials = trial_intersection(obj, trializedEvents, presets)
+function goodTrials = trial_intersection_BpodParser(obj, varargin)
 
 % Abstracts away some complexity from the find_event and find_bpod_event
 % functions. Calculates trial set intersections
@@ -7,22 +7,18 @@ function goodTrials = trial_intersection(obj, trializedEvents, presets)
 %     goodTrials - logical vector for indexing trial sets
 % INPUT:
 %     trializedEvents - discretized event trial numbers
-%     presets - a PresetManager object
+%     outcomes - outcomes found in config.ini
+%     trialTypes - trial types found in config.ini
+%     trials - a vector of trial numbers to include
+presets = PresetManager(varargin{:});
 
-numEvents = numel(trializedEvents);
-
-
-if isa(obj.bpod, 'BpodParser')
-    bpodStruct = obj.bpod.session;
-else
-    bpodStruct = obj.bpod;
-end
-
-eventTrialTypes = bpodStruct.TrialTypes(trializedEvents);
-eventOutcomes = bpodStruct.SessionPerformance(trializedEvents);
+bpodStruct = obj.session;
+numTrials = bpodStruct.nTrials;
+eventTrialTypes = bpodStruct.TrialTypes;
+eventOutcomes = bpodStruct.SessionPerformance;
 
 if isfield(bpodStruct, 'StimTypes')
-    eventStimTypes = bpodStruct.StimTypes(trializedEvents);
+    eventStimTypes = bpodStruct.StimTypes;
     stimTypes = presets.stimType;
 else
     stimTypes = [];
@@ -31,6 +27,7 @@ end
 trialTypes = presets.trialType;
 outcomes = presets.outcome;
 trials = presets.trials;
+delayLength = presets.delayLength;
 
 
 %% Trial Types
@@ -39,14 +36,14 @@ if ischar(trialTypes)
 end
 
 if isempty(trialTypes)
-    isDesiredTT = true(1, numEvents);
+    isDesiredTT = true(1, numTrials);
 else
     numTT = numel(trialTypes);
-    intersectMatTT = zeros(numTT, numEvents);
+    intersectMatTT = zeros(numTT, numTrials);
     for tt = 1:numTT
         trialTypeString = regexprep(trialTypes{tt}, " ", "_");
         try
-            trialTypeVal = obj.info.trialTypes.(trialTypeString);
+            trialTypeVal = obj.config.trialTypes.(trialTypeString);
             intersectMatTT(tt, :) = ismember(eventTrialTypes, trialTypeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No TrialType %s found. Please edit config file and recreate object', trialTypeString));
@@ -62,14 +59,14 @@ if ischar(stimTypes)
 end
 
 if isempty(stimTypes)
-    isDesiredStimType = true(1, numEvents);
+    isDesiredStimType = true(1, numTrials);
 else
     numStimTypes = numel(stimTypes);
-    intersectMatST = zeros(numStimTypes, numEvents);
+    intersectMatST = zeros(numStimTypes, numTrials);
     for s = 1:numStimTypes
         stimTypeString = regexprep(stimTypes{s}, " ", "_");
         try
-            stimTypeVal = obj.info.stimTypes.(stimTypeString);
+            stimTypeVal = obj.config.stimTypes.(stimTypeString);
             intersectMatST(s, :) = ismember(eventStimTypes, stimTypeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No StimType %s found. Please edit config file and recreate object', stimTypeString));
@@ -85,14 +82,14 @@ if ischar(outcomes)
 end
 
 if isempty(outcomes)
-    isDesiredOutcome = true(1, numEvents);
+    isDesiredOutcome = true(1, numTrials);
 else
     numOutcomes = numel(outcomes);
-    intersectMatO = zeros(numOutcomes, numEvents);
+    intersectMatO = zeros(numOutcomes, numTrials);
     for o = 1:numOutcomes
         outcomeString = regexprep(outcomes{o}, " ", "_");
         try
-            outcomeVal = obj.info.outcomes.(outcomeString);
+            outcomeVal = obj.config.outcomes.(outcomeString);
             intersectMatO(o, :) = ismember(eventOutcomes, outcomeVal);
         catch
             mv = MException('BehDat:MissingVar', sprintf('No Outcome %s found. Please edit config file and recreate object', outcomeString));
@@ -102,11 +99,22 @@ else
     isDesiredOutcome = any(intersectMatO, 1);
 end
 
+%% Delay Length
+if isempty(delayLength)
+    isDesiredDelay = ones(1, numTrials);
+else
+    try
+        delayTimes = extractfield(bpodStruct.GUI, 'DelayHoldTime');
+        isDesiredDelay = discretize(delayTimes, delayLength);
+        isDesiredDelay = ~isnan(isDesiredDelay);
+    end
+end
+
 %% Trial numbers
 if isempty(trials)
-    trialIncluded = ones(1, numEvents);
+    trialIncluded = ones(1, numTrials);
 else
     trialIncluded = ismember(trializedEvents, trials);
 end
 
-goodTrials = isDesiredTT & isDesiredStimType & isDesiredOutcome & trialIncluded;
+goodTrials = isDesiredTT & isDesiredStimType & isDesiredOutcome & isDesiredDelay & trialIncluded;

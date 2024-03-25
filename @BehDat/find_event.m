@@ -12,11 +12,12 @@ function [timestamps, bpodTrials] = find_event(obj, varargin)
 %     'withinTimes' - a 1x2 vector specifying times to select events within (seconds)
 
 presets = PresetManager(varargin{:});
-
 offset = round(presets.offset * obj.info.baud);
-% withinTimes = p.Results.withinTimes;
+[eventField, eventEdited] = find_closest_match(presets.event, fields(obj.timestamps.keys));
+if eventEdited
+    disp(sprintf("Closest match found to %s: '%s'", presets.event, eventField))
+end
 
-eventField = find_closest_match(presets.event, fields(obj.timestamps.keys));
 try
     timestamp = obj.timestamps.keys.(eventField);
 catch
@@ -24,8 +25,8 @@ catch
     throw(mv)
 end
 timestamps = obj.timestamps.times(obj.timestamps.codes == timestamp) + offset;
-
 eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
+
 %This logic is here while transitioning to using BpodParser in the BehDat
 %class instead of a BpodSession struct.
 try
@@ -33,17 +34,8 @@ try
 catch
     eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
 end
-% trialInBounds = trialIncluded;
 
 bpodTrials = obj.trial_intersection(eventTrials, presets);
-% 
-% if ~isempty(withinTimes)
-%     edgesInSamples = withinTimes * obj.info.baud;
-%     trialInBounds = discretize(timestamps, edgesInSamples);
-%     trialInBounds = ~isnan(trialInBounds);
-% end
-% 
-% bpodTrials = isDesiredTT & isDesiredOutcome & trialIncluded & trialInBounds;
 timestamps = timestamps(bpodTrials);
 
 if presets.trialized  

@@ -5,14 +5,19 @@ classdef BpodParser < handle
 
     properties
         session
+        info
+        config
     end
 
     methods (Access = public)
 
         % Constructor
-        function obj = BpodParser(bpodSession)
-            if exist("bpodSession", 'var')
+        function obj = BpodParser(bpodSession, info)
+            if nargin == 1
                 obj.session = bpodSession;
+            elseif nargin == 2
+                obj.session = bpodSession;
+                obj.info = info;
             end
         end
 
@@ -23,16 +28,28 @@ classdef BpodParser < handle
                 obj.(currentProp) = copyObj.(currentProp);
             end
         end
-        
+
         %%% Event Methods
         
         eventTimes = event_times(obj, varargin)
 
-        frameTimes = e3v_bpod_sync(obj, varargin)
+        event_sankey(obj, varargin)
         
         %%% State Methods
 
-        stateEdges = state_times(obj, varargin)
+        stateEdges = state_times(obj, stateName)
+
+        state_sankey(obj, varargin)
+
+        %%% Video Methods
+
+        frameTimes = e3v_bpod_sync(obj, varargin)
+
+        %%% Other
+
+        [numTT, numCorrect] = performance(obj, varargin)
+
+        goodTrials = trial_intersection_BpodParser(obj, varargin)
 
     end
     
@@ -51,6 +68,7 @@ classdef BpodParser < handle
         goodTimes = event_prior_to_event(obj, varargin)
 
         goodTimes = event_after_event(obj, varargin)
+
 
     end
 end

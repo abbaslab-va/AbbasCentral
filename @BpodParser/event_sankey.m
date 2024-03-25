@@ -1,5 +1,5 @@
 function event_sankey(obj, varargin)
-
+% 
 % This function outputs a sankey plot showing the transitions between bpod
 % events. By default, it displays all event transitions from all trial
 % types, but users can use name-value pairs to only analyze certain
@@ -15,13 +15,14 @@ function event_sankey(obj, varargin)
 %     states to visualize
 
 presets = PresetManager(varargin{:});
-session = obj.bpod;
+session = obj.session;
 defaultInput = {'Port1In', 'Port1Out', 'Port2In', 'Port2Out', 'Port3In', 'Port3Out',...
     'Port4In', 'Port4Out', 'Port5In', 'Port5Out', 'Port6In', 'Port6Out',...
     'Port7In', 'Port7Out', 'Port8In', 'Port8Out'};              % all input events
 defaultOutput = defaultInput;                                   % all output events
 validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
 p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p, 'inputEvents', defaultInput, validField);
 addParameter(p, 'outputEvents', defaultOutput, validField);
 addParameter(p, 'inputWithinState', [], validField);
@@ -30,9 +31,9 @@ inputEvents = p.Results.inputEvents;
 outputEvents = p.Results.outputEvents;
 inputWithinState = p.Results.inputWithinState;
 
-trialsToInclude = find(obj.trial_intersection(1:obj.bpod.nTrials, presets));
+trialsToInclude = find(obj.trial_intersection_BpodParser(1:obj.session.nTrials, presets));
 
-rawEvents2Check = obj.bpod.RawEvents.Trial(trialsToInclude);
+rawEvents2Check = obj.session.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
 endEvent = cell(0);
 

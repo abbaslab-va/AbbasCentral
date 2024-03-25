@@ -1,5 +1,4 @@
-function [numTT, numCorrect] = bpod_performance(bpodSession, correctOutcome)
-
+function [numTT, numCorrect] = performance(obj, varargin)
 % This function returns a vector by trial type of the number of completed trials of each trial type, 
 % as well as the number correctly completed for the trial type of interest.
 %
@@ -16,22 +15,28 @@ function [numTT, numCorrect] = bpod_performance(bpodSession, correctOutcome)
 %     of trial types with the outcome specified by varargin. If no argument
 %     is given, the default outcome returned by numCorrect is for 1.
 
-if ~exist('correctOutcome', 'var')
+presets = PresetManager(varargin{:});
+goodTrials = obj.trial_intersection_BpodParser('preset', presets);
+
+if isempty(presets.outcome)
     correctOutcome = 1;
+else
+    correctOutcome = presets.outcome;
 end
+
 %Must have the SessionPerformance variable saved to the Bpod structure to use this function
 perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerformance variable found in bpodSession');
 %User can enter an integer value as the second argument to change the default outcome evaluation
 
-nTrials = bpodSession.nTrials;
-trialTypes = bpodSession.TrialTypes;
+trialTypes = obj.session.TrialTypes;
 nTT = numel(unique(trialTypes));
-if ~isfield(bpodSession, 'SessionPerformance')
+if ~isfield(obj.session, 'SessionPerformance')
     throw(perfException)
 end
-correctChoice = numel(find(bpodSession.SessionPerformance == correctOutcome));
+numTT = zeros(1, nTT);
+numCorrect = numTT;
 for tt = 1:nTT
-    ttInd = find(bpodSession.TrialTypes == tt);
-    numTT(tt) = numel(ttInd);
-    numCorrect(tt) = numel(find(bpodSession.SessionPerformance(ttInd) == correctOutcome));
+    ttInd = obj.session.TrialTypes(goodTrials) == tt;
+    numTT(tt) = numel(find(ttInd));
+    numCorrect(tt) = numel(find(obj.session.SessionPerformance(ttInd) == correctOutcome));
 end
