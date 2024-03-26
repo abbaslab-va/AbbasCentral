@@ -22,24 +22,24 @@ offset = round(presets.offset * obj.info.baud);
 
 eventTimes = obj.bpod.event_times('preset', presets);
 
-
-% Find trial start times in acquisition system timestamps
-trialStartTimes = num2cell(obj.find_event('event', 'Trial Start'), 1);
-numTrialStart = numel(trialStartTimes);
-eventTrials = 1:numTrialStart;
-% Intersect all logical matrices to index bpod trial cells with
-goodTrials = obj.trial_intersection(eventTrials, presets);
-rawEvents = obj.bpod.session.RawEvents.Trial;
-rawEvents2Check = rawEvents(goodTrials);
-% Find bpod intra-trial times for Trial Start timestamp
-bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
-% Calculate differences between bpod event times and trial start times and
-% convert to sampling rate of acquisition system
-eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, eventTimes, bpodStartTimes, 'uni', 0);
-% subtract the factor by which bpod outpaces the blackrock system
-averageOffset = num2cell(obj.sampling_diff(presets));
-eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffset, 'uni', 0);
-eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
+eventTimesCorrected = obj.bpod_to_blackrock(eventTimes, presets);
+% % Find trial start times in acquisition system timestamps
+% trialStartTimes = num2cell(obj.find_event('event', 'Trial Start'), 1);
+% numTrialStart = numel(trialStartTimes);
+% eventTrials = 1:numTrialStart;
+% % Intersect all logical matrices to index bpod trial cells with
+% goodTrials = obj.trial_intersection(eventTrials, presets);
+% rawEvents = obj.bpod.session.RawEvents.Trial;
+% rawEvents2Check = rawEvents(goodTrials);
+% % Find bpod intra-trial times for Trial Start timestamp
+% bpodStartTimes = cellfun(@(x) x.States.(obj.info.startState)(1), rawEvents2Check, 'uni', 0);
+% % Calculate differences between bpod event times and trial start times and
+% % convert to sampling rate of acquisition system
+% eventOffset = cellfun(@(x, y) (x - y) * obj.info.baud, eventTimes, bpodStartTimes, 'uni', 0);
+% % subtract the factor by which bpod outpaces the blackrock system
+% averageOffset = num2cell(obj.sampling_diff(presets));
+% eventOffsetCorrected = cellfun(@(x, y) round(x - x.*y), eventOffset, averageOffset, 'uni', 0);
+% eventTimesCorrected = cellfun(@(x, y) x + y, trialStartTimes, eventOffsetCorrected, 'uni', 0);
 
 if presets.trialized 
     timestamps = cellfun(@(x) x + offset, eventTimesCorrected, 'uni', 0);

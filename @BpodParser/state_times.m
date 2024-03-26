@@ -1,10 +1,12 @@
-function stateEdges = state_times(obj, stateName)
+function stateEdges = state_times(obj, stateName, varargin)
 
 % OUTPUT:
 %     stateEdges - a 1xN cell array of state edges where N is the number of trials.
 % 
 % INPUTS:
 %     stateName - a name of a bpod state to find edges for
+
+presets = PresetManager(varargin{:});
 
 % Trialized bpod information
 rawEvents = obj.session.RawEvents.Trial;
@@ -19,4 +21,6 @@ stateTimesBpod = cellfun(@(x, y) x(y), trialCells, fieldsToIndex, 'uni', 0);
 stateTimes = cellfun(@(x) cat(1, x{:}), stateTimesBpod, 'uni', 0);
 stateEdges = cellfun(@(x) x(all(~isnan(x), 2), :), stateTimes, 'uni', 0);
 stateEdges = cellfun(@(x) num2cell(x, 2), stateEdges, 'uni', 0);
+goodTrials = obj.trial_intersection_BpodParser('preset', presets);
+stateEdges = stateEdges(goodTrials);
 %stateEdges = cat(1, stateEdges{:});
