@@ -117,7 +117,7 @@ classdef BehDat < handle
 
         [pwr, freqs, phase, lfpAll] = cwt_power(obj, event, varargin)
 
-        [ppc_all, spikePhase, ppc_sig]  = ppc(obj, event, varargin)
+        [ppc_all, spikePhase, ppc_sig]  = ppc(obj, varargin)
 
         filteredLFP = filter_signal(obj, event, varargin)
 
