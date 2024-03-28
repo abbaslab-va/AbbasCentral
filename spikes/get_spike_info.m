@@ -70,7 +70,7 @@ try
 [~, child] = fileparts(sessPath);
 
 NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')));
-if NS6 == -1
+if ~isa(NS6,'struct') && NS6 == -1
     NS6_dir = dir([sessPath,'\*.ns6']);
     NS6 = openNSx(fullfile(sessPath,NS6_dir.name));    
 end
@@ -128,11 +128,11 @@ catch
     disp('No waveforms - likely need more RAM - continueing without')
     [~, child] = fileparts(sessPath);
 
-NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')),'noread');
-if NS6 == -1
-    NS6_dir = dir('*.ns6');
-    NS6 = openNSx(fullfile(sessPath,NS6_dir.name),'noread');    
-end
+%NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')),'noread');
+% if NS6 == -1
+%     NS6_dir = dir('*.ns6');
+%     NS6 = openNSx(fullfile(sessPath,NS6_dir.name),'noread');    
+% end
     numSamples = NS6.MetaTags.DataPoints;
 parfor neuron = 1:numNeurons
     totalSpikes = length(spikeTimeArray{neuron});
