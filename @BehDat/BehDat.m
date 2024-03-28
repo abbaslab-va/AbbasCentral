@@ -72,6 +72,8 @@ classdef BehDat < handle
         add_focus_trialTypes(obj)
         
         [cPortTimes3,cReward3,pPortTimes3,pReward3,pPid3r,nPortTimes3,nReward3,nPid3r,adjustlogical3,chirpOccur3]=find_port(obj,varargin);
+        
+        portInfo = find_port_BpodParser(obj, varargin)
 
 
     %% Spike methods
@@ -152,6 +154,8 @@ classdef BehDat < handle
         bpodOffset = samplingDiff(obj)
 
         goodTrials = trial_intersection(obj, trializedEvents, presets)
+
+        brTimes = bpod_to_blackrock(obj, bpodTimes, presets)
 
     end
 end

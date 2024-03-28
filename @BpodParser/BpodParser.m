@@ -31,13 +31,13 @@ classdef BpodParser < handle
 
         %%% Event Methods
         
-        eventTimes = event_times(obj, varargin)
+        [eventTimes, eventNames] = event_times(obj, varargin)
 
         event_sankey(obj, varargin)
         
         %%% State Methods
 
-        stateEdges = state_times(obj, stateName)
+        stateEdges = state_times(obj, stateName, varargin)
 
         state_sankey(obj, varargin)
 
