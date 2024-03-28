@@ -64,42 +64,43 @@ classdef PresetManager < handle
             addParameter(p, 'ignoreRepeats', true, @islogical);
             addParameter(p, 'freqLimits', [1 120], validVectorSize);
             addParameter(p, 'panel', []);
-            addParameter(p, 'preset', [], validPreset)  % Overwrites all other presets
+            addParameter(p, 'preset', [], validPreset)
             parse(p, varargin{:});
             a = p.Results;
 
             % Distribute inputs/default values
-            obj.subset = a.subset;
-            obj.event = a.event;
-            obj.bpod = a.bpod;
-            obj.trialized = a.trialized;
-            obj.trials = a.trials;
-            obj.trialType = a.trialType;
-            obj.stimType = a.stimType;
-            obj.outcome = a.outcome;
-            obj.delayLength = a.delayLength;
-            obj.offset = a.offset;
-            obj.edges = a.edges;
-            obj.binWidth = a.binWidth;
-            obj.withinState = a.withinState;
-            obj.excludeState = a.excludeState;
-            obj.priorToState = a.priorToState;
-            obj.priorToEvent = a.priorToEvent;
-            obj.afterState = a.afterState;
-            obj.afterEvent = a.afterEvent;
-            obj.ignoreRepeats = a.ignoreRepeats;
-            obj.freqLimits = a.freqLimits;
-            obj.panel = a.panel;
             if ~isempty(a.preset)
-                copy(obj, a.preset);
+                obj.copy_and_update(a.preset, p);
+            else
+                obj.fill(a)
             end
         end
-
+    
         function copy(obj, copyObj)
             propNames = properties(obj);
             for prop = 1:numel(propNames)
                 currentProp = propNames{prop};
                 obj.(currentProp) = copyObj.(currentProp);
+            end
+        end
+
+        function fill(obj, results)
+            propNames = properties(obj);
+            for prop = 1:numel(propNames)
+                currentProp = propNames{prop};
+                obj.(currentProp) = results.(currentProp);
+            end
+        end
+
+        function copy_and_update(obj, copyObj, parser)
+            obj.copy(copyObj);
+            newParamIdx = ~ismember(parser.Parameters, parser.UsingDefaults);
+            updateParams = parser.Parameters(newParamIdx);
+            goodParams = cellfun(@(x) ~strcmp(x, 'preset'), updateParams);
+            updateParams = updateParams(goodParams);
+            for prop = 1:numel(updateParams)
+                currentProp = updateParams{prop};
+                obj.(currentProp) = parser.Results.(currentProp);
             end
         end
     end

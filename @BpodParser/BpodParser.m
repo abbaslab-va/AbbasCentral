@@ -69,6 +69,5 @@ classdef BpodParser < handle
 
         goodTimes = event_after_event(obj, varargin)
 
-
     end
 end
