@@ -65,6 +65,8 @@ classdef BehDat < handle
 
         timestamps = find_bpod_event(obj, varargin)
         
+        timestamps = find_event_all(obj, varargin)
+        
         stateEdges = find_bpod_state(obj, stateName, varargin)
 
         adjust_vip_trialTypes(obj)
