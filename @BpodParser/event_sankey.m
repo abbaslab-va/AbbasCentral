@@ -31,7 +31,7 @@ inputEvents = p.Results.inputEvents;
 outputEvents = p.Results.outputEvents;
 inputWithinState = p.Results.inputWithinState;
 
-trialsToInclude = find(obj.trial_intersection_BpodParser(1:obj.session.nTrials, presets));
+trialsToInclude = find(obj.trial_intersection_BpodParser('preset', presets));
 
 rawEvents2Check = obj.session.RawEvents.Trial(trialsToInclude);
 startEvent = cell(0);
