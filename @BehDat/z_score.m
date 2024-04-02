@@ -27,7 +27,6 @@ addParameter(p, 'bWindow', [-1 0], validVectorSize);
 addParameter(p, 'eWindow', [-1 1], validVectorSize);
 addParameter(p, 'binWidth', 20, @isscalar);
 addParameter(p, 'baseTrials', [], validTrials)
-addParameter(p, 'eventTrials', [], validTrials);
 
 parse(p, varargin{:});
 baseline = p.Results.baseline;
@@ -35,17 +34,11 @@ bWindow = p.Results.bWindow;
 eWindow = p.Results.eWindow;
 binWidth = p.Results.binWidth;
 baseTrials = p.Results.baseTrials;
-eventTrials = p.Results.eventTrials;
 
 baseTimes = obj.find_event('event', baseline, 'trialType', presets.trialType, 'trials', baseTrials, ...
     'outcome', presets.outcome, 'offset', presets.offset);
-if presets.bpod
-    eventTimes = obj.find_bpod_event('event', presets.event, 'trialType', presets.trialType, 'trials', eventTrials, ...
-    'outcome', presets.outcome, 'stimType', presets.stimType, 'offset', presets.offset);
-else
-    eventTimes = obj.find_event('event', presets.event, 'trialType', presets.trialType, 'trials', eventTrials, ...
-    'outcome', presets.outcome, 'stimType', presets.stimType, 'offset', presets.offset);
-end
+eventTimes = obj.find_event('preset', presets, 'trialized', false);
+
 % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
 baseCells = cellfun(@(x) obj.bin_spikes(x, binWidth), baseEdges, 'uni', 0);

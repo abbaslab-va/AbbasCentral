@@ -10,7 +10,7 @@ if isa(obj.bpod, 'BpodParser')
 else
     bpodSess = obj.bpod;
 end
-goodTrials = obj.trial_intersection(1:bpodSess.nTrials, presets);
+goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
 acqDiff = diff(obj.timestamps.trialStart);
 bpodDiff = diff(bpodSess.TrialStartTimestamp .* obj.info.baud);
 acqDiff = acqDiff(1:numel(bpodDiff));

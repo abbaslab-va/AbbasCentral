@@ -17,9 +17,9 @@ defaultBuffer = 1;
 obj.info.numChannels=32;
 
 % input validation scheme
-presets=PresetManager(varargin{:});
-p=inputParser();
-p.KeepUnmatched=true;
+presets = PresetManager(varargin{:});
+p = inputParser();
+p.KeepUnmatched = true;
 
 % input validation scheme
 addParameter(p, 'filter', defaultFilter, @ischar);
@@ -31,17 +31,12 @@ parse(p, varargin{:});
 filter = p.Results.filter;
 scramble = p.Results.scramble;
 buffer = p.Results.buffer;
-useBpod = presets.bpod;
 baud = obj.info.baud;
 
-% timestamp and trialize event times
-if useBpod
-    eventTimes = obj.find_bpod_event('preset',presets);
-else
-    eventTimes = obj.find_event('preset',presets);
-end
-presets.edges = (presets.edges * baud) + eventTimes';
-edgeCells = num2cell(presets.edges, 2);
+eventTimes = obj.find_event('preset', presets, 'trialized', false);
+
+edgeVec = (presets.edges * baud) + eventTimes';
+edgeCells = num2cell(edgeVec, 2);
 numEvents = numel(edgeCells);
 numNeurons = length(obj.spikes);
 numChan = obj.info.numChannels;

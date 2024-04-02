@@ -60,12 +60,6 @@ classdef BehDat < handle
         state_sankey(obj, varargin)
 
         event_sankey(obj, varargin)
-
-        timestamps = find_bpod_event_BpodParser(obj, varargin)
-
-        timestamps = find_bpod_event(obj, varargin)
-        
-        timestamps = find_event_all(obj, varargin)
         
         stateEdges = find_bpod_state(obj, stateName, varargin)
 
@@ -73,14 +67,10 @@ classdef BehDat < handle
 
         add_focus_trialTypes(obj)
         
-        [cPortTimes3,cReward3,pPortTimes3,pReward3,pPid3r,nPortTimes3,nReward3,nPid3r,adjustlogical3,chirpOccur3]=find_port(obj,varargin);
-        
-        portInfo = find_port_BpodParser(obj, varargin)
+        portInfo = find_port(obj, varargin)
 
 
     %% Spike methods
-    
-        [timestamps, bpodTrials] = find_event(obj, varargin)
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 
@@ -88,7 +78,7 @@ classdef BehDat < handle
 
         binnedTrials = bin_neuron(obj, neuron, varargin)
 
-        binnedNeurons = bin_all_neurons(obj, event, varargin)
+        binnedNeurons = bin_all_neurons(obj, varargin)
 
         h = raster(obj, neuron, varargin)
 
@@ -121,7 +111,7 @@ classdef BehDat < handle
 
         [ppc_all, spikePhase, ppc_sig]  = ppc(obj, varargin)
 
-        filteredLFP = filter_signal(obj, event, varargin)
+        filteredLFP = filter_signal(obj, varargin)
 
         ITPC = itpc(obj, event, varargin)
 
@@ -150,6 +140,8 @@ classdef BehDat < handle
         get_e3v_frame_times(obj, bncData)
         
     %% Additional methods
+
+        timestamps = find_event(obj, varargin)
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 

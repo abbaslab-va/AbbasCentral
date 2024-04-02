@@ -16,14 +16,9 @@ function binnedTrials = bin_neuron(obj, neuron, varargin)
 
 presets = PresetManager(varargin{:});
 
-
 baud = obj.info.baud;
 
-if presets.bpod
-    timestamps = obj.find_bpod_event('preset', presets);
-else
-    timestamps = obj.find_event('preset', presets);
-end
+timestamps = obj.find_event('preset', presets, 'trialized', false);
 
 try
     adjustedEdges = (presets.edges * baud) + timestamps';
@@ -31,10 +26,6 @@ try
     binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),...
         edgeCells, 'uni', 0);
     binnedTrials = cat(1, binnedTrials{:});
-    if isfield(obj.info, 'noisyPeriods')
-        binnedTrials=obj.remove_noisy_periods(binnedTrials, presets.event, 'trialType', presets.trialType, ...
-        'outcome', presets.outcome, 'offset', presets.offset,'binWidth', presets.binWidth, 'edges', presets.edges);
-    end
 catch
     binnedTrials = []; 
 end

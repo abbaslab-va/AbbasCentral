@@ -13,24 +13,15 @@ function stateFrames = find_state_frames(obj, stateName, varargin)
 %     'eos' - a boolean that if true, aligns to the end of a state rather than the start
 
 defaultEOS = false;
-validPreset = @(x) isa(x, 'PresetManager');
-
-p = parse_BehDat('offset', 'outcome', 'trialType');
+presets = PresetManager(varargin{:});
+p = inputParser;
+p.KeepUnmatched = true;
 addRequired(p, 'stateName', @ischar);
 addParameter(p, 'eos', defaultEOS, @islogical);
-addParameter(p, 'preset', [], validPreset)
 parse(p, stateName, varargin{:});
-
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;
-end
 stateName = p.Results.stateName;
 alignToEnd = p.Results.eos;
-trialType = a.trialType;
-outcome = a.outcome;
-offset = a.offset;
+
 % stateEdge determines if frames are found from the end of a state
 % backwards by offset (2) or from the start of a state (1)
 if alignToEnd
@@ -38,24 +29,12 @@ if alignToEnd
 else
     stateEdge = 1;
 end
-
-correctTrialType = true(1, obj.bpod.nTrials);
-correctOutcome = true(1, obj.bpod.nTrials);
-if ~isempty(trialType)
-    ttToIndex = obj.info.trialTypes.(trialType);
-    correctTrialType = obj.bpod.TrialTypes == ttToIndex;
-end
-if ~isempty(outcome)
-    outcomeToIndex = obj.info.outcomes.(outcome);
-    correctOutcome = obj.bpod.SessionPerformance == outcomeToIndex;
-end
-trialsIntersect = correctTrialType & correctOutcome;
-
-[firstFrame, firstTrial] = find_first_frame(obj.bpod);
-framesByTrial = align_frames_to_trials(obj.bpod, size(obj.coordinates, 1), firstTrial);
-framesByTrial = framesByTrial(:, trialsIntersect);
-EventCells = obj.bpod.RawEvents.Trial;
-EventCells = EventCells(trialsIntersect);
+goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
+[firstFrame, firstTrial] = find_first_frame(obj.bpod.session);
+framesByTrial = align_frames_to_trials(obj.bpod.session, size(obj.coordinates, 1), firstTrial);
+framesByTrial = framesByTrial(:, goodTrials);
+EventCells = obj.bpod.session.RawEvents.Trial;
+EventCells = EventCells(goodTrials);
 stateFrames = zeros(1, numel(EventCells));
 for trialno = 1:numel(EventCells)
     trialStates = EventCells{trialno}.States;

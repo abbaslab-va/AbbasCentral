@@ -11,11 +11,7 @@ function coordCell = plot_centroid(obj, varargin)
 
 presets = PresetManager(varargin{:});
 
-if presets.bpod
-    eventTimes = obj.find_bpod_event('preset', presets)';
-else
-    eventTimes = obj.find_event('preset', presets)';
-end
+eventTimes = obj.find_event('preset', presets, 'trialized', false)';
 
 if isempty(eventTimes) || isempty(obj.coordinates)
     coordCell = cell(0, 1);

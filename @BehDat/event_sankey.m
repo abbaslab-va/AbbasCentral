@@ -15,4 +15,4 @@ function event_sankey(obj, varargin)
 %     'outputEvents' - a string or cell array of strings of desired output
 %     states to visualize
 
-obj.bpod.event_sankey(varargin{:})
+obj.bpod.event_sankey(varargin{:});

@@ -12,11 +12,7 @@ function figH = plot_centroid_and_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
 
-if presets.bpod
-    eventTimes = obj.find_bpod_event('preset', presets)';
-else
-    eventTimes = obj.find_event('preset', presets)';
-end
+eventTimes = obj.find_event('preset', presets, 'trialized', false)';
 
 if isempty(eventTimes)
     return

@@ -18,25 +18,18 @@ function [gcx]= gc(obj, varargin)
 %     > 'offset' - a number that defines the offset from the alignment you wish to center around.
 
 % default input values
-goodEvent = @(x) isempty(x) || ischar(x);
-validPreset = @(x) isempty(x) || isa(x, 'PresetManager');
 defaultAveraged = false;
 defaultPhase = false;
 
 % input validation scheme
-presets=PresetManager(varargin{:})
-%p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
-p=inputParser()
-p.KeepUnmatched=true;
+presets = PresetManager(varargin{:});
+p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p, 'averaged', defaultAveraged, @islogical);
-addParameter(p, 'phase', defaultPhase, @islogical);
-%addParameter(p, 'excludeEventsByState', [], goodEvent);
-%addParameter(p, 'preset', [], validPreset)
 parse(p, varargin{:});
 
 phase = p.Results.phase;
 averaged = p.Results.averaged;
-useBpod = presets.bpod;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
@@ -46,15 +39,12 @@ downsampleRatio = baud/sf;
 %filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 
 % timestamp and trialize event times
-if useBpod
-    eventTimes = obj.find_bpod_event('preset',presets);
-else
-    eventTimes = obj.find_event('preset',presets);
-end
+
+eventTimes = obj.find_event('preset', presets, 'trialized', false);
 
 try
-    presets.edges = (presets.edges * baud) + eventTimes';
-    edgeCells = num2cell(presets.edges, 2);
+    edgeVec = (presets.edges * baud) + eventTimes';
+    edgeCells = num2cell(edgeVec, 2);
 catch
     return
 end
@@ -62,7 +52,7 @@ end
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
 lfp = double(NS6.Data);
-lfp = rms(lfp, 2)                % uncomment to RMS normalize lfp
+lfp = rms(lfp, 2);                % uncomment to RMS normalize lfp
 clear NS6
 numChan = size(lfp, 1);
 

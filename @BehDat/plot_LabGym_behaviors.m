@@ -2,11 +2,7 @@ function figH = plot_LabGym_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
 
-if presets.bpod
-    keypoints = obj.find_bpod_event('preset', presets);
-else
-    keypoints = obj.find_event('preset', presets);
-end
+keypoints = obj.find_event('preset', presets, 'trialized', false);
 
 if isfield(obj.info, 'frameRate')
     frameRate = obj.info.frameRate;

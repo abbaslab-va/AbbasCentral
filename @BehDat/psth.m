@@ -1,4 +1,4 @@
-function spikesSmooth=psth(obj, neuron, varargin)
+function spikesSmooth = psth(obj, neuron, varargin)
     % OUTPUT:
     %     smoothSpikes- a 1xT vector of smoothed spike times
     % INPUT:
