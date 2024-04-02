@@ -1,4 +1,4 @@
-function [pwr, freqs, phase, lfpAll] = cwt_power(obj, event, varargin)
+function [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
 
 % Calculates the power of a signal using a continuous wavelet transform
 % and returns the power and phase of the signal at the specified frequencies.
@@ -21,33 +21,23 @@ function [pwr, freqs, phase, lfpAll] = cwt_power(obj, event, varargin)
 defaultAveraged = false;
 defaultPhase = false;
 defaultSF = 2000;
-validStates = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
-validPreset = @(x) isa(x, 'PresetManager');
 % input validation scheme
-p = parse_BehDat('event', 'edges', 'freqLimits', 'trialType', 'outcome', 'offset', 'bpod');
+presets = PresetManager(varargin{:});
+p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
-addParameter(p, 'withinState', [], validStates)
-addParameter(p, 'excludeEventsByState', [], @ischar);
 addParameter(p, 'samplingFreq', defaultSF, validSF);
-addParameter(p, 'preset', [], validPreset)
-parse(p, event, varargin{:});    
-if isempty(p.Results.preset)
-    a = p.Results;
-else
-    a = p.Results.preset;   % Needs expansion to all params (averaged, calculatePhase, samplingFreq)
-end
+parse(p, varargin{:});    
 averaged = p.Results.averaged;
 calculatePhase = p.Results.calculatePhase;
 samplingFreq = p.Results.samplingFreq;
-useBpod = a.bpod;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
 downsampleRatio = baud/samplingFreq;
-sigLength = (a.edges(2) - a.edges(1)) * samplingFreq;
-filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',a.freqLimits, 'VoicesPerOctave', 10);
+sigLength = (presets.edges(2) - presets.edges(1)) * samplingFreq;
+filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 try
     numChan = obj.info.numChannels;
 catch 
@@ -56,15 +46,11 @@ catch
 end
 lfpAll = cell(1, numChan);
 % timestamp and trialize event times
-if useBpod
-    eventTimes = obj.find_bpod_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset, 'withinState', a.withinState,'excludeEventsByState',a.excludeEventsByState);
-else
-    eventTimes = obj.find_event(a.event, 'trialType', a.trialType, 'outcome', a.outcome, 'offset', a.offset);
-end
+eventTimes = obj.find_event('preset', presets, 'trialized', false);
 
 try
-    a.edges = (a.edges * baud) + eventTimes';
-    edgeCells = num2cell(a.edges, 2);
+    edgeVec = (presets.edges * baud) + eventTimes';
+    edgeCells = num2cell(edgeVec, 2);
 catch
     pwr = [];
     phase = [];
