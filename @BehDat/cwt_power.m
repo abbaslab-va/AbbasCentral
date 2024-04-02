@@ -21,6 +21,8 @@ function [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
 defaultAveraged = false;
 defaultPhase = false;
 defaultSF = 2000;
+validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
+
 % input validation scheme
 presets = PresetManager(varargin{:});
 p = inputParser;

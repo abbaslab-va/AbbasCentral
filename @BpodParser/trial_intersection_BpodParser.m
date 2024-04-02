@@ -114,7 +114,7 @@ end
 if isempty(trials)
     trialIncluded = ones(1, numTrials);
 else
-    trialIncluded = ismember(trializedEvents, trials);
+    trialIncluded = ismember(1:bpodStruct.nTrials, trials);
 end
 
 goodTrials = isDesiredTT & isDesiredStimType & isDesiredOutcome & isDesiredDelay & trialIncluded;

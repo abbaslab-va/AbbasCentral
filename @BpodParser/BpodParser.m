@@ -12,13 +12,10 @@ classdef BpodParser < handle
     methods (Access = public)
 
         % Constructor
-        function obj = BpodParser(bpodSession, info)
-            if nargin == 1
-                obj.session = bpodSession;
-            elseif nargin == 2
+        function obj = BpodParser(bpodSession, info, config)
                 obj.session = bpodSession;
                 obj.info = info;
-            end
+                obj.config = config;
         end
 
         function copy(obj, copyObj)
