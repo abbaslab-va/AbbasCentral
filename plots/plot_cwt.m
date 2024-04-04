@@ -13,7 +13,11 @@ numFreqs = numel(freqs);
 yTick = [1:10:numFreqs, numFreqs];
 if exist('panel', 'var')
     h = figure('Visible', 'off');
-    surf(mean(pwr{channel}, 3), 'EdgeColor', 'none');
+    if iscell(pwr)
+        surf(mean(pwr{channel}, 3), 'EdgeColor', 'none');
+    else
+        surf(pwr(:, :, channel), 'EdgeColor', 'none')
+    end
     yticks(yTick)
     yticklabels(freqs(yTick))
     view(2)
@@ -24,7 +28,11 @@ if exist('panel', 'var')
 end
 
 figure
-surf(mean(pwr{channel}, 3), 'EdgeColor', 'none')
+if iscell(pwr)
+    surf(mean(pwr{channel}, 3), 'EdgeColor', 'none')
+else
+    surf(pwr(:, :, channel), 'EdgeColor', 'none')
+end
 view(2)
 yticks(yTick)
 yticklabels(freqs(yTick))

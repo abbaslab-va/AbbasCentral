@@ -40,7 +40,7 @@ else
         eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
         temp = timestamps;
         trialNo = unique(eventTrial);
-        timestamps = cell(1, numel(trialNo));
+        timestamps = cell(1, numel(bpodTrials));
         for t = trialNo
             timestamps{t} = temp(eventTrial == t);
         end

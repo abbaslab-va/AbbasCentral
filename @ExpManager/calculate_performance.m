@@ -11,13 +11,19 @@ presets = PresetManager(varargin{:});
 p = inputParser;
 p.KeepUnmatched = true;
 addParameter(p, 'threshold', .65, @isnumeric);
-addParameter(p, 'comparison', 'sessions')
-
+addParameter(p, 'comparison', 'sessions', @ischar)
+addParameter(p, 'animal', [], @ischar)
+parse(p, varargin{:});
 
 % performance by animal or by session
 [numTT, numCorrect] = arrayfun(@(x) ...
     x.bpod.performance('preset', presets), ...
     obj.sessions, 'uni', 0);
+
+goodSessions = obj.subset(p.Results.animal);
+
+numTT = numTT(goodSessions);
+numCorrect = numCorrect(goodSessions);
 
 % performance threshold
 % plots?

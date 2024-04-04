@@ -19,8 +19,11 @@ classdef ExpManager < handle
 %         newExperiment = collect_sessions(expPath)     % collect all sessions in a directory, not an ExpManager method
 
         function sessionIdx = subset(obj, containingString)
-            sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), ...
-                obj.sessions);
+            if isempty(containingString)
+                sessionIdx = true(1, numel(obj.sessions));
+            else
+                sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), obj.sessions);
+            end
         end
 
         function get_size(obj) 
