@@ -129,9 +129,9 @@ classdef BehDat < handle
 
         combinedOutput = combine_LabGym_outputs(obj, metric)
 
-        figH = plot_LabGym_behaviors(obj, varargin)
+        [trializedBehavior, figH] = plot_LabGym_behaviors(obj, varargin)
 
-        figH = plot_centroid(obj, varargin)
+        [trializedLocation, figH] = plot_centroid(obj, varargin)
 
         figH = plot_centroid_and_behaviors(obj, varargin)
         

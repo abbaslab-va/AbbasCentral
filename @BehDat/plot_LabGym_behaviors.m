@@ -1,4 +1,4 @@
-function figH = plot_LabGym_behaviors(obj, varargin)
+function [trializedBehavior, figH] = plot_LabGym_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
 

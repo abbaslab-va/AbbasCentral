@@ -31,12 +31,15 @@ for trialNo = 1:numTrials
     if exist('firstFrameTrial', 'var')
         try
             timeLost = sessionData.TrialStartTimestamp(trialNo) - sessionData.TrialEndTimestamp(trialNo-1);
+            brFrame = 996/30000;
+            bpodOffset = (.03335 - brFrame)./brFrame;
+            timeLost = timeLost + timeLost*bpodOffset;
         catch
             timeLost = 0;
         end
         framesLost = timeLost*30;
-        frameNo = frameNo + ceil(framesLost);    %could be responsible for drift
-        % frameNo = frameNo + round(framesLost);
+        % frameNo = frameNo + ceil(framesLost);    %could be responsible for drift
+        frameNo = frameNo + round(framesLost);
     end
     if trialInVideo
         trialFrames = find(BNCwidth > .0165);
