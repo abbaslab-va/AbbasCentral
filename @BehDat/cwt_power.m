@@ -22,6 +22,8 @@ defaultAveraged = false;
 defaultPhase = false;
 defaultSF = 2000;
 validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
+validOutputOpts = {'quiet', 'verbose', 'q', 'v'};
+validOutput = @(x) any(cellfun(@(y) strcmp(x, y), validOutputOpts));
 
 % input validation scheme
 presets = PresetManager(varargin{:});
@@ -30,16 +32,18 @@ p.KeepUnmatched = true;
 addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 addParameter(p, 'samplingFreq', defaultSF, validSF);
+addParameter(p, 'outputStyle', 'quiet', validOutput)
 parse(p, varargin{:});    
 averaged = p.Results.averaged;
+trialized = presets.trialized;
 calculatePhase = p.Results.calculatePhase;
 samplingFreq = p.Results.samplingFreq;
-
+outputStyle = p.Results.outputStyle;
 % set up filterbank and downsample signal
 baud = obj.info.baud;
 downsampleRatio = baud/samplingFreq;
 sigLength = (presets.edges(2) - presets.edges(1)) * samplingFreq;
-filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
+filterbank = cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 try
     numChan = obj.info.numChannels;
 catch 
@@ -51,7 +55,7 @@ lfpAll = cell(1, numChan);
 eventTimes = obj.find_event('preset', presets, 'trialized', false);
 
 try
-    edgeVec = (presets.edges * baud) + eventTimes';
+    edgeVec = round(presets.edges * baud) + eventTimes';
     edgeCells = num2cell(edgeVec, 2);
 catch
     pwr = [];
@@ -82,18 +86,30 @@ parfor c = 1:numChan
         phase{c} = chanPhase;
     end
     freqs{c} = flip(f{1});
-    chanPower = cellfun(@(x) flip(abs(x).^2, 1), AS, 'uni', 0);
-%     clear AS
-    pwr{c} = single(cat(3, chanPower{:}));
-    disp(num2str(c))
+    AS = cellfun(@(x) flip(abs(x).^2, 1), AS, 'uni', 0);
+    % clear AS
+    pwr{c} = single(cat(3, AS{:}));
+    if strcmp(outputStyle, 'verbose')
+        disp(num2str(c))
+    end
 end 
 freqs = freqs{1};
+
 if averaged
     pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
     phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
     lfpAll = cellfun(@(x) mean(cell2mat(x)), lfpAll, 'uni', 0);
+    trialized = false;
 end
 
+if trialized
+    pwrMat = cat(4, pwr{:});
+    clear pwr
+    pwrReshape = num2cell(pwrMat, [1 2 4]);
+    clear pwrMat
+    pwr = squeeze(cellfun(@(x) squeeze(x), pwrReshape, 'uni', 0));
+end
 
-
-disp(obj.info)
+if strcmp(outputStyle, 'verbose')
+    disp(obj.info)
+end

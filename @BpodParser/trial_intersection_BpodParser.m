@@ -35,7 +35,7 @@ if ischar(trialTypes)
     trialTypes = {trialTypes};
 end
 
-if isempty(trialTypes)
+if isempty(trialTypes) || strcmp(trialTypes, 'All')
     isDesiredTT = true(1, numTrials);
 else
     numTT = numel(trialTypes);
@@ -58,7 +58,7 @@ if ischar(stimTypes)
     stimTypes = {stimTypes};
 end
 
-if isempty(stimTypes)
+if isempty(stimTypes) || strcmp(stimTypes, 'All')
     isDesiredStimType = true(1, numTrials);
 else
     numStimTypes = numel(stimTypes);
@@ -81,7 +81,7 @@ if ischar(outcomes)
     outcomes = {outcomes};
 end
 
-if isempty(outcomes)
+if isempty(outcomes) || strcmp(outcomes, 'All')
     isDesiredOutcome = true(1, numTrials);
 else
     numOutcomes = numel(outcomes);
@@ -100,7 +100,7 @@ else
 end
 
 %% Delay Length
-if isempty(delayLength)
+if isempty(delayLength) || strcmp(delayLength, 'All')
     isDesiredDelay = ones(1, numTrials);
 else
     try
