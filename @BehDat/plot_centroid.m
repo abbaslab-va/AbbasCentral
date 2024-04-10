@@ -46,8 +46,8 @@ if ~isempty(presets.panel)
     hold on
     cellfun(@(x) scatter(x(:, 1), x(:, 2), [], colors, 'filled'), trializedLocation)
     set(gca, 'color', 'w', 'ydir', 'reverse')
-    copyobj(h.Children, presets.panel)
-    close(h)
+    copyobj(figH.Children, presets.panel)
+    close(figH)
 else
     figH = figure;
     hold on

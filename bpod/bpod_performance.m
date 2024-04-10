@@ -1,4 +1,4 @@
-function [numTT, numCorrect] = bpod_performance(bpodSession, correctOutcome)
+function [numTT, numCorrect] = bpod_performance(parserObj, correctOutcome)
 
 % This function returns a vector by trial type of the number of completed trials of each trial type, 
 % as well as the number correctly completed for the trial type of interest.
@@ -16,6 +16,11 @@ function [numTT, numCorrect] = bpod_performance(bpodSession, correctOutcome)
 %     of trial types with the outcome specified by varargin. If no argument
 %     is given, the default outcome returned by numCorrect is for 1.
 
+if isa(parserObj, 'BpodParser')
+    bpodSession = parserObj.session;
+else
+    bpodSession = parserObj;
+end
 if ~exist('correctOutcome', 'var')
     correctOutcome = 1;
 end
