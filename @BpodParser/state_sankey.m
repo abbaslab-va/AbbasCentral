@@ -26,7 +26,12 @@ addParameter(p, 'outputStates', defaultOutput, validField);
 parse(p, varargin{:});
 inputStates = p.Results.inputStates;
 outputStates = p.Results.outputStates;
-
+if isempty(inputStates)
+    inputStates = defaultInput;
+end
+if isempty(outputStates)
+    outputStates = defaultOutput;
+end
 trialsToInclude = find(obj.trial_intersection_BpodParser('preset', presets));
 startState = cell(0);
 endState = cell(0);
