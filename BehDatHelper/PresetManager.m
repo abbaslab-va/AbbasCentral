@@ -30,7 +30,7 @@ classdef PresetManager < handle
     methods
 
         % Constructor needs work
-        function obj = PresetManager(varargin) 
+        function [obj, updated] = PresetManager(varargin) 
             % Validation functions
             validPreset = @(x) isempty(x) || isa(x, 'PresetManager');
             validVectorSize = @(x) all(size(x) == [1, 2]);
@@ -67,7 +67,9 @@ classdef PresetManager < handle
             addParameter(p, 'preset', [], validPreset)
             parse(p, varargin{:});
             a = p.Results;
-
+            
+            changedIdx = ~ismember(p.Parameters, p.UsingDefaults);
+            updated = p.Parameters(changedIdx);
             % Distribute inputs/default values
             if ~isempty(a.preset)
                 obj.copy_and_update(a.preset, p);

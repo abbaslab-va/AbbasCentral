@@ -39,8 +39,8 @@ end
 % cd(obj.info.path)
 cd('E:\Ephys\Test')
 save('hctsa_allTS.mat', 'timeSeriesData', 'labels', 'keywords')
-TS_Init('hctsa_allTS.mat', 'INP_mops.txt', 'INP_ops_reduced.txt');
-sample_runscript_matlab();
+TS_Init('hctsa_allTS.mat', {'E:\AbbasCentral\packages\hctsa\FeatureSets\INP_mops_catch24.txt', 'E:\AbbasCentral\packages\hctsa\FeatureSets\INP_ops_catch24.txt'});
+sample_runscript_matlab(true, 5);
 % TS_LabelGroups('raw',labels);
 TS_Normalize('mixedSigmoid',[0.5, 1.0]);
 

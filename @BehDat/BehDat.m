@@ -139,9 +139,11 @@ classdef BehDat < handle
 
         get_e3v_frame_times(obj, bncData)
         
+        hctsa_position(obj, varargin)
+        
     %% Additional methods
 
-        timestamps = find_event(obj, varargin)
+        [timestamps, eventTrial] = find_event(obj, varargin)
 
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
@@ -151,5 +153,6 @@ classdef BehDat < handle
 
         brTimes = bpod_to_blackrock(obj, bpodTimes, presets)
 
+        keywords = hctsa_keywords(obj, varargin)
     end
 end

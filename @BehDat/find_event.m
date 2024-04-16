@@ -1,4 +1,4 @@
-function timestamps = find_event(obj, varargin)
+function [timestamps, bpodTrial] = find_event(obj, varargin)
 
 % This will ultimately combine the functionality of find_event and
 % find_bpod_event.
@@ -35,17 +35,19 @@ else
     timestamps = obj.timestamps.times(matchingTimestamp) + offset;
     eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
     eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
-    bpodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
+    goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
+    goodEvents = ismember(eventTrials, find(goodTrials));
+    bpodTrial = eventTrials(goodEvents);
     if presets.trialized
         eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
         temp = timestamps;
         trialNo = unique(eventTrial);
-        timestamps = cell(1, numel(bpodTrials));
+        timestamps = cell(1, numel(goodTrials));
         for t = trialNo
             timestamps{t} = temp(eventTrial == t);
         end
-        timestamps = timestamps(bpodTrials);
+        timestamps = timestamps(goodTrials);
     else
-        timestamps = timestamps(bpodTrials(eventTrials));
+        timestamps = timestamps(goodTrials(eventTrials));
     end 
 end
