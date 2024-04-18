@@ -21,8 +21,12 @@ classdef ExpManager < handle
         function sessionIdx = subset(obj, containingString)
             if isempty(containingString)
                 sessionIdx = true(1, numel(obj.sessions));
-            else
+            elseif ischar(containingString)
                 sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), obj.sessions);
+            elseif iscell(containingString)
+                sessionIdx = cellfun(@(x) arrayfun(@(y) contains(y.info.path, x), obj.sessions), containingString, 'uni', 0);
+                sessionIdx = cat(1, sessionIdx{:});
+                sessionIdx = any(sessionIdx, 1);
             end
         end
 
@@ -32,7 +36,7 @@ classdef ExpManager < handle
            
             for ii=1:length(props) 
                 s = whos('currentProperty'); 
-                totSize = totSize + s.bytes; 
+                totSize = totSize + s.bytes;
                 for sess = 1:numel(obj.sessions)
                     totSize = totSize + obj.sessions(sess).get_size;
                 end
@@ -64,6 +68,7 @@ classdef ExpManager < handle
         
         %% Video methods
         
+        hctsa_position(obj, varargin)
     end
 
 end

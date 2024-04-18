@@ -138,8 +138,12 @@ classdef BehDat < handle
         %[f, h] = rotation_surf(rotVec, panel)
 
         get_e3v_frame_times(obj, bncData)
+
+        [timeSeriesData, labels, keywords] = hctsa_position_initialize(obj, presets)
         
-        hctsa_position(obj, varargin)
+        hctsa_position_calculate(obj, varargin)
+
+        hctsa_position_plot(obj, varargin)
         
     %% Additional methods
 
@@ -154,5 +158,7 @@ classdef BehDat < handle
         brTimes = bpod_to_blackrock(obj, bpodTimes, presets)
 
         keywords = hctsa_keywords(obj, varargin)
+
+        
     end
 end

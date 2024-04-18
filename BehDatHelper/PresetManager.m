@@ -4,6 +4,7 @@ classdef PresetManager < handle
 % and neuron combinations like FR-thresholded or user-defined.
     
     properties (SetAccess = public)
+        animals         % Which animals to include in ExpManager analyses
         subset          % Indices of neurons for population fcns
         event           % Which event to align data to
         bpod            % Bool toggling which find_event fcn to use
@@ -43,6 +44,7 @@ classdef PresetManager < handle
             % Parse variable inputs
             p = inputParser;
             p.KeepUnmatched = true;
+            addParameter(p, 'animals', [], validField)
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
