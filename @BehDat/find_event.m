@@ -1,7 +1,9 @@
 function [timestamps, bpodTrial] = find_event(obj, varargin)
 
-% This will ultimately combine the functionality of find_event and
-% find_bpod_event.
+% This is one of the most core functions to the functionality of this
+% software package. It extracts timestamps according to the input
+% parameters, managed by the PresetManager class. At minimum, the user
+% should specify an event using the name value pair ('event', 'eventName')
 
 presets = PresetManager(varargin{:});
 % Convert seconds offset into sampling rate of acquisition system
@@ -18,36 +20,37 @@ if presets.bpod
     else
         timestamps = cat(2, eventTimesCorrected{:}) + offset;
     end 
+    return
+end
+
+% Levenshtein distance to find closest event in timestamps
+[eventField, eventEdited] = find_closest_match(presets.event, fields(obj.timestamps.keys));
+if eventEdited
+    fprintf("Closest match found to %s: '%s'\n", presets.event, eventField)
+end
+% Match timestamp wire codes to user input
+try
+    ts = obj.timestamps.keys.(eventField);
+catch
+    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', presets.event));
+    throw(mv)
+end
+matchingTimestamp = obj.timestamps.codes == ts;
+timestamps = obj.timestamps.times(matchingTimestamp) + offset;
+eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
+eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
+goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
+goodEvents = ismember(eventTrials, find(goodTrials));
+bpodTrial = eventTrials(goodEvents);
+if presets.trialized
+    eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
+    temp = timestamps;
+    trialNo = unique(eventTrial);
+    timestamps = cell(1, numel(goodTrials));
+    for t = trialNo
+        timestamps{t} = temp(eventTrial == t);
+    end
+    timestamps = timestamps(goodTrials);
 else
-    % Levenshtein distance to find closest event in timestamps
-    [eventField, eventEdited] = find_closest_match(presets.event, fields(obj.timestamps.keys));
-    if eventEdited
-        fprintf("Closest match found to %s: '%s'\n", presets.event, eventField)
-    end
-    % Match timestamp wire codes to user input
-    try
-        ts = obj.timestamps.keys.(eventField);
-    catch
-        mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', presets.event));
-        throw(mv)
-    end
-    matchingTimestamp = obj.timestamps.codes == ts;
-    timestamps = obj.timestamps.times(matchingTimestamp) + offset;
-    eventTrials = discretize(timestamps, [obj.timestamps.trialStart(obj.timestamps.trialStart < obj.info.samples) obj.info.samples]);
-    eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
-    goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
-    goodEvents = ismember(eventTrials, find(goodTrials));
-    bpodTrial = eventTrials(goodEvents);
-    if presets.trialized
-        eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
-        temp = timestamps;
-        trialNo = unique(eventTrial);
-        timestamps = cell(1, numel(goodTrials));
-        for t = trialNo
-            timestamps{t} = temp(eventTrial == t);
-        end
-        timestamps = timestamps(goodTrials);
-    else
-        timestamps = timestamps(goodTrials(eventTrials));
-    end 
+    timestamps = timestamps(goodTrials(eventTrials));
 end
