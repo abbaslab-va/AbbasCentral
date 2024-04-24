@@ -144,6 +144,8 @@ classdef BehDat < handle
         hctsa_position_calculate(obj, varargin)
 
         hctsa_position_plot(obj, varargin)
+
+        hctsa_position(obj, varargin)
         
     %% Additional methods
 
