@@ -6,6 +6,7 @@ classdef PresetManager < handle
     properties (SetAccess = public)
         animals         % Which animals to include in ExpManager analyses
         subset          % Indices of neurons for population fcns
+        region          % A string matching a region in spike data
         event           % Which event to align data to
         bpod            % Bool toggling which find_event fcn to use
         trialized       % Bool to output each trial in separate cells or all as one vector
@@ -30,8 +31,8 @@ classdef PresetManager < handle
 
     methods
 
-        % Constructor needs work
-        function [obj, updated] = PresetManager(varargin) 
+        function [obj, updated] = PresetManager(varargin)   % obj constructor
+
             % Validation functions
             validPreset = @(x) isempty(x) || isa(x, 'PresetManager');
             validVectorSize = @(x) all(size(x) == [1, 2]);
@@ -46,41 +47,44 @@ classdef PresetManager < handle
             p.KeepUnmatched = true;
             addParameter(p, 'animals', [], validField)
             addParameter(p, 'subset', [], validNeurons)
+            addParameter(p, 'region', [], validField)
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
-            addParameter(p, 'trialized', false, @islogical);
-            addParameter(p, 'trials', {}, validTrials);
-            addParameter(p, 'trialType', {}, validField);
-            addParameter(p, 'stimType', {}, validField);
-            addParameter(p, 'outcome', {}, validField);
-            addParameter(p, 'delayLength', [], validVectorSize);
-            addParameter(p, 'offset', 0, @isnumeric);
-            addParameter(p, 'edges', [-2 2], validVectorSize);
-            addParameter(p, 'binWidth', 1, validNumber);
+            addParameter(p, 'trialized', false, @islogical)
+            addParameter(p, 'trials', {}, validTrials)
+            addParameter(p, 'trialType', {}, validField)
+            addParameter(p, 'stimType', {}, validField)
+            addParameter(p, 'outcome', {}, validField)
+            addParameter(p, 'delayLength', [], validVectorSize)
+            addParameter(p, 'offset', 0, @isnumeric)
+            addParameter(p, 'edges', [-2 2], validVectorSize)
+            addParameter(p, 'binWidth', 1, validNumber)
             addParameter(p, 'withinState', [], validField)
             addParameter(p, 'excludeState', [], validField)
             addParameter(p, 'priorToState', [], validField)
             addParameter(p, 'priorToEvent', [], validField)
-            addParameter(p, 'afterState', [], validField);
-            addParameter(p, 'afterEvent', [], validField);
-            addParameter(p, 'ignoreRepeats', true, @islogical);
-            addParameter(p, 'freqLimits', [1 120], validVectorSize);
-            addParameter(p, 'panel', []);
+            addParameter(p, 'afterState', [], validField)
+            addParameter(p, 'afterEvent', [], validField)
+            addParameter(p, 'ignoreRepeats', true, @islogical)
+            addParameter(p, 'freqLimits', [1 120], validVectorSize)
+            addParameter(p, 'panel', [])
             addParameter(p, 'preset', [], validPreset)
             parse(p, varargin{:});
-            a = p.Results;
             
+            % Distribute parsed inputs/default values to object
+            if isempty(p.Results.preset)
+                obj.fill(p.Results)
+            else
+                obj.copy_and_update(p);
+            end
+
+            % Outputs which default vals were updated
             changedIdx = ~ismember(p.Parameters, p.UsingDefaults);
             updated = p.Parameters(changedIdx);
-            % Distribute inputs/default values
-            if ~isempty(a.preset)
-                obj.copy_and_update(a.preset, p);
-            else
-                obj.fill(a)
-            end
         end
     
-        function copy(obj, copyObj)
+        % Makes a basic deep copy of the copyObj
+        function copy(obj, copyObj) 
             propNames = properties(obj);
             for prop = 1:numel(propNames)
                 currentProp = propNames{prop};
@@ -88,6 +92,7 @@ classdef PresetManager < handle
             end
         end
 
+        % Fills object with values from parsed inputParser
         function fill(obj, results)
             propNames = properties(obj);
             for prop = 1:numel(propNames)
@@ -96,8 +101,11 @@ classdef PresetManager < handle
             end
         end
 
-        function copy_and_update(obj, copyObj, parser)
-            obj.copy(copyObj);
+
+        % Makes a deep copy of the included presets, then updates the
+        % remaining fields with extra user inputs
+        function copy_and_update(obj, parser)
+            obj.copy(parser.Results.preset);
             newParamIdx = ~ismember(parser.Parameters, parser.UsingDefaults);
             updateParams = parser.Parameters(newParamIdx);
             goodParams = cellfun(@(x) ~strcmp(x, 'preset'), updateParams);
