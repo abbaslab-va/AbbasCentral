@@ -60,15 +60,18 @@ classdef ExpManager < handle
         
         [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, varargin)
 
-        binnedSessions = bin_spikes(obj, varargin);
+        binnedSessions = bin_spikes(obj, varargin)
 
-        hctsa(obj, varargin);
+        hctsa(obj, varargin)
         
+        hctsa_fr(obj, varargin)
+
         %% LFP methods
         
         %% Video methods
         
         hctsa_position(obj, varargin)
+        
     end
 
 end

@@ -105,6 +105,13 @@ classdef BehDat < handle
         sigs = zeta_call(obj, event, varargin) 
         
         hctsa(obj, varargin)
+
+        [timeSeriesData, labels, keywords] = hctsa_fr_initialize(obj, presets)
+
+        hctsa_fr_calculate(obj, varargin)
+
+        hctsa_fr_plot(obj, varargin)
+
     %% LFP methods
 
         [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
