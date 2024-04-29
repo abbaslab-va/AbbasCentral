@@ -1,6 +1,7 @@
 function hctsa_position(obj, varargin)
 
-cd(obj.info.path)
+% cd(obj.info.path)
+cd('E:/Ephys/Test')
 presets = PresetManager(varargin{:});
 
 [~, sessName] = fileparts(obj.info.path);
