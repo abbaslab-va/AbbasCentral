@@ -14,8 +14,8 @@ classdef BpodParser < handle
         % Constructor
         function obj = BpodParser(bpodSession, info, config)
                 obj.session = bpodSession;
-                obj.info = info;
-                obj.config = config;
+                %obj.info = info;
+                %obj.config = config;
         end
 
         function copy(obj, copyObj)

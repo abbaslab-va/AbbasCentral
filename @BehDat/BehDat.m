@@ -67,7 +67,7 @@ classdef BehDat < handle
 
         add_focus_trialTypes(obj)
         
-        portInfo = find_port(obj, varargin)
+        [portInfo, dM, edges] = find_port(obj, varargin)
 
 
     %% Spike methods
@@ -76,7 +76,7 @@ classdef BehDat < handle
 
         binnedSpikes = bin_spikes(obj, eventEdges, binSize, neuronNo)
 
-        binnedTrials = bin_neuron(obj, neuron, varargin)
+        binnedTrials = bin_neuron(obj, neuron, edgeCells, varargin)
 
         binnedNeurons = bin_all_neurons(obj, varargin)
 

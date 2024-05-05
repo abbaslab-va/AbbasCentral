@@ -1,4 +1,4 @@
-function portInfo = find_port(obj, varargin)
+function [portInfo, dMat, edges] = find_port(obj, varargin)
 
 % This is an updated find_port method that uses the BpodParser
 % functionality to find the port times.
@@ -25,6 +25,7 @@ parse(p, varargin{:});
 rewardStateNames = p.Results.rewardStates;
 proxState = p.Results.proximalState;
 proxEdges = p.Results.proximalEdges;
+
 
 % Get times for all events as well as the events preceding and succeeding
 % them (off by two, so it returns events of the same type (in or out))
@@ -99,9 +100,221 @@ eventProximal = cat(2, eventProximal{:});
 proxStateStartAll = nan(size(eventProximal));
 proxStateStartAll(eventProximal) = proxStateStart - allEventTimes(eventProximal);
 
+% Bin 
+baud=30000;
+%edges are bins from prev to next port
+%zero-padded
+zeroPad=.1*baud;
+edges=arrayfun(@(x,y) [x-zeroPad y+zeroPad],prevEventTimes,nextEventTimes,'uni',0);
+
+% create binned event times
+BINprevEventTimes=cellfun(@(x,y) histcounts(y,'BinEdges',x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(prevEventTimes),'UniformOutput',false);
+BINnextEventTimes=cellfun(@(x,y) histcounts(y,'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(nextEventTimes),'UniformOutput',false);
+BINallEventTimesBR=cellfun(@(x,y) histcounts(y,'BinEdges',x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(allEventTimesBR),'UniformOutput',false);
+
+%create rewarded bins 
+BINprevEventRewarded=BINprevEventTimes;
+for c=1:numel(BINprevEventRewarded)
+    if prevEventRewarded(c)==1
+    else
+    BINprevEventRewarded{c}=[zeros(1,numel(BINprevEventRewarded{c}))];
+    end 
+end 
+
+BINallEventRewarded=BINallEventTimesBR;
+for c=1:numel(BINallEventRewarded)
+    if eventRewarded(c)==1
+    else
+    BINallEventRewarded{c}=[zeros(1,numel(BINallEventRewarded{c}))];
+    end 
+end 
+
+BINnextEventRewarded=BINnextEventTimes;
+for c=1:numel(BINnextEventRewarded)
+    if nextEventRewarded(c)==1
+    else
+    BINnextEventRewarded{c}=[zeros(1,numel(BINnextEventRewarded{c}))];
+    end 
+end 
+
+
+% create binned identity
+% Previous 
+% % Catagorical: 
+% BINprevEventIDidx=cellfun(@(x) find(x==1),BINprevEventTimes);
+% BINprevEventID=cellfun(@(x) zeros(1,length(x)),BINprevEventTimes,'uni',0);
+% for c=1:numel(prevEventID)
+%     BINprevEventID{c}(BINprevEventIDidx(c))=prevEventID(c);
+% end 
+
+% % Dummy 
+% BINprevEventIDidx=cellfun(@(x) find(x==1),BINprevEventTimes);
+% BINprevEventID1=cellfun(@(x) zeros(1,length(x)),BINprevEventTimes,'uni',0);
+% BINprevEventID2=BINprevEventID1;
+% BINprevEventID3=BINprevEventID1;
+% BINprevEventID4=BINprevEventID1;
+% BINprevEventID5=BINprevEventID1;
+% BINprevEventIDb=BINprevEventID1;
+% 
+% for c=1:numel(prevEventID)
+%     if prevEventID(c)==1
+%         BINprevEventID1{c}(BINprevEventIDidx(c))=1;
+%     elseif prevEventID(c)==2
+%         BINprevEventID2{c}(BINprevEventIDidx(c))=1;
+%     elseif prevEventID(c)==3
+%         BINprevEventID3{c}(BINprevEventIDidx(c))=1;
+%     elseif prevEventID(c)==4
+%         BINprevEventID4{c}(BINprevEventIDidx(c))=1;
+%     elseif prevEventID(c)==5
+%         BINprevEventID5{c}(BINprevEventIDidx(c))=1;
+%     elseif prevEventID(c)==7
+%         BINprevEventIDb{c}(BINprevEventIDidx(c))=1;
+%     end 
+% end 
+
+% Current
+
+% %catagorical
+% cPort=str2num(presets.event(5));
+% BINallEventIDidx=cellfun(@(x) find(x==1),BINallEventTimesBR);
+% BINallEventID=cellfun(@(x) zeros(1,length(x)),BINallEventTimesBR,'uni',0);
+% for c=1:numel(allEventTimes)
+%     BINallEventID{c}(BINallEventIDidx(c))=cPort;
+% end 
+
+% %Dummy 
+% BINallEventIDidx=cellfun(@(x) find(x==1),BINallEventTimesBR);
+% BINallEventID1=cellfun(@(x) zeros(1,length(x)),BINallEventTimesBR,'uni',0);
+% BINallEventID2=BINallEventID1;
+% BINallEventID3=BINallEventID1;
+% BINallEventID4=BINallEventID1;
+% BINallEventID5=BINallEventID1;
+% BINallEventIDb=BINallEventID1;
+% 
+% if strcmp(presets.event,'Port1In')
+%     for c=1:numel(prevEventID)
+%     BINallEventID1{c}(BINallEventIDidx(c))=1;
+%     end 
+% elseif strcmp(presets.event,'Port2In')
+%     for c=1:numel(prevEventID)
+%     BINallEventID2{c}(BINallEventIDidx(c))=1;
+%     end
+% elseif strcmp(presets.event,'Port3In')
+%     for c=1:numel(prevEventID)
+%     BINallEventID3{c}(BINallEventIDidx(c))=1;
+%     end
+% elseif strcmp(presets.event,'Port4In')
+%     for c=1:numel(prevEventID)
+%     BINallEventID4{c}(BINallEventIDidx(c))=1;
+%     end
+% elseif strcmp(presets.event,'Port5In')
+%     for c=1:numel(prevEventID)
+%     BINallEventID5{c}(BINallEventIDidx(c))=1;
+%     end
+% elseif strcmp(presets.event,'Port7In')
+%     for c=1:numel(prevEventID)
+%     BINallEventIDb{c}(BINallEventIDidx(c))=1;
+%     end
+% end 
+
+% Next
+
+% % Catagorical: 
+% BINnextEventIDidx=cellfun(@(x) find(x==1),BINnextEventTimes);
+% BINnextEventID=cellfun(@(x) zeros(1,length(x)),BINnextEventTimes,'uni',0);
+% for c=1:numel(nextEventID)
+%     BINnextEventID{c}(BINnextEventIDidx(c))=nextEventID(c);
+% end 
+
+% % dummy 
+% BINnextEventIDidx=cellfun(@(x) find(x==1),BINnextEventTimes);
+% BINnextEventID1=cellfun(@(x) zeros(1,length(x)),BINnextEventTimes,'uni',0);
+% BINnextEventID2=BINnextEventID1;
+% BINnextEventID3=BINnextEventID1;
+% BINnextEventID4=BINnextEventID1;
+% BINnextEventID5=BINnextEventID1;
+% BINnextEventIDb=BINnextEventID1;
+% 
+% for c=1:numel(nextEventID)
+%     if nextEventID(c)==1
+%         BINnextEventID1{c}(BINnextEventIDidx(c))=1;
+%     elseif nextEventID(c)==2
+%         BINnextEventID2{c}(BINnextEventIDidx(c))=1;
+%     elseif nextEventID(c)==3
+%         BINnextEventID3{c}(BINnextEventIDidx(c))=1;
+%     elseif nextEventID(c)==4
+%         BINnextEventID4{c}(BINnextEventIDidx(c))=1;
+%     elseif nextEventID(c)==5
+%         BINnextEventID5{c}(BINnextEventIDidx(c))=1;
+%     elseif nextEventID(c)==7
+%         BINnextEventIDb{c}(BINnextEventIDidx(c))=1;
+%     end 
+% end 
+
+
 % Create output struct
 portTimes = struct('previous', prevEventTimes, 'current', allEventTimesBR, 'next', nextEventTimes);
 portRewards = struct('previous', prevEventRewarded, 'current', eventRewarded, 'next', nextEventRewarded);
 portID = struct('previous', prevEventID, 'next', nextEventID);
 proximalInfo = struct('inRange', eventProximal, 'stateStart', proxStateStartAll);
 portInfo = struct('times', portTimes, 'reward', portRewards, 'identity', portID, 'proximal', proximalInfo, 'included', eventIncluded);
+
+
+
+
+% create old trialized structure 
+dMat(:,1)=prevEventID;
+dMat(:,2)=repelem(str2num(presets.event(5)),numel(allEventTimes));
+dMat(:,3)=nextEventID;
+dMat(:,4)=prevEventRewarded;
+dMat(:,5)=eventRewarded;
+dMat(:,6)=nextEventRewarded;
+
+
+% create binned output structure 
+
+% % design matrix catagorical
+% dMat(:,1)=[BINprevEventID{:}];
+% dMat(:,2)=[BINallEventID{:}];
+% dMat(:,3)=[BINnextEventID{:}];
+% 
+% dMat(:,4)=[BINprevEventRewarded{:}];
+% dMat(:,5)=[BINallEventRewarded{:}];
+% dMat(:,6)=[BINnextEventRewarded{:}];
+% 
+
+%design matrix dummy 
+% dMat(:,1)=[BINprevEventID1{:}];
+% dMat(:,2)=[BINprevEventID2{:}];
+% dMat(:,3)=[BINprevEventID3{:}];
+% dMat(:,4)=[BINprevEventID4{:}];
+% dMat(:,5)=[BINprevEventID5{:}];
+% dMat(:,6)=[BINprevEventIDb{:}];
+% 
+% dMat(:,7)=[BINallEventID1{:}];
+% dMat(:,8)=[BINallEventID2{:}];
+% dMat(:,9)=[BINallEventID3{:}];
+% dMat(:,10)=[BINallEventID4{:}];
+% dMat(:,11)=[BINallEventID5{:}];
+% dMat(:,12)=[BINallEventIDb{:}];
+% 
+% dMat(:,13)=[BINnextEventID1{:}];
+% dMat(:,14)=[BINnextEventID2{:}];
+% dMat(:,15)=[BINnextEventID3{:}];
+% dMat(:,16)=[BINnextEventID4{:}];
+% dMat(:,17)=[BINnextEventID5{:}];
+% dMat(:,18)=[BINnextEventIDb{:}];
+% 
+% dMat(:,19)=[BINprevEventRewarded{:}];
+% dMat(:,20)=[BINallEventRewarded{:}];
+% dMat(:,21)=[BINnextEventRewarded{:}];
+% 
+% 
+% dMat=logical(dMat);
+
+
+
+
+
+
+
