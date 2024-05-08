@@ -101,12 +101,12 @@ proxStateStartAll = nan(size(eventProximal));
 proxStateStartAll(eventProximal) = proxStateStart - allEventTimes(eventProximal);
 
 % % Bin 
-% baud=30000;
-% %edges are bins from prev to next port
-% %zero-padded
-% zeroPad=.1*baud;
-% edges=arrayfun(@(x,y) [x-zeroPad y+zeroPad],prevEventTimes,nextEventTimes,'uni',0);
-% 
+baud=30000;
+%edges are bins from prev to next port
+%zero-padded
+zeroPad=.1*baud;
+edges=arrayfun(@(x,y) [x-zeroPad y+zeroPad],prevEventTimes,nextEventTimes,'uni',0);
+
 % % create binned event times
 % BINprevEventTimes=cellfun(@(x,y) histcounts(y,'BinEdges',x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(prevEventTimes),'UniformOutput',false);
 % BINnextEventTimes=cellfun(@(x,y) histcounts(y,'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(nextEventTimes),'UniformOutput',false);
@@ -269,6 +269,7 @@ dMat(:,3)=nextEventID;
 dMat(:,4)=prevEventRewarded;
 dMat(:,5)=eventRewarded;
 dMat(:,6)=nextEventRewarded;
+%dMat(:,7)=proximal;
 
 
 % create binned output structure 
