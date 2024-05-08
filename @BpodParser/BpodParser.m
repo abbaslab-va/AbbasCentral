@@ -12,10 +12,16 @@ classdef BpodParser < handle
     methods (Access = public)
 
         % Constructor
-        function obj = BpodParser(bpodSession, info, config)
-                obj.session = bpodSession;
-                %obj.info = info;
-                %obj.config = config;
+        function obj = BpodParser(varargin)
+            validSession = @(x) isstruct(x);
+            p = inputParser;
+            addParameter(p, 'session', struct, @validSession)
+            addParameter(p, 'info', struct, @validSession)
+            addParameter(p, 'config', struct, @validSession)
+            parse(p, varargin{:});
+            obj.session = p.Results.session;
+            obj.info = p.Results.info;
+            obj.config = p.Results.config;
         end
 
         function copy(obj, copyObj)
