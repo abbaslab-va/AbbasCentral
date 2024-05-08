@@ -76,7 +76,7 @@ classdef BehDat < handle
 
         binnedSpikes = bin_spikes(obj, eventEdges, binSize, neuronNo)
 
-        binnedTrials = bin_neuron(obj, neuron, edgeCells, varargin)
+        binnedTrials = bin_neuron(obj, neuron, varargin)
 
         binnedNeurons = bin_all_neurons(obj, varargin)
 
