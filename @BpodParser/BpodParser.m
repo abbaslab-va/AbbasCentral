@@ -15,9 +15,9 @@ classdef BpodParser < handle
         function obj = BpodParser(varargin)
             validSession = @(x) isstruct(x);
             p = inputParser;
-            addParameter(p, 'session', struct, @validSession)
-            addParameter(p, 'info', struct, @validSession)
-            addParameter(p, 'config', struct, @validSession)
+            addParameter(p, 'session', struct, validSession)
+            addParameter(p, 'info', struct, validSession)
+            addParameter(p, 'config', struct, validSession)
             parse(p, varargin{:});
             obj.session = p.Results.session;
             obj.info = p.Results.info;

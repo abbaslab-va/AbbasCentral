@@ -51,7 +51,11 @@ currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'un
 % guaranteed to have an previous and next event
 if isBracketed
     for t = 1:numel(currentEventTimes)
-        currentEventTimes{t}([1, 2, end-1, end]) = false;
+        if ~isempty(currentEventTimes{t})
+            currentEventTimes{t}([1, 2, end-1, end]) = false;
+        else
+            currentEventTimes{t}=[];
+        end 
     end    
     eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
 end
