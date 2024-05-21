@@ -80,19 +80,6 @@ if ignoreRepeats
     eventTimes = cellfun(@(x, y) x(y), eventTimes, eventsToKeep, 'uni', 0);
 end
 
-if returnNext
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
-    currentEventTimes = cellfun(@(x) circshift(x, +2), currentEventTimes, 'uni', 0);
-    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
-elseif returnPrev
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
-    currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
-    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
-elseif returnOut
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
-    currentEventTimes = cellfun(@(x) circshift(x, +1), currentEventTimes, 'uni', 0);
-    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
-end
 
 eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 intersectMat = cell([size(eventTimes), 6]);
@@ -109,6 +96,22 @@ intersectMat = squeeze(intersectMat)';
 intersectMat = cellfun(@(x) vertcat(x{:}), num2cell(intersectMat, 1), 'uni', 0);
 goodEvents = cellfun(@(x) all(x, 1), intersectMat, 'uni', 0);
 eventTimes = cellfun(@(x, y) x(y), eventTimes, goodEvents, 'uni', 0);
+
+if returnNext
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
+    currentEventTimes = cellfun(@(x) circshift(x, +2), currentEventTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+elseif returnPrev
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
+    currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+elseif returnOut
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
+    currentEventTimes = cellfun(@(x) circshift(x, +1), currentEventTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+end
+
+
 goodTrials = obj.trial_intersection_BpodParser('preset', presets);
 eventTimes = eventTimes(goodTrials);
 eventNames = eventNames(goodTrials);
