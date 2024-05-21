@@ -31,7 +31,7 @@ returnNext = p.Results.returnNext;
 returnOut = p.Results.returnOut;
 if returnPrev && returnNext
     throw(MException('BehDat:badArgs', 'returnPrev and returnNext cannot both be set to true'))
-elseif returnPrev || returnNext
+elseif returnPrev || returnNext || returnOut
     ignoreRepeats = true;
     isBracketed = true;
 end

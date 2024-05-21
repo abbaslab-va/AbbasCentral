@@ -54,6 +54,8 @@ classdef BpodParser < handle
 
         goodTrials = trial_intersection_BpodParser(obj, varargin)
 
+        adjust_vip_trialTypes_tri(obj)
+
     end
     
     %% Internal Methods
