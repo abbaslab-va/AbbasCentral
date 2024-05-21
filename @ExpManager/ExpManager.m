@@ -45,6 +45,23 @@ classdef ExpManager < handle
             fprintf(1, '%d bytes\n', totSize); 
         end
             
+        function copy(obj, copyObj)
+            propNames = properties(obj);
+            for prop = 1:numel(propNames)
+                currentProp = propNames{prop};
+                if strcmp(currentProp, "sessions")
+                    for s = 1:numel(copyObj.sessions)
+                        obj.sessions(s) = BehDat();
+                        obj.sessions(s).copy(copyObj.sessions(s))
+                    end
+                elseif isa(copyObj.(currentProp), 'handle')
+                    obj.(currentProp) = eval(class(copyObj.(currentProp)));
+                    obj.(currentProp).copy(copyObj.(currentProp));
+                else
+                    obj.(currentProp) = copyObj.(currentProp);
+                end
+            end
+        end
 
         %% Bpod methods
         

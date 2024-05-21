@@ -1,6 +1,12 @@
-function [trializedBehavior, figH] = plot_LabGym_behaviors(obj, varargin)
+function [trializedBehavior, numericalBehavior, figH] = plot_LabGym_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
+
+p = inputParser;
+p.KeepUnmatched = true;
+addParameter(p, 'plot', true, @islogical);
+parse(p, varargin{:});
+doPlot = p.Results.plot;
 
 keypoints = obj.find_event('preset', presets, 'trialized', false);
 
@@ -34,11 +40,16 @@ trializedBehaviorMat = cat(2, trializedBehavior{:})';
 if isempty(trializedBehaviorMat)
     return;
 end
-f = zeros(size(trializedBehaviorMat));
+numericalBehavior = zeros(size(trializedBehaviorMat));
 allCats = categories(obj.LabGym);
 for c = 1:numel(allCats)
     inds = trializedBehaviorMat == allCats{c};
-    f(inds) = c;
+    numericalBehavior(inds) = c;
+end
+
+if ~doPlot
+    figH = [];
+    return
 end
 
 if isempty(presets.panel)
@@ -47,7 +58,7 @@ else
     figH = figure('Visible', 'off');
 end
 
-heatmap(figH, f, 'GridVisible', 'off', 'CellLabelColor', 'none')
+heatmap(figH, numericalBehavior, 'GridVisible', 'off', 'CellLabelColor', 'none')
 colormap(custom_colormap);
 Ax = gca;
 Ax.XDisplayLabels = nan(size(Ax.XDisplayData));
