@@ -11,7 +11,7 @@ offset = round(presets.offset * obj.info.baud);
 
 if presets.bpod
     % Get event times from BpodParser method in seconds from trial start
-    eventTimes = obj.bpod.event_times('preset', presets);
+    eventTimes = obj.bpod.event_times(varargin{:});
     % Convert Bpod trialized timestamps to absolute Blackrock timestamps
     eventTimesCorrected = obj.bpod_to_blackrock(eventTimes, presets);
     % Return either a cell array of trialized timestamps or a concatenated vector

@@ -9,7 +9,7 @@ function [eventTimes, eventNames] = event_times(obj, varargin)
 %     'priorToState' - Return the last (bpod) event(s) prior to a bpod state
 %     'afterState' - Return the first event(s) after a bpod state
 %     'priorToEvent' - Return the last (bpod) event(s) prior to a bpod event
-%     'afterEvent' - Return the first event(s) after a bpod event
+%     'afterEvent' - Return the first event(s) after a bpod event   
 
 presets = PresetManager(varargin{:});
 
@@ -19,14 +19,16 @@ addParameter(p, 'ignoreRepeats', false, @islogical)
 % This param should be used when your event needs to not be the first or
 % last event in a trial, i.e. there was a recorded event on either side of
 % it.
-addParameter(p, 'isBracketed', false, @islogical)
-addParameter(p, 'returnPrev', false, @islogical)
-addParameter(p, 'returnNext', false, @islogical)
+addParameter(p, 'isBracketed', false, @islogical)   % makes sure everthing is paired
+addParameter(p, 'returnPrev', false, @islogical)    % returns previous matching event type (input in  gives previous in)
+addParameter(p, 'returnNext', false, @islogical)    % returns next matching event type (input in  gives next in)
+addParameter(p, 'returnOut', false, @islogical)     % returns next unmatched event type (input in  gives next out)
 parse(p, varargin{:});
 ignoreRepeats = p.Results.ignoreRepeats;
 isBracketed = p.Results.isBracketed;
 returnPrev = p.Results.returnPrev;
 returnNext = p.Results.returnNext;
+returnOut = p.Results.returnOut;
 if returnPrev && returnNext
     throw(MException('BehDat:badArgs', 'returnPrev and returnNext cannot both be set to true'))
 elseif returnPrev || returnNext
@@ -85,6 +87,10 @@ if returnNext
 elseif returnPrev
     currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
     currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+elseif returnOut
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
+    currentEventTimes = cellfun(@(x) circshift(x, +1), currentEventTimes, 'uni', 0);
     eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
 end
 
