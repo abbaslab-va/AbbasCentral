@@ -2,12 +2,12 @@ function [timeSeriesData, labels, keywords] = hctsa_position_initialize(obj, pre
 
 coordinates = obj.plot_centroid('event', presets.event, 'edges', presets.edges, ...
     'offset', presets.offset, 'plot', false);
+
 vidCenter = obj.info.vidRes/2;
-leftTrials = obj.bpod.trial_intersection_BpodParser('trialType', 'Left');
-rightTrials = obj.bpod.trial_intersection_BpodParser('trialType', 'Right');
-correctTrials = obj.bpod.trial_intersection_BpodParser('outcome', 'Correct');
+if obj.bpod.session.nTrials ~= numel(coordinates)
+    coordinates = [ones(size(coordinates{1})); coordinates];
+end
 delay1Trials = obj.bpod.trial_intersection_BpodParser('trialType', 'Delay1');
-delay2Trials = obj.bpod.trial_intersection_BpodParser('trialType', 'Delay2');
 delay3Trials = obj.bpod.trial_intersection_BpodParser('trialType', 'Delay3');
 rot1 = rotate_coordinate_data(coordinates(delay1Trials), vidCenter, -2*pi/3);
 rot3 = rotate_coordinate_data(coordinates(delay3Trials), vidCenter, 2*pi/3);
@@ -24,7 +24,7 @@ end
 
 % timeSeriesData = cellfun(@(x) sub2ind(obj.info.vidRes, round(x(:, 1)), round(x(:, 2))), coordinates, 'uni', 0);
 % timeSeriesData = cellfun(@(x) sub2ind(obj.info.vidRes, flipud(round(x(:, 1))), round(x(:, 2))), coordinates, 'uni', 0);
-timeSeriesData = cellfun(@(x) sub2ind(fliplr(obj.info.vidRes), round(x(:, 2)), round(x(:, 1))), coordinates, 'uni', 0);
+timeSeriesData = cellfun(@(x) sub2ind(fliplr(obj.info.vidRes), ceil(x(:, 2)), ceil(x(:, 1))), coordinates, 'uni', 0);
 timeSeriesData = cellfun(@(x) x - x(1), timeSeriesData, 'uni', 0);
 trialNo = num2cell(1:numel(timeSeriesData));
 trialString = cellfun(@(x) num2str(x), trialNo, 'uni', 0);
@@ -55,14 +55,13 @@ end
 % cellfun(@(x) plot(x, 'Color', [0 0 .5]), timeSeriesData(delay2Trials & rightTrials & correctTrials))
 % cellfun(@(x) plot(x, 'Color', [0 .5 0]), timeSeriesData(delay3Trials & rightTrials & correctTrials))
 % 
-% timeSeriesData = timeSeriesData(correctTrials);
-% labels = labels(correctTrials);
-% keywords = keywords(correctTrials);
-
-% timeSeriesData = timeSeriesData(leftTrials);
-% labels = labels(leftTrials);
-% keywords = keywords(leftTrials);
-% % 
-timeSeriesData = timeSeriesData(rightTrials);
-labels = labels(rightTrials);
-keywords = keywords(rightTrials);
+% if isempty(presets.outcome)
+%     timeSeriesData = timeSeriesData(correctTrials);
+%     labels = labels(correctTrials);
+%     keywords = keywords(correctTrials);
+% else
+%     whichTrials = obj.bpod.trial_intersection_BpodParser('trialType', presets.trialType);
+%     timeSeriesData = timeSeriesData(whichTrials);
+%     labels = labels(whichTrials);
+%     keywords = keywords(whichTrials);
+% end

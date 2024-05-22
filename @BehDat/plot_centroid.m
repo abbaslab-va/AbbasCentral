@@ -22,6 +22,7 @@ if isfield(obj.info, 'frameRate')
     frameRate = obj.info.frameRate;
 else
     frameRate = 30;
+    warning('No frame rate supplied by object - defaulting to 30 fps')
 end
 p = inputParser;
 p.KeepUnmatched = true;
@@ -40,6 +41,14 @@ trializedLocation = cellfun(@(x) obj.coordinates(x(1):x(2), :), eventCells, 'uni
 if ~doPlot
     return
 end
+
+% vidCenter = obj.info.vidRes/2;
+% delay1Trials = obj.bpod.trial_intersection_BpodParser('trialType', 'Delay1');
+% delay3Trials = obj.bpod.trial_intersection_BpodParser('trialType', 'Delay3');
+% rot1 = rotate_coordinate_data(trializedLocation(delay1Trials), vidCenter, -2*pi/3);
+% rot3 = rotate_coordinate_data(trializedLocation(delay3Trials), vidCenter, 2*pi/3);
+% trializedLocation(delay1Trials) = rot1;
+% trializedLocation(delay3Trials) = rot3;
 
 if ~isempty(presets.panel)
     figH = figure('Visible', 'off');
