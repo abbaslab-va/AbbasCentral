@@ -1,7 +1,4 @@
-function hctsa_position(obj, varargin)
-
-% This method will calculate hctsa on trialized coordinate data across all
-% animals, or on all sessions on the specified animal.
+function hctsa_behavior(obj, varargin)
 
 cd('E:/Ephys/Test')
 presets = PresetManager(varargin{:});
@@ -13,14 +10,15 @@ if ~isempty(presets.animals)
     subNames = join(presets.animals, '+');
 end
 edgeStr = num2str(presets.edges);
-saveString = strcat('hctsa_position_all_', presets.event, '_', edgeStr, '_', subNames);
+saveString = strcat('hctsa_behavior_all_', presets.event, '_', edgeStr, '_', subNames);
 saveFile = strcat(saveString, '.mat');
 normalizedFile = strcat(saveString, '_N.mat');
 
 if ~ismember(saveFile, fileNames)
 
-    [timeSeriesData, labels, keywords] = arrayfun(@(x) x.hctsa_position_initialize(presets), obj.sessions(whichSessions), 'uni', 0);
+    [timeSeriesData, labels, keywords] = arrayfun(@(x) x.hctsa_behavior_initialize(presets), obj.sessions(whichSessions), 'uni', 0);
     timeSeriesData = cat(1, timeSeriesData{:});
+    timeSeriesData = num2cell(timeSeriesData, 2);
     labels = cat(2, labels{:})';
     keywords = cat(2, keywords{:})';
     
@@ -30,7 +28,7 @@ if ~ismember(saveFile, fileNames)
         'E:\AbbasCentral\packages\hctsa\FeatureSets\INP_ops_catch24.txt'}, false, saveFile, false);
     sample_runscript_matlab(true, 5, saveFile);
 end
-% TS_LabelGroups('raw',labels);
+
 TS_Normalize('mixedSigmoid',[0.5, 1.0], saveFile);    
 % Cluster
 distanceMetricRow = 'euclidean'; % time-series feature distance
@@ -71,13 +69,6 @@ elseif iscell(presets.outcome)
     ttLabel = {};
 end
 
-% if isempty(praesets.trialType)
-%     ttLabel = {};
-% elseif ischar(presets.trialType)
-%     ttLabel = {presets.trialType};
-% elseif iscell(presets.trialType)
-%     ttLabel = presets.trialType;
-% end
 
 groupLabels = [outcomeLabel, ttLabel];
 % try

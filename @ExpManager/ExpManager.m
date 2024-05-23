@@ -88,6 +88,10 @@ classdef ExpManager < handle
         %% Video methods
         
         hctsa_position(obj, varargin)
+
+        hctsa_behavior(obj, varargin)
+
+        trializedBehavior = plot_combined_behaviors(obj, varargin)
         
     end
 

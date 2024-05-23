@@ -1,13 +1,13 @@
-function hctsa_position_calculate(obj, varargin)
+function hctsa_behavior_calculate(obj, varargin)
 
-% This method uses find_event to trialize coordinate data in order to use
+% This method uses find_event to trialize behavior data in order to use
 % the hctsa analysis on the events.
 cd(obj.info.path)
 presets = PresetManager(varargin{:});
 
-[timeSeriesData, labels, keywords] = obj.hctsa_position_initialize(presets);
+[timeSeriesData, labels, keywords] = obj.hctsa_behavior_initialize(presets);
 [~, sessName] = fileparts(obj.info.path);
-subSaveString = strcat('hctsa_position_', sessName, '_', num2str(presets.edges), '_', presets.event);
+subSaveString = strcat('hctsa_behavior_', sessName, '_', num2str(presets.edges), '_', presets.event);
 subSaveFile = strcat(subSaveString, '.mat');
 normalizedFile = strcat(subSaveString, '_N.mat');
 save(subSaveFile, 'timeSeriesData', 'labels', 'keywords');

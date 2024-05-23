@@ -153,6 +153,14 @@ classdef BehDat < handle
         hctsa_position_plot(obj, varargin)
 
         hctsa_position(obj, varargin)
+
+        [timeSeriesData, labels, keywords] = hctsa_behavior_initialize(obj, varargin)
+
+        hctsa_behavior_calculate(obj, varargin)
+
+        hctsa_behavior_plot(obj, varargin)
+
+        hctsa_behavior(obj, varargin)
         
     %% Additional methods
 
