@@ -26,6 +26,9 @@ function figH = plot_performance(obj, outcome, varargin)
 end
 
 function figH = label_performance(sessObj, figH, params)
+allTT = cellfun(@(x) sessObj.info.trialTypes.(x), fields(sessObj.info.trialTypes), 'uni', 0);
+allTT = cat(2, allTT{:});
+allTT = 1:numel(unique(allTT));
     if ~isempty(params.panel)
         fontWeight = 16;
     else
@@ -44,8 +47,10 @@ function figH = label_performance(sessObj, figH, params)
             ttVals = cat(2, ttVals{:});
             ttVals = unique(ttVals);
         end
-        x = ttVals;
-        y = figH.Children.Children.YData(ttVals);
+        x = allTT;
+        notX = allTT(~ismember(allTT, ttVals));
+        y(ttVals) = figH.Children.Children.YData(ttVals);
+        y(notX) = 0;
         hold on
         bar(x, y, 'r')
     end
