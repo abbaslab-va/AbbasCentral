@@ -1,28 +1,25 @@
-function [trializedBehavior, numericalBehavior, figH] = plot_LabGym_behaviors(obj, varargin)
+function [trializedBehavior, numericalBehavior, figH] = plot_combined_behaviors(obj, varargin)
 
 presets = PresetManager(varargin{:});
 
 p = inputParser;
 p.KeepUnmatched = true;
-addParameter(p, 'plot', true, @islogical);
+addParameter(p, 'plot', true, @islogical)
 parse(p, varargin{:});
 doPlot = p.Results.plot;
 
-keypoints = obj.find_event('preset', presets, 'trialized', false);
+whichSessions = obj.subset(presets.animals);
 
-if isfield(obj.info, 'frameRate')
-    frameRate = obj.info.frameRate;
-else
-    frameRate = 30;
+[trializedBehaviorAll, numericalBehaviorAll] = arrayfun(@(x) x.plot_LabGym_behaviors('preset', presets, 'plot', false), obj.sessions(whichSessions), 'uni', 0);
+
+trializedBehavior = cat(1, trializedBehaviorAll{:});
+numericalBehavior = cat(1, numericalBehaviorAll{:});
+
+if ~doPlot
+    figH = [];
+    return
 end
 
-edges = round(presets.edges * frameRate);
-numFrames = numel(obj.LabGym);
-
-frameEdges = num2cell(edges + keypoints', 2);
-inBounds = cellfun(@(x) x(1) > 0 && x(2) <= numFrames, frameEdges);
-goodFrames = frameEdges(inBounds);
-trializedBehavior = cellfun(@(x) obj.LabGym(x(1):x(2)), goodFrames, 'uni', 0);
 
 custom_colormap = ...
     [0.3 0.3 0.3; ...   NA - dark grey
@@ -37,21 +34,14 @@ custom_colormap = ...
     ];
 
 trializedBehaviorMat = cat(2, trializedBehavior{:})';
-numericalBehavior = zeros(size(trializedBehaviorMat));
+
 if isempty(trializedBehaviorMat)
     return;
 end
-allCats = categories(obj.LabGym);
-for c = 1:numel(allCats)
-    inds = trializedBehaviorMat == allCats{c};
-    numericalBehavior(inds) = c;
-end
 
-if ~doPlot
-    figH = [];
-    return
-end
-
+allCats = arrayfun(@(x) categories(x.LabGym), obj.sessions, 'uni', 0);
+allCats = cat(1, allCats{:});
+allCats = unique(allCats);
 if isempty(presets.panel)
     figH = figure;
 else
@@ -72,3 +62,4 @@ if ~isempty(presets.panel)
     copyobj(figH.Children, presets.panel)
     close(figH)
 end
+disp('poop')

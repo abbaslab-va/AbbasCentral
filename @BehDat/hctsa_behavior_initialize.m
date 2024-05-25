@@ -3,6 +3,10 @@ function [timeSeriesData, labels, keywords] = hctsa_behavior_initialize(obj, pre
 [~, timeSeriesData] = obj.plot_LabGym_behaviors('event', presets.event, 'edges', presets.edges, ...
     'offset', presets.offset, 'plot', false);
 
+if obj.bpod.session.nTrials ~= size(timeSeriesData, 1)
+    timeSeriesData = [ones(1, size(timeSeriesData, 2)); timeSeriesData];
+end
+
 trialNo = num2cell(1:size(timeSeriesData, 1));
 trialString = cellfun(@(x) num2str(x), trialNo, 'uni', 0);
 [~, sessName] = fileparts(obj.info.path);

@@ -91,7 +91,7 @@ classdef ExpManager < handle
 
         hctsa_behavior(obj, varargin)
 
-        trializedBehavior = plot_combined_behaviors(obj, varargin)
+        [trializedBehavior, numericalBehavior, figH] = plot_combined_behaviors(obj, varargin)
         
     end
 
