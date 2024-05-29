@@ -18,17 +18,6 @@ classdef ExpManager < handle
 
 %         newExperiment = collect_sessions(expPath)     % collect all sessions in a directory, not an ExpManager method
 
-        function sessionIdx = subset(obj, containingString)
-            if isempty(containingString)
-                sessionIdx = true(1, numel(obj.sessions));
-            elseif ischar(containingString)
-                sessionIdx = arrayfun(@(x) contains(x.info.path, containingString), obj.sessions);
-            elseif iscell(containingString)
-                sessionIdx = cellfun(@(x) arrayfun(@(y) contains(y.info.path, x), obj.sessions), containingString, 'uni', 0);
-                sessionIdx = cat(1, sessionIdx{:});
-                sessionIdx = any(sessionIdx, 1);
-            end
-        end
 
         function get_size(obj) 
             props = properties(obj); 
@@ -93,6 +82,9 @@ classdef ExpManager < handle
 
         [trializedBehavior, numericalBehavior, figH] = plot_combined_behaviors(obj, varargin)
         
+        %% Other
+
+        sessionIdx = subset(obj, varargin)
     end
 
 end

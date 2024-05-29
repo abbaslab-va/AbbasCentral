@@ -13,7 +13,7 @@ matdir = dir('*.mat');
 for m = 1:length(matdir)
     fName = matdir(m).name;
     fInfo = whos('-file', fName);
-    if numel(fInfo) == 1 && strcmp(fInfo.name, "SessionData")
+    if isscalar(fInfo) && strcmp(fInfo.name, "SessionData")
         load(fName, 'SessionData')
     end
 end
@@ -35,8 +35,15 @@ end
 
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
+if ~isempty(ini.conditions)
+    allConditions = fields(ini.conditions);
+    matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
+    sessionCondition = allConditions(matchingCondition);
+end
 
-info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, 'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'startState', ini.info.StartState, 'channels', ini.regions);
+info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
+    'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
+    'condition', sessionCondition, 'startState', ini.info.StartState, 'channels', ini.regions);
 
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
