@@ -39,7 +39,7 @@ baseTimes = obj.find_event('event', baseline, 'trialType', presets.trialType, 't
     'outcome', presets.outcome, 'offset', presets.offset);
 eventTimes = obj.find_event('preset', presets, 'trialized', false);
 
-% Bin matrices of spikes for each baseline timestamp
+% % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
 baseCells = cellfun(@(x) obj.bin_spikes(x, binWidth), baseEdges, 'uni', 0);
 
@@ -51,7 +51,9 @@ baseSTD = std(baseNeurons, 0, 2);
 % Z-score binned spikes around each event timestamp against baseline FR
 eventEdges = num2cell((eWindow .* obj.info.baud) + eventTimes', 2);
 eventCells = cellfun(@(x) obj.bin_spikes(x, binWidth), eventEdges, 'uni', 0);
-zCells = cellfun(@(x) (x - baseMean)./baseSTD, eventCells, 'uni', 0);
+eventMean = cellfun(@(x) mean(x, 2), eventCells, 'uni', 0);
+eventSTD = cellfun(@(x) std(x, 0, 2), eventCells, 'uni', 0);
+zCells = cellfun(@(x, y, z) (x - y)./z, eventCells, eventMean, eventSTD, 'uni', 0);
 
 % Find trial number for each event timestamp
 trialNum = discretize(eventTimes, [baseTimes obj.info.samples]);

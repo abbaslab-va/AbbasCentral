@@ -50,6 +50,7 @@ function h = plot_pop_response(meanMat, params, figTitle)
     h = heatmap(meanMat, 'GridVisible', 'off');
     colormap('parula')
     colorbar
+    caxis([-3 3])
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
     timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
@@ -62,15 +63,15 @@ function h = plot_pop_response(meanMat, params, figTitle)
     % xticklabels(timeLabels)
     % yticks([1 numel(h.YData)])
     % set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'TickDir', 'out', 'LineWidth', 1.5);
-    xLabels = cell(size(meanMat, 2), 1);
-    [xLabels{:}] = deal("");
-    [xLabels{timeTix}] = timeLabels{:};
-    numNeurons = size(meanMat, 1);
-    neuronNumLabels = {num2str(1), num2str(numNeurons)};
-    yLabels = cell(numNeurons, 1);
-    [yLabels{:}] = deal("");
-    [yLabels{[1, numNeurons], 1}] = neuronNumLabels{:};
-    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XDisplayLabels', xLabels, 'YDisplayLabels', yLabels);
+%     xLabels = cell(size(meanMat, 2), 1);
+%     [xLabels{:}] = deal("");
+%     [xLabels{timeTix}] = timeLabels{:};
+%     numNeurons = size(meanMat, 1);
+%     neuronNumLabels = {num2str(1), num2str(numNeurons)};
+%     yLabels = cell(numNeurons, 1);
+%     [yLabels{:}] = deal("");
+%     [yLabels{[1, numNeurons], 1}] = neuronNumLabels{:};
+%     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XDisplayLabels', xLabels, 'YDisplayLabels', yLabels);
     if ~isempty(params.panel)
         copyobj(figH.Children, params.panel)
         close(figH)
