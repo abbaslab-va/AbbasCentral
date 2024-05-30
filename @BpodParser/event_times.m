@@ -29,6 +29,9 @@ isBracketed = p.Results.isBracketed;
 returnPrev = p.Results.returnPrev;
 returnNext = p.Results.returnNext;
 returnOut = p.Results.returnOut;
+if (returnPrev || returnNext) && returnOut
+    throw(MException('BehDat:badArgs', 'No no randall'))
+end
 if returnPrev && returnNext
     throw(MException('BehDat:badArgs', 'returnPrev and returnNext cannot both be set to true'))
 elseif returnPrev || returnNext || returnOut
@@ -87,10 +90,20 @@ intersectMat = cell([size(eventTimes), 6]);
 
 [intersectMat(:, :, 1)] = obj.event_within_state('eventTimes', eventTimes, 'stateName', presets.withinState);
 [intersectMat(:, :, 2)] = obj.event_exclude_state('eventTimes', eventTimes, 'stateName', presets.excludeState);
+
+
 [intersectMat(:, :, 3)] = obj.event_prior_to_state('eventTimes', eventTimes, 'stateName', presets.priorToState);
 [intersectMat(:, :, 4)] = obj.event_after_state('eventTimes', eventTimes, 'stateName', presets.afterState);
-[intersectMat(:, :, 5)] = obj.event_prior_to_event('eventTimes', eventTimes, 'eventName', presets.priorToEvent);
-[intersectMat(:, :, 6)] = obj.event_after_event('eventTimes', eventTimes, 'eventName', presets.afterEvent);
+if returnOut
+    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
+    currentEventTimes = cellfun(@(x) circshift(x, +1), currentEventTimes, 'uni', 0);
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+    [intersectMat(:, :, 5)] = obj.event_prior_to_event('eventTimes', eventTimes, 'eventName', presets.priorToEvent);
+    [intersectMat(:, :, 6)] = obj.event_after_event('eventTimes', eventTimes, 'eventName', presets.afterEvent);
+else
+    [intersectMat(:, :, 5)] = obj.event_prior_to_event('eventTimes', eventTimes, 'eventName', presets.priorToEvent);
+    [intersectMat(:, :, 6)] = obj.event_after_event('eventTimes', eventTimes, 'eventName', presets.afterEvent);
+end
 intersectMat = squeeze(intersectMat)';
 
 intersectMat = cellfun(@(x) vertcat(x{:}), num2cell(intersectMat, 1), 'uni', 0);
@@ -104,10 +117,6 @@ if returnNext
 elseif returnPrev
     currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
     currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
-    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
-elseif returnOut
-    currentEventTimes = cellfun(@(x, y) ismember(x, y), sortedTimes, eventTimes, 'uni', 0);
-    currentEventTimes = cellfun(@(x) circshift(x, +1), currentEventTimes, 'uni', 0);
     eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
 end
 
