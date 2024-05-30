@@ -13,7 +13,7 @@ classdef BpodParser < handle
 
         % Constructor
         function obj = BpodParser(varargin)
-            validSession = @(x) isstruct(x);
+            validSession = @(x) isstruct(x) || isempty(x);
             p = inputParser;
             addParameter(p, 'session', struct, validSession)
             addParameter(p, 'info', struct, validSession)

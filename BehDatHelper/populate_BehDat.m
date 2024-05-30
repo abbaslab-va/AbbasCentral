@@ -55,7 +55,7 @@ end
 configs.trialTypes = ini.trialTypes;
 configs.outcomes = ini.outcomes;
 configs.startState = ini.info.StartState;
-bpodObj = BpodParser(SessionData, [], configs);
+bpodObj = BpodParser('session',SessionData,'config', configs);
 sessObj = BehDat(info, spikeStruct, timestamps, bpodObj, coords);
 
 try
