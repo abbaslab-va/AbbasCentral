@@ -26,6 +26,7 @@ try
     binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),...
         edgeCells, 'uni', 0);
     binnedTrials = cat(1, binnedTrials{:});
+    binnedTrials = int16(binnedTrials); % Save on memory by 4x. Shouldn't change much bc raster converts to logical anyways
 catch
     binnedTrials = []; 
 end

@@ -1,14 +1,14 @@
 function binnedNeurons = bin_all_neurons(obj, varargin)
 
 % OUTPUT:
-%     meanFR - NxT matrix of averaged firing rates, where N is the number of
-%     neurons and T is the number of bins
-%     frCells - a 1xE cell array where E is the number of events. Each cell
-%     contains an NxT matrix of firing rates for that trial.
-%     trialNum - an index of the bpod trial the event occurred in
-% INPUT:
-%     event -  an event character vector found in the config.ini file
+%     binnedNeurons - a 1xN cell where N is the number of neurons in the
+%     session, each cell containing an ExT binary matrix of spike times for
+%     that neuron where E is the number of events and T is the number of
+%     timepoints with the given edges and binWidth. If binWidth is set
+%     larger than 1 (ms), it will no longer be a binary matrix.
+% INPUT: 
 % optional name/value pairs:
+%     event -  an event character vector found in the config.ini file (default is trialStart)
 %     'offset' - a number that defines the offset from the alignment you wish to center around.
 %     'edges' - 1x2 vector distance from event on either side in seconds
 %     'outcome' - an outcome character array found in config.ini
@@ -17,18 +17,10 @@ function binnedNeurons = bin_all_neurons(obj, varargin)
 %     'binWidth' - an optional parameter to specify the bin width, in ms. default value is 1
 
 presets = PresetManager(varargin{:});
-baud = obj.info.baud;
-binStep = baud/1000*presets.binWidth;
-timestamps = obj.find_event('preset', presets, 'trialized', false);
-
 binnedNeurons = cell(1, numel(obj.spikes));
 try
-    adjustedEdges = (presets.edges * baud) + timestamps';
-    edgeCells = num2cell(adjustedEdges, 2);
-    for neuron = 1:numel(obj.spikes)
-        binnedN = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):binStep:x(2)),...
-            edgeCells, 'uni', 0);
-        binnedNeurons{neuron} = cat(1, binnedN{:});
+    for n = 1:numel(obj.spikes)
+        binnedNeurons{n} = obj.bin_neuron(n, 'preset', presets);
     end
 catch
     binnedNeurons = []; 
