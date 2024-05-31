@@ -37,7 +37,7 @@ baseTrials = p.Results.baseTrials;
 
 baseTimes = obj.find_event('event', baseline, 'trialType', presets.trialType, 'trials', baseTrials, ...
     'outcome', presets.outcome, 'offset', presets.offset);
-eventTimes = obj.find_event('preset', presets, 'trialized', false);
+eventTimes = obj.find_event(varargin{:}, 'trialized', false);
 
 % % Bin matrices of spikes for each baseline timestamp
 baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
@@ -51,13 +51,13 @@ baseSTD = std(baseNeurons, 0, 2);
 % Z-score binned spikes around each event timestamp against baseline FR
 eventEdges = num2cell((eWindow .* obj.info.baud) + eventTimes', 2);
 eventCells = cellfun(@(x) obj.bin_spikes(x, binWidth), eventEdges, 'uni', 0);
-eventMean = cellfun(@(x) mean(x, 2), eventCells, 'uni', 0);
-eventSTD = cellfun(@(x) std(x, 0, 2), eventCells, 'uni', 0);
+eventMean = cellfun(@(x) mean(x, 2, 'omitnan'), eventCells, 'uni', 0);
+eventSTD = cellfun(@(x) std(x, 0, 2,  'omitnan'), eventCells, 'uni', 0);
 zCells = cellfun(@(x, y, z) (x - y)./z, eventCells, eventMean, eventSTD, 'uni', 0);
 
 % Find trial number for each event timestamp
 trialNum = discretize(eventTimes, [baseTimes obj.info.samples]);
 % Concatenate cells into 3d matrix, mean across trials, smooth and output
 zAll = cat(3, zCells{:});
-zMean = mean(zAll, 3);
+zMean = mean(zAll, 3, 'omitnan');
 zMean = smoothdata(zMean, 2, 'gaussian', floor(100/binWidth));
