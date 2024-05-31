@@ -21,7 +21,7 @@ function h = mean_population_response(obj, varargin)
     parse(p, varargin{:});
     sortBy = p.Results.sortBy;
 
-    zMean = obj.z_score('preset', presets, 'eWindow', presets.edges, 'binWidth', 20);
+    zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', 20);
     if ~isempty(presets.subset)
         zMean = zMean(presets.subset, :);
     end
