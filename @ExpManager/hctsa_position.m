@@ -8,7 +8,7 @@ presets = PresetManager(varargin{:});
 fileDir = dir;
 fileNames = extractfield(fileDir, 'name');
 
-whichSessions = obj.subset(presets.animals);
+whichSessions = obj.subset('animal', presets.animals);
 if ~isempty(presets.animals)
     subNames = join(presets.animals, '+');
 end
