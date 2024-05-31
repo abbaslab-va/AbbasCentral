@@ -23,20 +23,26 @@ addParameter(p, 'isBracketed', false, @islogical)   % makes sure everthing is pa
 addParameter(p, 'returnPrev', false, @islogical)    % returns previous matching event type (input in  gives previous in)
 addParameter(p, 'returnNext', false, @islogical)    % returns next matching event type (input in  gives next in)
 addParameter(p, 'returnOut', false, @islogical)     % returns next unmatched event type (input in  gives next out)
+addParameter(p, 'removeEnds', false, @islogical)    % removes first and last event from each trial
+
 parse(p, varargin{:});
 ignoreRepeats = p.Results.ignoreRepeats;
 isBracketed = p.Results.isBracketed;
 returnPrev = p.Results.returnPrev;
 returnNext = p.Results.returnNext;
 returnOut = p.Results.returnOut;
+removeEnds = p.Results.removeEnds;
+
 if (returnPrev || returnNext) && returnOut
     throw(MException('BehDat:badArgs', 'No no randall'))
 end
 if returnPrev && returnNext
     throw(MException('BehDat:badArgs', 'returnPrev and returnNext cannot both be set to true'))
-elseif returnPrev || returnNext || returnOut
+elseif returnPrev || returnNext
     ignoreRepeats = true;
     isBracketed = true;
+elseif returnOut
+    removeEnds = true;
 end
 rawEvents = obj.session.RawEvents.Trial;
 rawData = obj.session.RawData;
@@ -58,6 +64,17 @@ if isBracketed
     for t = 1:numel(currentEventTimes)
         if ~isempty(currentEventTimes{t})
             currentEventTimes{t}([1, 2, end-1, end]) = false;
+        else
+            currentEventTimes{t}=[];
+        end 
+    end    
+    eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
+end
+
+if removeEnds
+    for t = 1:numel(currentEventTimes)
+        if ~isempty(currentEventTimes{t})
+            currentEventTimes{t}([1, end]) = false;
         else
             currentEventTimes{t}=[];
         end 
