@@ -166,6 +166,8 @@ classdef BehDat < handle
 
         [timestamps, eventTrial] = find_event(obj, varargin)
 
+        eventDist = distance_between_events(obj, event1, event2, varargin)
+
         noiseRemoved = remove_noisy_periods(obj, rawData, event, varargin)
 
         bpodOffset = samplingDiff(obj)
