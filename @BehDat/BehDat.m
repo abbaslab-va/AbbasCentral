@@ -88,7 +88,7 @@ classdef BehDat < handle
         
         [zMean, zCells, trialNum] = z_score(obj, varargin)
 
-        [corrScore, trialTypes] = xcorr(obj, event, edges)
+        corrScore = xcorr(obj, varargin)
 
         plot_xcorr(obj, ref, target, window)
 

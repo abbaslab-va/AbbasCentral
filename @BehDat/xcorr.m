@@ -1,4 +1,4 @@
-function [corrScore, trialTypes] = xcorr(obj, event, edges)
+function corrScore = xcorr(obj, varargin)
 
 % Computes the cross-correlogram of the spike trains of all neurons centered 
 % around the specified event. 
@@ -6,32 +6,39 @@ function [corrScore, trialTypes] = xcorr(obj, event, edges)
 % OUTPUT:
 %     corrScore - a 1xE cell array where E is the number of events. Each cell
 %     contains an NxN matrix of cross-correlograms for that trial.
-%     trialTypes - a 1xE vector of trial types for each trial
 %
 % INPUT:
-%     event - a string of an event named in config.ini
-%     edges - 1x2 vector specifying distance from the event in seconds
+%     variable name/value pairs from PresetManager class
+%     event
+%     trialType
+%     outcome
+%     stimType
+%     offset
 
-    trialStart = obj.find_event('Trial_Start');
-    timestamps = obj.find_event(event);
-    trialNo = discretize(timestamps, [trialStart obj.info.samples]);
-    trialTypes = obj.bpod.TrialTypes(trialNo);
-    edges = num2cell(edges * obj.info.baud + timestamps', 2);
-    binnedSpikes = cellfun(@(x) obj.bin_spikes(x, 1), edges, 'uni', 0);
-    corrScore = cellfun(@corrfun, binnedSpikes, 'uni', 0);
-end
+presets = PresetManager(varargin{:});
+p = inputParser;
+p.KeepUnmatched = true;
+addParameter(p, 'corrWindow', 50, @isinteger);
+parse(p, varargin{:});
+corrWindow = p.Results.corrWindow;
 
-function corrCells = corrfun(spikeMat)
-    numNeurons = size(spikeMat, 1);
-    corrCells = cell(numNeurons);
-    for ref = 1:numNeurons
-        if ref == numNeurons
-            continue
+eventTimes = obj.find_event('preset', presets, 'trialized', false);
+numEvents = numel(eventTimes);
+numBins = corrWindow * 2 + 1;
+eventCorrTemp = int16(zeros(numEvents, numBins));
+binnedSpikes = obj.bin_all_neurons('preset', presets);
+numNeurons = numel(binnedSpikes);
+corrScore = cell(numNeurons);
+for ref = 1:numNeurons
+    if ref == numNeurons
+        continue
+    end
+    refSpikes = binnedSpikes{ref};
+    for target = ref + 1:numNeurons
+        targetSpikes = binnedSpikes{target};
+        parfor event = 1:numEvents
+            eventCorrTemp(event, :) = int16(xcorr(refSpikes(:, event), targetSpikes(:, event), corrWindow));
         end
-        refTrain = spikeMat(ref, :);
-        for target = ref + 1:numNeurons
-            targetTrain = spikeMat(target, :);
-            corrCells{ref, target} = round(xcorr(refTrain, targetTrain, 10));
-        end
+        corrScore{ref, target} = sum(eventCorrTemp, 1, 'native');
     end
 end
