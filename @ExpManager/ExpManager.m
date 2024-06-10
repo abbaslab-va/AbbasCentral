@@ -24,11 +24,12 @@ classdef ExpManager < handle
             totSize = 0; 
            
             for ii=1:length(props) 
+                currentProperty = getfield(obj, char(props(ii))); 
                 s = whos('currentProperty'); 
                 totSize = totSize + s.bytes;
-                for sess = 1:numel(obj.sessions)
-                    totSize = totSize + obj.sessions(sess).get_size;
-                end
+            end
+            for sess = 1:numel(obj.sessions)
+                totSize = totSize + obj.sessions(sess).get_size;
             end
           
             fprintf(1, '%d bytes\n', totSize); 

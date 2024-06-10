@@ -32,6 +32,15 @@ classdef BpodParser < handle
             end
         end
 
+        function totSize = get_size(obj)
+            propNames = properties(obj); 
+            totSize = 0; 
+            for prop=1:length(propNames) 
+                currentProperty = getfield(obj, char(propNames(prop))); 
+                s = whos('currentProperty'); 
+                totSize = totSize + s.bytes; 
+            end
+        end
         %%% Event Methods
         
         [eventTimes, eventNames] = event_times(obj, varargin)

@@ -32,10 +32,13 @@ classdef BehDat < handle
         function totSize = get_size(obj) 
             propNames = properties(obj); 
             totSize = 0; 
-            for prop=1:length(propNames) 
-                currentProperty = getfield(obj, char(props(propNames))); 
+            for prop=1:length(propNames)
+                currentProperty = getfield(obj, char(propNames(prop)));
                 s = whos('currentProperty'); 
                 totSize = totSize + s.bytes; 
+                if isa(currentProperty, 'handle')
+                    totSize = totSize + currentProperty.get_size;
+                end
             end
         end
 

@@ -32,11 +32,8 @@ refRegion = p.Results.refRegion;
 targetRegion = p.Results.targetRegion;
 baud = obj.info.baud;
 
-if presets.bpod
-    eventTimes = obj.find_bpod_event('preset', presets);
-else
-    eventTimes = obj.find_event('preset', presets);
-end
+eventTimes = obj.find_event('preset', presets);
+
 
 edges = (presets.edges * baud) + eventTimes';
 edgeCells = num2cell(edges, 2);
