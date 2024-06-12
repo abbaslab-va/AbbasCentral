@@ -5,21 +5,45 @@ function adjust_vip_trialTypes_tri(obj)
 % trials vs right trials. 1 corresponds to large reward on the left, 2 on
 % the right. 
 
+% Even numbered mice were recorded in the blackrock system, odd mice in the
+% whitematter. At the time of recording, up to 6/5/24, the blackrock ports
+% increased as you go CCW, whitematter increased clockwise. As of 6/5/24,
+% all ports go CCW.
+
+subName = obj.config.name;
+subNoIdx = regexp(subName, '[0-9]');
+subNo = str2double(subName(subNoIdx));
+isOdd = logical(mod(subNo, 2));
 centerPort1 = all(cellfun(@(x) ~isempty(x), obj.event_times('event', 'Port1In', 'withinState', 'RewardDelay')));
 centerPort2 = all(cellfun(@(x) ~isempty(x), obj.event_times('event', 'Port2In', 'withinState', 'RewardDelay')));
 centerPort3 = all(cellfun(@(x) ~isempty(x), obj.event_times('event', 'Port3In', 'withinState', 'RewardDelay')));
 
 if centerPort1
-    leftPort = 'Port3In';
-    rightPort = 'Port2In';
+    if isOdd
+        leftPort = 'Port3In';
+        rightPort = 'Port2In';
+    else
+        leftPort = 'Port2In';
+        rightPort = 'Port3In';
+    end
     ttAdd = 0;
 elseif centerPort2
-    leftPort = 'Port1In';
-    rightPort = 'Port3In';
+    if isOdd
+        leftPort = 'Port1In';
+        rightPort = 'Port3In';
+    else
+        leftPort = 'Port3In';
+        rightPort = 'Port1In';
+    end
     ttAdd = 4;
 elseif centerPort3
-    leftPort = 'Port2In';
-    rightPort = 'Port1In';
+    if isOdd
+        leftPort = 'Port2In';
+        rightPort = 'Port1In';
+    else
+        leftPort = 'Port1In';
+        rightPort = 'Port2In';
+    end
     ttAdd = 8;
 else
     warning('No center port found -- aborting operation')
