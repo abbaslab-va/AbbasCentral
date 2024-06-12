@@ -12,12 +12,15 @@ centerPort3 = all(cellfun(@(x) ~isempty(x), obj.event_times('event', 'Port3In', 
 if centerPort1
     leftPort = 'Port3In';
     rightPort = 'Port2In';
+    ttAdd = 0;
 elseif centerPort2
     leftPort = 'Port1In';
     rightPort = 'Port3In';
+    ttAdd = 4;
 elseif centerPort3
     leftPort = 'Port2In';
     rightPort = 'Port1In';
+    ttAdd = 8;
 else
     warning('No center port found -- aborting operation')
     return
@@ -68,3 +71,4 @@ end
 ttDiff = diff(obj.session.TrialTypes);
 obj.session.TrialTypes(find(ttDiff == -1) + 1) = 3;
 obj.session.TrialTypes(find(ttDiff == 1) + 1) = 4;
+obj.session.TrialTypes = obj.session.TrialTypes + ttAdd;
