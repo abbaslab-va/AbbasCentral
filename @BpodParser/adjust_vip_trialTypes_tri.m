@@ -69,10 +69,16 @@ for t = 1:obj.session.nTrials
                     obj.session.TrialTypes(t) = 2;
                 end
             case 0
-                if ~isempty(leftPunish{t})
+                if ~isempty(leftPunish{t}) && isempty(rightPunish{t})
                     obj.session.TrialTypes(t) = 2;
-                elseif isempty(rightPunish{t})
+                elseif ~isempty(rightPunish{t}) && isempty(leftPunish{t})
                     obj.session.TrialTypes(t) = 1;
+                else
+                    if leftPunish{t}(1) < rightPunish{t}(1)
+                        obj.session.TrialTypes(t) = 2;
+                    else
+                        obj.session.TrialTypes(t) = 1;
+                    end
                 end
         end
         continue
