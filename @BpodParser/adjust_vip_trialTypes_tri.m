@@ -50,6 +50,8 @@ else
     return
 end
 
+leftPunish = obj.event_times('event', leftPort, 'withinState', 'SmallReward');
+rightPunish = obj.event_times('event', rightPort, 'withinState', 'SmallReward');
 for t = 1:obj.session.nTrials
     outcome = obj.session.SessionPerformance(t);
     states = obj.session.RawEvents.Trial{t}.States;
@@ -67,10 +69,9 @@ for t = 1:obj.session.nTrials
                     obj.session.TrialTypes(t) = 2;
                 end
             case 0
-                punishTime = states.SmallReward(1);
-                if punishTime - lastL < punishTime - lastR
+                if ~isempty(leftPunish{t})
                     obj.session.TrialTypes(t) = 2;
-                else
+                elseif isempty(rightPunish{t})
                     obj.session.TrialTypes(t) = 1;
                 end
         end
