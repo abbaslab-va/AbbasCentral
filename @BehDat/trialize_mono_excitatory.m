@@ -32,11 +32,8 @@ refRegion = p.Results.refRegion;
 targetRegion = p.Results.targetRegion;
 baud = obj.info.baud;
 
-if presets.bpod
-    eventTimes = obj.find_bpod_event('preset', presets);
-else
-    eventTimes = obj.find_event('preset', presets);
-end
+eventTimes = obj.find_event('preset', presets);
+
 
 edges = (presets.edges * baud) + eventTimes';
 edgeCells = num2cell(edges, 2);
@@ -51,6 +48,7 @@ else
     hasExcitatoryConn = find(exciteID);
 end
 numEvents = numel(edgeCells);
+stepSize = baud/1000;
 
 for r = 1:numel(hasExcitatoryConn)
     ref = hasExcitatoryConn(r);
@@ -71,7 +69,7 @@ for r = 1:numel(hasExcitatoryConn)
         end
         parfor e = 1:numEvents
             eventEdges = edgeCells{e};
-            binEdges = eventEdges(1):baud/1000:eventEdges(2);
+            binEdges = eventEdges(1):stepSize:eventEdges(2);
             refSpikes = histcounts(refTimes, 'BinEdges', binEdges);
             targetSpikes = histcounts(targetTimes, 'BinEdges', binEdges);
             corrMat(e, :) = xcorr(refSpikes, targetSpikes, 50);

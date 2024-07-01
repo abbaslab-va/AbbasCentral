@@ -51,24 +51,4 @@ end
 startState = categorical(startState');
 endState = categorical(endState');
 t = table(startState, endState, 'VariableNames', ["Start", "End"]);
-
-options.color_map = 'parula';      
-options.flow_transparency = 0.2;   % opacity of the flow paths
-options.bar_width = 120;            % width of the category blocks
-options.show_perc = false;          % show percentage over the blocks
-options.text_color = [0 0 0];      % text color for the percentages
-options.show_layer_labels = true;  % show layer names under the chart
-options.show_cat_labels = true;   % show categories over the blocks.
-options.show_legend = false;    
-if isempty(t)
-    return
-end
-if isempty(presets.panel)
-    plotSankeyFlowChart(t, options);
-else
-    h = plotSankeyFlowChart(t, options);
-    h.Visible = 'off';
-    copyobj(h.Children, presets.panel)
-    close(h)
-end
-
+plot_sankey_diagram(t, presets.panel)

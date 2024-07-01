@@ -30,7 +30,7 @@ perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerforman
 
 nTrials = bpodSession.nTrials;
 trialTypes = bpodSession.TrialTypes;
-nTT = numel(unique(trialTypes));
+nTT = max(trialTypes);
 if ~isfield(bpodSession, 'SessionPerformance')
     throw(perfException)
 end

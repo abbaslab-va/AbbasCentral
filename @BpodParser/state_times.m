@@ -7,6 +7,22 @@ function stateEdges = state_times(obj, stateName, varargin)
 %     stateName - a name of a bpod state to find edges for
 
 presets = PresetManager(varargin{:});
+p = inputParser;
+p.KeepUnmatched = true;
+addParameter(p, 'returnStart', false, @islogical)
+addParameter(p, 'returnEnd', false, @islogical)
+parse(p, varargin{:})
+returnStart = p.Results.returnStart;
+returnEnd = p.Results.returnEnd;
+
+% eventIdx refers to which state edge to return
+if (returnStart && returnEnd) || (~returnStart && ~returnEnd)
+    eventIdx = [1, 2];
+elseif returnStart
+    eventIdx = 1;
+elseif returnEnd
+    eventIdx = 2;
+end
 
 % Trialized bpod information
 rawEvents = obj.session.RawEvents.Trial;
@@ -23,4 +39,7 @@ stateEdges = cellfun(@(x) x(all(~isnan(x), 2), :), stateTimes, 'uni', 0);
 stateEdges = cellfun(@(x) num2cell(x, 2), stateEdges, 'uni', 0);
 goodTrials = obj.trial_intersection_BpodParser('preset', presets);
 stateEdges = stateEdges(goodTrials);
-%stateEdges = cat(1, stateEdges{:});
+stateEdges = cellfun(@(x) cellfun(@(y) y(eventIdx), x, 'uni', 0), stateEdges, 'uni', 0);
+if ~presets.trialized
+    stateEdges = cat(1, stateEdges{:});
+end
