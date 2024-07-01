@@ -20,7 +20,7 @@ p = inputParser;
 p.KeepUnmatched = true;
 addParameter(p, 'rewardStates', {}, @iscell)
 addParameter(p, 'proximalState', [], @ischar)
-addParameter(p, 'proximalEdges', [-5 5], validVectorSize)
+addParameter(p, 'proximalEdges', [-1 3], validVectorSize)
 parse(p, varargin{:});
 rewardStateNames = p.Results.rewardStates;
 proxState = p.Results.proximalState;
@@ -36,8 +36,8 @@ eventIncluded = cellfun(@(x, y) ismember(x, y), allEventTimesUnadjusted, allEven
 nextEventID = cellfun(@(x) cellfun(@(y) str2double(y(5)), x), nextEventNames, 'uni', 0);
 [prevEventTimes, prevEventNames] = obj.bpod.event_times('preset', presets, 'returnPrev', true);
 prevEventID = cellfun(@(x) cellfun(@(y) str2double(y(5)), x), prevEventNames, 'uni', 0);
-[outEventTimes, outEventNames] = obj.bpod.event_times('preset', presets, 'returnOut', true);
-outEventID = cellfun(@(x) cellfun(@(y) str2double(y(5)), x), outEventNames, 'uni', 0);
+%[outEventTimes, outEventNames] = obj.bpod.event_times('preset', presets, 'returnOut', true);
+%outEventID = cellfun(@(x) cellfun(@(y) str2double(y(5)), x), outEventNames, 'uni', 0);
 
 
 
@@ -89,7 +89,7 @@ nextEventRewarded = cellfun(@(x) any(x, 1), nextEventRewarded, 'uni', 0);
 allEventTimesBR = obj.bpod_to_blackrock(allEventTimes, presets);
 prevEventTimes = obj.bpod_to_blackrock(prevEventTimes, presets);
 nextEventTimes = obj.bpod_to_blackrock(nextEventTimes, presets);
-outEventTimes = obj.bpod_to_blackrock(outEventTimes, presets);
+%outEventTimes = obj.bpod_to_blackrock(outEventTimes, presets);
 
 % Concatenate all outputs
 allEventTimes = cat(2, allEventTimes{:});
@@ -103,18 +103,19 @@ nextEventRewarded = cat(2, nextEventRewarded{:});
 nextEventID = cat(2, nextEventID{:});
 eventIncluded = cat(2, eventIncluded{:});
 eventProximal = cat(2, eventProximal{:});
-proxStateStartAll = nan(size(eventProximal));
-proxStateStartAll(eventProximal) = proxStateStart - allEventTimes(eventProximal);
-outEventTimes = cat(2, outEventTimes{:});
-outEventTimes=outEventTimes(eventIncluded);
+%proxStateStartAll = nan(size(eventProximal));
+%proxStateStartAll(eventProximal) = proxStateStart - allEventTimes(eventProximal);
+%outEventTimes = cat(2, outEventTimes{:});
+%outEventTimes=outEventTimes(eventIncluded);
 
 % % Bin 
 baud=30000;
 %edges are bins from prev to next port
 %zero-padded
-zeroPad=.1*baud;
-edges=arrayfun(@(x,y) [x-zeroPad y+zeroPad],prevEventTimes,nextEventTimes,'uni',0);
-edges=cellfun(@(x,y) [x(1) y x(2)], edges, num2cell(outEventTimes),'uni',0);
+zeroPad=[1*baud 2*baud]; %3 seconds 
+edges=arrayfun(@(x) [x-zeroPad(1) x+zeroPad(2)],allEventTimesBR,'uni',0);
+%edges=cellfun(@(x,y) [x(1) y x(2)], edges, num2cell(allEventTimesBR),'uni',0);
+
 
 % % create binned event times
 % BINprevEventTimes=cellfun(@(x,y) histcounts(y,'BinEdges',x(1):baud/1000*presets.binWidth:x(2)),edges,num2cell(prevEventTimes),'UniformOutput',false);
@@ -265,7 +266,7 @@ edges=cellfun(@(x,y) [x(1) y x(2)], edges, num2cell(outEventTimes),'uni',0);
 portTimes = struct('previous', prevEventTimes, 'current', allEventTimesBR, 'next', nextEventTimes);
 portRewards = struct('previous', prevEventRewarded, 'current', eventRewarded, 'next', nextEventRewarded);
 portID = struct('previous', prevEventID, 'next', nextEventID);
-proximalInfo = struct('inRange', eventProximal, 'stateStart', proxStateStartAll);
+proximalInfo = struct('inRange', eventProximal);
 portInfo = struct('times', portTimes, 'reward', portRewards, 'identity', portID, 'proximal', proximalInfo, 'included', eventIncluded);
 
 
@@ -278,7 +279,7 @@ dMat(:,3)=nextEventID;
 dMat(:,4)=prevEventRewarded;
 dMat(:,5)=eventRewarded;
 dMat(:,6)=nextEventRewarded;
-%dMat(:,7)=double(proximalInfo.inRange);
+dMat(:,7)=double(proximalInfo.inRange);
 
 
 % create binned output structure 

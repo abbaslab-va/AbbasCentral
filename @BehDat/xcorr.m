@@ -22,11 +22,11 @@ addParameter(p, 'corrWindow', 50, @isinteger);
 parse(p, varargin{:});
 corrWindow = p.Results.corrWindow;
 
-eventTimes = obj.find_event('preset', presets, 'trialized', false);
+eventTimes = obj.find_event(varargin{:});
 numEvents = numel(eventTimes);
 numBins = corrWindow * 2 + 1;
 eventCorrTemp = int16(zeros(numEvents, numBins));
-binnedSpikes = obj.bin_all_neurons('preset', presets);
+binnedSpikes = obj.bin_all_neurons(varargin{:});
 numNeurons = numel(binnedSpikes);
 corrScore = cell(numNeurons);
 for ref = 1:numNeurons

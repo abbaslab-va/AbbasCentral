@@ -101,7 +101,6 @@ if ignoreRepeats
 end
 
 
-eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 intersectMat = cell([size(eventTimes), 6]);
 
 
@@ -136,6 +135,8 @@ elseif returnPrev
     currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
     eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
 end
+
+eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 
 
 goodTrials = obj.trial_intersection_BpodParser('preset', presets);
