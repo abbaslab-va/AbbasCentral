@@ -1,4 +1,4 @@
-function [numTT, numCorrect] = bpod_performance(parserObj, correctOutcome)
+function [numTT, numCorrect] = bpod_performance(parserObj, correctOutcome, goodTrials)
 
 % This function returns a vector by trial type of the number of completed trials of each trial type, 
 % as well as the number correctly completed for the trial type of interest.
@@ -21,9 +21,7 @@ if isa(parserObj, 'BpodParser')
 else
     bpodSession = parserObj;
 end
-if ~exist('correctOutcome', 'var')
-    correctOutcome = 1;
-end
+
 %Must have the SessionPerformance variable saved to the Bpod structure to use this function
 perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerformance variable found in bpodSession');
 %User can enter an integer value as the second argument to change the default outcome evaluation
@@ -31,12 +29,17 @@ perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerforman
 nTrials = bpodSession.nTrials;
 trialTypes = bpodSession.TrialTypes;
 nTT = max(trialTypes);
+if ~exist('correctOutcome', 'var')
+    correctOutcome = 1;
+end
+if ~exist('goodTrials', 'var')
+    goodTrials = true(1, nTrials);
+end
 if ~isfield(bpodSession, 'SessionPerformance')
     throw(perfException)
 end
-correctChoice = numel(find(bpodSession.SessionPerformance == correctOutcome));
 for tt = 1:nTT
-    ttInd = find(bpodSession.TrialTypes == tt);
+    ttInd = find(bpodSession.TrialTypes == tt & goodTrials);
     numTT(tt) = numel(ttInd);
     numCorrect(tt) = numel(find(bpodSession.SessionPerformance(ttInd) == correctOutcome));
 end
