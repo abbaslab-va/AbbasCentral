@@ -10,6 +10,7 @@ end
 p = inputParser;
 addParameter(p, 'color', 'k')
 addParameter(p, 'alpha', .6)
+addParameter(p, 'jitter', .5)
 parse(p, varargin{:});
 a = p.Results;
 dataMeans = cellfun(@(x) mean(x, 'omitnan'), data);
@@ -24,7 +25,7 @@ else
     end
 end
 for s = 1:numel(dataMeans)
-    jitterVec = (zeros(1, numel(data{s})) + rand(1, numel(data{s})) - .5).*.5;
+    jitterVec = (zeros(1, numel(data{s})) + rand(1, numel(data{s})) - .5).*a.jitter;
     scatter(zeros(1, numel(data{s})) + s + jitterVec, data{s}, 20, 'filled', 'k')
 end
 errorbar(dataMeans, dataSEM, 'vertical', 'Color','k', 'LineWidth', 3, 'LineStyle', 'none');

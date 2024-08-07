@@ -20,10 +20,10 @@
     - [x] CWT power
     - [x] By trial type
     - [x] By trial outcome
-    - [ ] Clickable scatter plot to select neuron
+    - [x] Clickable scatter plot to select neuron
     - [x] Bpod performance plotter
     - [x] Sankey diagram
-    - [ ] HCTSA
+    - [x] HCTSA
     - [x] Rotation
 - [x] Implement cwt power function
 - [ ] Identify putative connection types
@@ -35,4 +35,4 @@
     - [ ] Shared excitatory input
     - [ ] Shared inhibatory input
 - [ ] Ensemble activity across trials
-- [ ] Implement BehDat into ExpManager
+- [x] Implement BehDat into ExpManager

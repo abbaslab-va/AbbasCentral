@@ -21,7 +21,7 @@ goodTrials = obj.trial_intersection_BpodParser('preset', presets);
 if isempty(presets.outcome)
     correctOutcome = 1;
 else
-    correctOutcome = presets.outcome;
+    correctOutcome = obj.config.outcomes.(presets.outcome);
 end
 
 %Must have the SessionPerformance variable saved to the Bpod structure to use this function
