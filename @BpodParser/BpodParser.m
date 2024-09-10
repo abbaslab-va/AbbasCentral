@@ -51,6 +51,8 @@ classdef BpodParser < handle
 
         stateEdges = state_times(obj, stateName, varargin)
 
+        stateDist = distance_between_states(obj, state1, state2, varargin)
+
         state_sankey(obj, varargin)
 
         %%% Video Methods

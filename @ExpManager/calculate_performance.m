@@ -12,7 +12,6 @@ p = inputParser;
 p.KeepUnmatched = true;
 addParameter(p, 'threshold', .65, @isnumeric);
 addParameter(p, 'comparison', 'sessions', @ischar)
-addParameter(p, 'animal', [], @ischar)
 parse(p, varargin{:});
 
 % performance by animal or by session
@@ -20,7 +19,7 @@ parse(p, varargin{:});
     x.bpod.performance('preset', presets), ...
     obj.sessions, 'uni', 0);
 
-goodSessions = obj.subset('animal', p.Results.animal);
+goodSessions = obj.subset('animal', presets.animals);
 
 numTT = numTT(goodSessions);
 numCorrect = numCorrect(goodSessions);

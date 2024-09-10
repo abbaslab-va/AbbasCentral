@@ -101,7 +101,6 @@ if ignoreRepeats
 end
 
 
-eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 intersectMat = cell([size(eventTimes), 6]);
 
 
@@ -121,7 +120,11 @@ else
     [intersectMat(:, :, 5)] = obj.event_prior_to_event('eventTimes', eventTimes, 'eventName', presets.priorToEvent);
     [intersectMat(:, :, 6)] = obj.event_after_event('eventTimes', eventTimes, 'eventName', presets.afterEvent);
 end
-intersectMat = squeeze(intersectMat)';
+if obj.session.nTrials == 1
+    intersectMat = squeeze(intersectMat);
+else
+    intersectMat = squeeze(intersectMat)';
+end
 
 intersectMat = cellfun(@(x) vertcat(x{:}), num2cell(intersectMat, 1), 'uni', 0);
 goodEvents = cellfun(@(x) all(x, 1), intersectMat, 'uni', 0);
@@ -136,6 +139,8 @@ elseif returnPrev
     currentEventTimes = cellfun(@(x) circshift(x, -2), currentEventTimes, 'uni', 0);
     eventTimes = cellfun(@(x, y) x(y), sortedTimes, currentEventTimes, 'uni', 0);
 end
+
+eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 
 
 goodTrials = obj.trial_intersection_BpodParser('preset', presets);

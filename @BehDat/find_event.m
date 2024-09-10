@@ -45,7 +45,7 @@ bpodTrial = eventTrials(goodEvents);
 if presets.trialized
     eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
     temp = timestamps;
-    trialNo = unique(eventTrial);
+    trialNo = unique(eventTrial(~isnan(eventTrial)));
     timestamps = cell(1, numel(goodTrials));
     for t = trialNo
         timestamps{t} = temp(eventTrial == t);

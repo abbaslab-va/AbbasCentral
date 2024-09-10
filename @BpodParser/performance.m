@@ -21,22 +21,14 @@ goodTrials = obj.trial_intersection_BpodParser('preset', presets);
 if isempty(presets.outcome)
     correctOutcome = 1;
 else
-    correctOutcome = presets.outcome;
+    correctOutcome = obj.config.outcomes.(presets.outcome);
 end
 
 %Must have the SessionPerformance variable saved to the Bpod structure to use this function
 perfException = MException('MATLAB:missingVariable', 'Error: No SessionPerformance variable found in bpodSession');
 %User can enter an integer value as the second argument to change the default outcome evaluation
 
-trialTypes = obj.session.TrialTypes;
-nTT = numel(unique(trialTypes));
 if ~isfield(obj.session, 'SessionPerformance')
     throw(perfException)
 end
-numTT = zeros(1, nTT);
-numCorrect = numTT;
-for tt = 1:nTT
-    ttInd = obj.session.TrialTypes(goodTrials) == tt;
-    numTT(tt) = numel(find(ttInd));
-    numCorrect(tt) = numel(find(obj.session.SessionPerformance(ttInd) == correctOutcome));
-end
+[numTT, numCorrect] = bpod_performance(obj, correctOutcome, goodTrials);

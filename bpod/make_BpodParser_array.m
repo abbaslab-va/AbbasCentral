@@ -49,5 +49,5 @@ end
 function parser = make_BpodParser_obj(sessPath, n, ini)
     info = struct('path', sessPath, 'name', n, 'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'startState', ini.info.StartState);
     bpodSession = load(sessPath);
-    parser = BpodParser(bpodSession.SessionData, info);
+    parser = BpodParser('session', bpodSession.SessionData, 'config', info);
 end
