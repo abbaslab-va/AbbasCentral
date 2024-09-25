@@ -110,7 +110,7 @@ function spikesSmooth = psth(obj, neuron, varargin)
         hold on
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
-            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
+            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor, h);
         end
         label_psth(obj, h, neuron, presets, true);
         if plotSEM
@@ -127,7 +127,7 @@ function spikesSmooth = psth(obj, neuron, varargin)
         hold on
         for i = 1:numel(spikesSmooth)
             currentColor = cMap(2*i - 1:2*i, :);
-            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor);
+            plot_all_conditions(spikesMean{i}, spikesSEM{i}, plotSEM, currentColor, h);
         end
         label_psth(obj, h, neuron, presets, false);
         if plotSEM
@@ -159,9 +159,9 @@ function label_psth(sessObj, figH, neuron, params, panel)
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XColor', 'k', 'YColor', 'k', 'TickDir', 'out', 'LineWidth', 1.5);
 end   
 
-function plot_all_conditions(means, sem, addShade, color)
+function plot_all_conditions(means, sem, addShade, color, figH)
     if addShade
-        shaded_error_plot(1:numel(means), means, sem, color(2, :), color(1, :), .3);
+        shaded_error_plot(1:numel(means), means, sem, color(2, :), color(1, :), .3, figH);
     else
         plot(means, 'color', color(2, :), 'LineWidth', 1.5);
     end

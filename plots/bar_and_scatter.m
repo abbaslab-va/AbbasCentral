@@ -14,7 +14,7 @@ addParameter(p, 'jitter', .5)
 parse(p, varargin{:});
 a = p.Results;
 dataMeans = cellfun(@(x) mean(x, 'omitnan'), data);
-dataSEM = cellfun(@(x) std(x, 0, 'omitnan')/sqrt(numel(x(~isnan(x)))), data);
+dataSEM = cellfun(@(x) std(x, 0, 'omitnan')/sqrt(sum(~isnan(x))), data);
 figH = figure;
 hold on
 if ~iscell(a.color)

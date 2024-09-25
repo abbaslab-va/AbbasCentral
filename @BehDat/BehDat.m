@@ -175,7 +175,7 @@ classdef BehDat < handle
 
         bpodOffset = samplingDiff(obj)
 
-        goodTrials = trial_intersection(obj, trializedEvents, presets)
+        goodTrials = trial_intersection(obj, varargin)
 
         brTimes = bpod_to_blackrock(obj, bpodTimes, presets)
 

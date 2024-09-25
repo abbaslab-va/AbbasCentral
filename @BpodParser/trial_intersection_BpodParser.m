@@ -105,9 +105,14 @@ if isempty(delayLength) || any(strcmp(delayLength, 'All'))
 else
     try
         delayTimes = extractfield(bpodStruct.GUI, 'DelayHoldTime');
-        isDesiredDelay = discretize(delayTimes, delayLength);
-        isDesiredDelay = ~isnan(isDesiredDelay);
+    catch
+        delayReward = obj.state_times('DelayOn', 'trialized', true, 'returnStart', true);
+        delayStart = obj.state_times('WaitForDelayPoke', 'trialized', true, 'returnEnd', true);
+        delayTimes = cellfun(@(x, y) x{end} - y{end}, delayReward, delayStart);
     end
+    delayTimes = (floor(delayTimes * 1000))/1000;
+    isDesiredDelay = discretize(delayTimes, delayLength);
+    isDesiredDelay = ~isnan(isDesiredDelay);
 end
 
 %% Trial numbers
