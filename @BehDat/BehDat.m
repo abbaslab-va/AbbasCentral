@@ -96,6 +96,10 @@ classdef BehDat < handle
 
         plot_xcorr(obj, ref, target, window)
 
+        isAuto = find_auto(obj)
+
+        remove_duplicate_neurons(obj, autoIdx)
+        
         find_mono(obj)
 
         plot_mono(obj, varargin)
