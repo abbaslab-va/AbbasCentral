@@ -72,6 +72,7 @@ classdef BehDat < handle
         
         [portInfo, dM, edges] = find_port(obj, varargin)
 
+        [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
 
     %% Spike methods
         
@@ -95,6 +96,10 @@ classdef BehDat < handle
 
         plot_xcorr(obj, ref, target, window)
 
+        isAuto = find_auto(obj)
+
+        remove_duplicate_neurons(obj, autoIdx)
+        
         find_mono(obj)
 
         plot_mono(obj, varargin)
@@ -175,7 +180,7 @@ classdef BehDat < handle
 
         bpodOffset = samplingDiff(obj)
 
-        goodTrials = trial_intersection(obj, trializedEvents, presets)
+        goodTrials = trial_intersection(obj, varargin)
 
         brTimes = bpod_to_blackrock(obj, bpodTimes, presets)
 

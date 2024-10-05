@@ -3,8 +3,10 @@ if ~exist('BehaviorData')
 end
 
 FlashData = 'G:\BehaviorData';
-AnimalNames ={'VIP-29(1)_Laser','VIP-29(3)_Laser', 'VIP-30(1)_Laser','VIP-30(2)_Laser','VIP-30(3)_Laser', 'VIP-29(1)','VIP-29(3)', 'VIP-30(1)','VIP-30(2)','VIP-30(3)'};
-StructNames = {'VIP_29_1_Laser','VIP_29_3_Laser', 'VIP_30_1_Laser','VIP_30_2_Laser','VIP_30_3_Laser', 'VIP_29_1','VIP_29_3', 'VIP_30_1','VIP_30_2','VIP_30_3'};
+AnimalNames = cellfun(@(x) ['MD_', num2str(x)], num2cell(13:24), 'uni', 0);
+StructNames = AnimalNames;
+% AnimalNames ={'VIP-29(1)_Laser','VIP-29(3)_Laser', 'VIP-30(1)_Laser','VIP-30(2)_Laser','VIP-30(3)_Laser', 'VIP-29(1)','VIP-29(3)', 'VIP-30(1)','VIP-30(2)','VIP-30(3)'};
+% StructNames = {'VIP_29_1_Laser','VIP_29_3_Laser', 'VIP_30_1_Laser','VIP_30_2_Laser','VIP_30_3_Laser', 'VIP_29_1','VIP_29_3', 'VIP_30_1','VIP_30_2','VIP_30_3'};
 %Parse through all animals predefined in AnimalNames
 
 for animal = 1:length(AnimalNames)

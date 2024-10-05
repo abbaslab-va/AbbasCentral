@@ -1,4 +1,4 @@
-function [f, b, e] = bar_and_error(data, nGroups)
+function [f, b, e] = bar_and_error(data, nGroups, figH)
 
 % This function will plot the error bars for data on the bar graph and return the handle to the bar and error bar.
 %
@@ -21,7 +21,9 @@ if size(data, 1) == 1
 else
     SEM = std(data, 1)./sqrt(size(data, 1));
 end
-f = figure;
+if ~exist('figH', 'var')
+    f = figure;
+end
 if nargin == 1
     b = bar(meanResult);
     b.FaceColor = 'flat';

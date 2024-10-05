@@ -39,6 +39,8 @@ if ~isempty(ini.conditions)
     allConditions = fields(ini.conditions);
     matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
     sessionCondition = allConditions(matchingCondition);
+else
+    sessionCondition = [];
 end
 
 info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
@@ -55,6 +57,7 @@ end
 configs.trialTypes = ini.trialTypes;
 configs.outcomes = ini.outcomes;
 configs.startState = ini.info.StartState;
+configs.stimTypes = ini.info.stimTypes;
 bpodObj = BpodParser('session',SessionData,'config', configs);
 sessObj = BehDat(info, spikeStruct, timestamps, bpodObj, coords);
 

@@ -46,6 +46,8 @@ classdef BpodParser < handle
         [eventTimes, eventNames] = event_times(obj, varargin)
 
         event_sankey(obj, varargin)
+
+        [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
         
         %%% State Methods
 
