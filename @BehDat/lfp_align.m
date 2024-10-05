@@ -49,9 +49,9 @@ end
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
 lfp = double(NS6.Data);
-% norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
+norm = rms(lfp, 2);             % uncomment to RMS normalize lfp
 clear NS6
-numChan = size(lfp, 1);
+numChan = 32;
 
 
 
@@ -78,11 +78,14 @@ else
     lfpChan= cell(1, numChan);
     for c = 1:numChan
         lfpChan{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
-        lfpChan{c}= cellfun(@(x) filtfilt(B, A, x), lfpChan{c}, 'uni', 0);
+        %lfpChan{c}= cellfun(@(x) filtfilt(B, A, x), lfpChan{c}, 'uni', 0);
+        %cellfun(@(x) spectrogram(x,bartlett(200),100,100,2000,'yaxis'),lfpChan{c}, 'uni', 0);
         %disp(num2str(c));
     end
 end 
 %freqs = flip(f{1});
+ % dick=spectrogram(lfp(c,edgeCells{1}(1):edgeCells{1}(2)-1)
+
 
 if averaged
    % pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
@@ -93,3 +96,6 @@ end
 
 
 disp(obj.info.path)
+
+
+
