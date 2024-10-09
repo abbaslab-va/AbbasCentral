@@ -72,6 +72,8 @@ classdef BehDat < handle
         
         [portInfo, dM, edges] = find_port(obj, varargin)
 
+        [portInfo, dMat, edges] = find_port2(obj, varargin)
+
         [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
 
     %% Spike methods
