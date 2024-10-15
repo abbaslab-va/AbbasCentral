@@ -15,7 +15,6 @@ presets = PresetManager(varargin{:});
 
 p = inputParser;
 p.KeepUnmatched = true;
-addParameter(p, 'ignoreRepeats', false, @islogical)
 % This param should be used when your event needs to not be the first or
 % last event in a trial, i.e. there was a recorded event on either side of
 % it.
@@ -26,7 +25,7 @@ addParameter(p, 'returnOut', false, @islogical)     % returns next unmatched eve
 addParameter(p, 'removeEnds', false, @islogical)    % removes first and last event from each trial
 
 parse(p, varargin{:});
-ignoreRepeats = p.Results.ignoreRepeats;
+ignoreRepeats = presets.ignoreRepeats;
 isBracketed = p.Results.isBracketed;
 returnPrev = p.Results.returnPrev;
 returnNext = p.Results.returnNext;
