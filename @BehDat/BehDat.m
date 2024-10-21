@@ -188,6 +188,6 @@ classdef BehDat < handle
 
         keywords = hctsa_keywords(obj, varargin)
 
-        
+        designTable = binned_port_identity(obj, num)
     end
 end
