@@ -50,14 +50,14 @@ info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ..
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 if ~isempty(dir('*.npy'))
-    spikeStruct = get_spike_info(sessPath, ini.regions);
+    spikeStruct = get_spike_info(sessPath, ini.regions, 1); % for now including mua with flag
 else
     spikeStruct = struct();
 end
 configs.trialTypes = ini.trialTypes;
 configs.outcomes = ini.outcomes;
 configs.startState = ini.info.StartState;
-configs.stimTypes = ini.info.stimTypes;
+configs.stimTypes = ini.stimTypes;
 bpodObj = BpodParser('session',SessionData,'config', configs);
 sessObj = BehDat(info, spikeStruct, timestamps, bpodObj, coords);
 
