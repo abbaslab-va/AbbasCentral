@@ -27,8 +27,8 @@ function h = mean_population_response(obj, varargin)
     end
     if ~isempty(sortBy)
         msBins = presets.edges * 1000 / presets.binWidth;
-        leftEdge = floor((sortBy(1) - msBins(1)) * presets.binWidth) + 1;
-        rightEdge = ceil((sortBy(2) - msBins(1)) * presets.binWidth) - 1;
+        leftEdge = floor((sortBy(1) - msBins(1)) / 20) + 1;
+        rightEdge = ceil((sortBy(2) - msBins(1)) / 20) - 1;
         valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
         [~, sortedIdx] = sort(valsToSort, 'descend');
         zMean = zMean(sortedIdx, :);
