@@ -25,12 +25,12 @@ function designTable = binned_port_identity(obj)
     % In/Out
     ports={'Port1In','Port2In','Port3In','Port4In','Port5In', 'Port7In'};
     for p=1:numel(ports)
-        Pin{p} = obj.find_event('event', ports{p}, 'bpod',true, 'trialtype', 'Laser Off','removeEnds', true, 'ignoreRepeats', true);
+        Pin{p} = obj.find_event('event', ports{p}, 'bpod',true, 'trialtype', 'Laser On','removeEnds', true, 'ignoreRepeats', true);
     end 
     
     
     for p=1:numel(ports)
-        Pout{p} = obj.find_event('event', ports{p}, 'bpod',true, 'trialtype', 'Laser Off','returnOut', true,'removeEnds', true,'ignoreRepeats', true);
+        Pout{p} = obj.find_event('event', ports{p}, 'bpod',true, 'trialtype', 'Laser On','returnOut', true,'removeEnds', true,'ignoreRepeats', true);
     end 
     
     
@@ -39,18 +39,18 @@ function designTable = binned_port_identity(obj)
     
     
     % Forage Reward 
-    fReward= obj.find_event('event','Forage', 'trialtype', 'Laser Off');
+    fReward= obj.find_event('event','Forage', 'trialtype', 'Laser On');
     binnedPortsfReward = histcounts(fReward, 'BinEdges', binEdges);   
     
     
     
     
     % Reward
-    Reward= obj.find_event('event','Reward', 'trialtype', 'Laser Off');
+    Reward= obj.find_event('event','Reward', 'trialtype', 'Laser On');
     binnedPortsReward = histcounts(Reward, 'BinEdges', binEdges);    
     
     % % Reward
-    % Punish= obj.find_event('event','Punish', 'trialtype', 'Laser Off');
+    % Punish= obj.find_event('event','Punish', 'trialtype', 'Laser On');
     % binnedPortsPunish = histcounts(Punish, 'BinEdges', binEdges);    
    
     

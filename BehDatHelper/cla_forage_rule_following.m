@@ -1,19 +1,22 @@
-[pctAll, binnedPctAll] = arrayfun(@(x) get_rule_following_pct(x), allSessions, 'uni', 0);
+%[pctAllLOFF, binnedPctAllLOFF] = arrayfun(@(x) get_rule_following_pct(x), allSessions([1:14,16:21]), 'uni', 0);
+[pctAllLON, binnedPctAllLON] = arrayfun(@(x) get_rule_following_pct(x), allSessions([1:14,16:21]), 'uni', 0);
+
 %%
-%  for s=1:numel(allSessions)
-%  get_rule_following_pct(allSessions(33))
+%  for s=[1:14,16:21]
+%  get_rule_following_pct(allSessions(s))
 %  end 
+ %%
 %% 
-names=arrayfun(@(x) x.info.name, allSessions, 'uni', 0);
+names=arrayfun(@(x) x.info.name, allSessions([1:14,16:21]), 'uni', 0);
 animals=unique(names);
 figure()
 for a=1:numel(animals)
     hold on
-    scatter(ones(1,sum(strcmp(names,animals{a})))*a,cell2num(pctAll(strcmp(names,animals{a}))),'filled')
+    scatter(ones(1,sum(strcmp(names,animals{a})))*a,cell2num(pctAll(strcmp(names,animals{a}))))
 end 
 ylim([70 100])
-xlim([0.5 13.5])
-xticks([1:13])
+xlim([0.5 8.5])
+xticks([1:8])
 ax = gca;
 ax.FontSize=20
 ax.TickDir='out'
