@@ -25,6 +25,8 @@ classdef PresetManager < handle
         afterState      % Return the first event(s) after a bpod state
         afterEvent      % Return the first event(s) after a bpod event
         ignoreRepeats   % If true, afterEvent and priorToEvent ignore duplicate events
+        firstEvent      % Return only the first event per bpod trial
+        lastEvent       % Return only the last event per bpod trial
         freqLimits      % Edges for calculating frequency-domain props
         panel           % Allows for plotting to app
     end
@@ -66,6 +68,8 @@ classdef PresetManager < handle
             addParameter(p, 'afterState', [], validField)
             addParameter(p, 'afterEvent', [], validField)
             addParameter(p, 'ignoreRepeats', true, @islogical)
+            addParameter(p, 'firstEvent', false, @islogical)
+            addParameter(p, 'lastEvent', false, @islogical)
             addParameter(p, 'freqLimits', [1 120], validVectorSize)
             addParameter(p, 'panel', [])
             addParameter(p, 'preset', [], validPreset)

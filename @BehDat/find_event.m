@@ -32,7 +32,8 @@ end
 try
     ts = obj.timestamps.keys.(eventField);
 catch
-    mv = MException('BehDat:MissingVar', sprintf('No timestamp pair found for event %s. Please edit config file and recreate object', presets.event));
+    mv = MException('BehDat:MissingVar', sprintf(['No timestamp pair found for event %s. ' ...
+        'Please edit config file and recreate object'], presets.event));
     throw(mv)
 end
 matchingTimestamp = obj.timestamps.codes == ts;
@@ -42,15 +43,27 @@ eventTrials = eventTrials(eventTrials <= obj.bpod.session.nTrials);
 goodTrials = obj.bpod.trial_intersection_BpodParser('preset', presets);
 goodEvents = ismember(eventTrials, find(goodTrials));
 bpodTrial = eventTrials(goodEvents);
-if presets.trialized
-    eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
-    temp = timestamps;
-    trialNo = unique(eventTrial(~isnan(eventTrial)));
-    timestamps = cell(1, numel(goodTrials));
-    for t = trialNo
-        timestamps{t} = temp(eventTrial == t);
-    end
-    timestamps = timestamps(goodTrials);
+eventTrial = discretize(timestamps,[obj.timestamps.trialStart obj.info.samples]);
+temp = timestamps;
+trialNo = unique(eventTrial(~isnan(eventTrial)));
+timestamps = cell(1, numel(goodTrials));
+for t = trialNo
+    timestamps{t} = temp(eventTrial == t);
+end
+timestamps = timestamps(goodTrials);
+emptyTrials = cellfun(@(x) isempty(x), timestamps);
+if presets.firstEvent
+    firstEvents = cellfun(@(x) ismember(x, x(1)), timestamps(~emptyTrials), 'uni', 0);
 else
-    timestamps = timestamps(goodTrials(eventTrials));
+    firstEvents = cellfun(@(x) true(size(x)), timestamps(~emptyTrials), 'uni', 0);
+end
+if presets.lastEvent
+    lastEvents = cellfun(@(x) ismember(x, x(end)), timestamps(~emptyTrials), 'uni', 0);
+else
+    lastEvents = cellfun(@(x) true(size(x)), timestamps(~emptyTrials), 'uni', 0);
+end
+goodTS = cellfun(@(x, y, z) x(y & z), timestamps(~emptyTrials), firstEvents, lastEvents, 'uni', 0);
+timestamps(~emptyTrials) = goodTS;
+if ~presets.trialized
+    timestamps = cat(2, timestamps{:});
 end

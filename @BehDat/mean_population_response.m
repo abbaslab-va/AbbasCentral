@@ -42,7 +42,7 @@ function h = plot_pop_response(meanMat, params, figTitle)
     if isempty(params.panel)
         fontWeight = 24;
         title(figTitle)
-        figure
+        figure;
     else
         fontWeight = 16;
         figH = figure('Visible', 'off');
@@ -50,7 +50,7 @@ function h = plot_pop_response(meanMat, params, figTitle)
     h = heatmap(meanMat, 'GridVisible', 'off');
     colormap('parula')
     colorbar
-    caxis([-3 3])
+    clim([-3 3])
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
     timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
