@@ -27,8 +27,8 @@ function h = mean_population_response(obj, varargin)
     end
     if ~isempty(sortBy)
         msBins = presets.edges * 1000 / presets.binWidth;
-        leftEdge = floor((sortBy(1) - msBins(1)) * presets.binWidth) + 1;
-        rightEdge = ceil((sortBy(2) - msBins(1)) * presets.binWidth) - 1;
+        leftEdge = floor((sortBy(1) - msBins(1)) / 20) + 1;
+        rightEdge = ceil((sortBy(2) - msBins(1)) / 20) - 1;
         valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
         [~, sortedIdx] = sort(valsToSort, 'descend');
         zMean = zMean(sortedIdx, :);
@@ -54,11 +54,15 @@ function h = plot_pop_response(meanMat, params, figTitle)
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
     timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
-    leftEdge = params.edges(1)*1000/params.binWidth;
-    rightEdge = params.edges(2)*1000/params.binWidth;
-    stepSize = .5*1000/params.binWidth;
+    leftEdge = params.edges(1)*1000/20;
+    rightEdge = params.edges(2)*1000/20;
+    stepSize = .5*1000/20;
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
-    timeTix(1) = 1;
+    timeTix(1) = 1;    
+    [h.XDisplayLabels{:}] = deal("");
+    h.XDisplayLabels(timeTix) = timeLabels;
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial');
+
     % xticks(timeTix)
     % xticklabels(timeLabels)
     % yticks([1 numel(h.YData)])

@@ -11,9 +11,9 @@ function sessionIdx = subset(obj, varargin)
     if isempty(animals)
         animalIdx = true(1, numel(obj.sessions));
     elseif ischar(animals)
-        animalIdx = arrayfun(@(x) contains(x.info.path, animals), obj.sessions);
+        animalIdx = arrayfun(@(x) contains(x.info.path, ['\' animals '\']), obj.sessions);
     elseif iscell(animals)
-        animalIdx = cellfun(@(x) arrayfun(@(y) contains(y.info.path, x), obj.sessions), animals, 'uni', 0);
+        animalIdx = cellfun(@(x) arrayfun(@(y) contains(y.info.path, ['\' x '\']), obj.sessions), animals, 'uni', 0);
         animalIdx = cat(1, animalIdx{:});
         animalIdx = any(animalIdx, 1);
     end
