@@ -7,6 +7,7 @@ classdef PresetManager < handle
         animals         % Which animals to include in ExpManager analyses
         subset          % Indices of neurons for population fcns
         region          % A string matching a region in spike data
+        label           % String or cell of strings indicating spike label
         event           % Which event to align data to
         bpod            % Bool toggling which find_event fcn to use
         trialized       % Bool to output each trial in separate cells or all as one vector
@@ -50,6 +51,7 @@ classdef PresetManager < handle
             addParameter(p, 'animals', [], validField)
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'region', [], validField)
+            addParameter(p, 'label', [], validField)
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
             addParameter(p, 'trialized', false, @islogical)

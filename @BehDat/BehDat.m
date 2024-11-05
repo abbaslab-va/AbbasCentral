@@ -77,6 +77,8 @@ classdef BehDat < handle
         [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
 
     %% Spike methods
+
+        whichNeurons = spike_subset(obj, presets)
         
         spikesByTrial = trialize_spikes(obj, trialStart)
 

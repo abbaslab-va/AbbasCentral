@@ -17,11 +17,13 @@ function binnedNeurons = bin_all_neurons(obj, varargin)
 %     'binWidth' - an optional parameter to specify the bin width, in ms. default value is 1
 
 presets = PresetManager(varargin{:});
-numNeuons = numel(obj.spikes);
-binnedNeurons = cell(1, numNeuons);
+whichNeurons = find(obj.spike_subset(presets));
+numNeurons = numel(whichNeurons);
+binnedNeurons = cell(1, numNeurons);
 try
-    for n = 1:numNeuons
-        binnedNeurons{n} = obj.bin_neuron(n, 'preset', presets);
+    for n = 1:numNeurons
+        neuronNo = whichNeurons(n);
+        binnedNeurons{n} = obj.bin_neuron(neuronNo, 'preset', presets);
     end
 catch
     binnedNeurons = []; 
