@@ -53,6 +53,13 @@ numMuaCells = length(muaClusters);
 spikeTimeArray = cell(numGoodCells, 1);
 muaArray = cell(numMuaCells, 1);
 
+if includeMua
+    numNeurons = numGoodCells + numMuaCells;
+else
+    numNeurons = numGoodCells;
+end
+
+
 goodCellRegions = cell(numGoodCells, 1);
 muaCellRegions = cell(numMuaCells, 1);
 allRegions = fields(regions);
