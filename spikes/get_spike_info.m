@@ -86,11 +86,8 @@ for cluster = 1:numMuaCells
 end
 % Get Waveforms and Waveform metrics
 
-% This is a resource-heavy step, try/catch to skip waveforms if memory
-% insufficient.
-try
-[~, child] = fileparts(sessPath);
 
+[~, child] = fileparts(sessPath);
 NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')));
 if ~isa(NS6,'struct') && NS6 == -1
     NS6_dir = dir([sessPath,'\*.ns6']);
@@ -101,44 +98,89 @@ end
 % duplicates, but it makes it a slice variable instead of a broadcast
 % variable for the parfor loop (for speed)
 rawData = NS6.Data;
-neuronChannels = rawData([cell2mat(goodChannels), cell2mat(muaChannels)], :);
-goodLabels = cell(numGoodCells, 1);
-[goodLabels{:}] = deal('good');
+
+
+% This is a resource-heavy step, try/catch to skip waveforms if memory
+% insufficient.
 if includeMua
     numNeurons = numGoodCells + numMuaCells;
+    goodLabels = cell(numGoodCells, 1);
+[goodLabels{:}] = deal('good');
     spikeTimeArray = [spikeTimeArray; muaArray];
+    goodCellRegions = [goodCellRegions; muaCellRegions];
     muaLabels = cell(numMuaCells, 1);
     [muaLabels{:}] = deal('mua');
     neuronLabels = [goodLabels; muaLabels];
+
+neuronChannels = rawData([cell2mat(goodChannels); cell2mat(muaChannels)], :);
+goodChannels = [goodChannels; muaChannels];
 else
     numNeurons = numGoodCells;
+    goodLabels = cell(numNeurons, 1);
+[goodLabels{:}] = deal('good');
     neuronLabels = goodLabels;
+
+neuronChannels = rawData(cell2mat(goodChannels), :);
 end
+
+% try a
+
+
+
+
+
 numSamples = length(NS6.Data);
 averageWaveforms = cell(numNeurons,1);
 fr = averageWaveforms;
 halfValleyWidth = averageWaveforms;
 halfPeakWidth = averageWaveforms;
 peak2valley = averageWaveforms;
-%%
+%%par
 parfor neuron = 1:numNeurons
     totalSpikes = length(spikeTimeArray{neuron});
     numspikes=1000;
-    if totalSpikes < numspikes
-        numspikes = length(spikeTimeArray{neuron});
-    end
-    if ~numspikes
-        continue
-    end
-    chanData = neuronChannels(neuron, :)
-    highPassedData = highpass(single(chanData(1:spikeTimeArray{neuron}(numspikes))), 500, 30000);
+    % if totalSpikes < numspikes
+    %     numspikes = length(spikeTimeArray{neuron});
+    % end
+    % if ~numspikes
+    %     continue
+    % end
+    % spike_inds = randi([1, length(spikeTimeArray{neuron})], numspikes,1);
+% spikeTimes = spikeTimeArray{neuron}(spike_inds)';
+% padding = [-100 100];
+% waveformData = num2cell(spikeTimes + padding, 2);
+% highPassedData = cellfun(@(x) highpass(single(neuronChannels(neuron, x(1):x(2))), 500, 30000), waveformData, 'uni', 0);
+
+
+% end
+% lksajlfd = 213; 
+
+%%
+% for neuron = 1:numNeurons
+    
+    % chanData = neuronChannels(neuron, :);
+    % LengthData = length(chanData);
+        % try
+        
+    % spikeTimes = spikeTimeArray{neuron}(spike_inds);
+    % padding = [500];
     averageWaveforms{neuron} = zeros(numspikes,101);
-    for spike = 1:numspikes
-        try
-            averageWaveforms{neuron}(spike,:) = highPassedData(spikeTimeArray{neuron}(spike)-50 : spikeTimeArray{neuron}(spike)+50);
-        catch
-        end
-    end      
+    % for spike = 1:numspikes
+        % if (spikeTimeArray{neuron}(spike)+padding)>LengthData
+        %     continue
+        % end
+        % if (spikeTimeArray{neuron}(spike)-padding)<1
+        %     continue
+        % end
+        % snippet = chanData(spikeTimeArray{neuron}(spike_inds(spike))-padding+1:spikeTimeArray{neuron}(spike_inds(spike))+padding);
+        % highPassedData = highpass(single(snippet), 500, 30000);
+        % try
+        % Check that spike +/-padding doesn't go out of bounds
+        % highpass(single(chanData(spikeTimeArray{neuron}(spike)-500 : spikeTimeArray{neuron}(spike)+500)
+            % averageWaveforms{neuron}(spike,:) = highPassedData{spike}(50 : 150);
+        % catch
+        % end
+    % end      
 
     fr{neuron} = totalSpikes/(numSamples/30000);
 
@@ -152,26 +194,34 @@ parfor neuron = 1:numNeurons
     [~, ~, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
     [~, maxIdxInv] = max(pInv);
     halfPeakWidth{neuron} = wInv(maxIdxInv);
+    % catch
+    % end
+    disp(['completed neuron' num2str(neuron)])
 end
 
 spikeStruct= struct('times', spikeTimeArray, 'region', goodCellRegions, 'channel', goodChannels, 'label', neuronLabels, ...
     'fr', fr, 'waveform', averageWaveforms, 'halfValleyWidth',halfValleyWidth,'halfPeakWidth',halfPeakWidth,'peak2valley', peak2valley);
-catch
-    disp('No waveforms - likely need more RAM - continueing without')
-    [~, child] = fileparts(sessPath);
-
-%NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')),'noread');
-% if NS6 == -1
-%     NS6_dir = dir('*.ns6');
-%     NS6 = openNSx(fullfile(sessPath,NS6_dir.name),'noread');    
+end
+% catch b
+%     disp('No waveforms - likely need more RAM - continueing without')
+%     [~, child] = fileparts(sessPath);
+% 
+% %NS6 = openNSx(fullfile(sessPath,strcat(child,'.ns6')),'noread');
+% % if NS6 == -1
+% %     NS6_dir = dir('*.ns6');
+% %     NS6 = openNSx(fullfile(sessPath,NS6_dir.name),'noread');    
+% % end
+% 
+% 
+% 
+% 
+%     numSamples = NS6.MetaTags.DataPoints;
+% parfor neuron = 1:numNeurons
+%     totalSpikes = length(spikeTimeArray{neuron});
+%     fr{neuron} = totalSpikes/(numSamples/30000);
 % end
-    numSamples = NS6.MetaTags.DataPoints;
-parfor neuron = 1:numNeurons
-    totalSpikes = length(spikeTimeArray{neuron});
-    fr{neuron} = totalSpikes/(numSamples/30000);
-end
-    spikeStruct= struct('times', spikeTimeArray, 'region', goodCellRegions, 'channel', goodChannels, ...
-    'fr', fr);
-end
+%     spikeStruct= struct('times', spikeTimeArray, 'region', goodCellRegions, 'channel', goodChannels, 'label', neuronLabels,...
+%     'fr', fr);
+% end c
 
 
