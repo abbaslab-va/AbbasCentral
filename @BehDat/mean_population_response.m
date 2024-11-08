@@ -22,9 +22,11 @@ function h = mean_population_response(obj, varargin)
     sortBy = p.Results.sortBy;
 
     zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', 20);
-    if ~isempty(presets.subset)
-        zMean = zMean(presets.subset, :);
-    end
+    spikeSubset = obj.spike_subset(presets);
+    zMean = zMean(spikeSubset, :);
+    % if ~isempty(presets.subset)
+    %     zMean = zMean(presets.subset, :);
+    % end
     if ~isempty(sortBy)
         msBins = presets.edges * 1000 / presets.binWidth;
         leftEdge = floor((sortBy(1) - msBins(1)) / 20) + 1;
@@ -32,14 +34,18 @@ function h = mean_population_response(obj, varargin)
         valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
         [~, sortedIdx] = sort(valsToSort, 'descend');
         zMean = zMean(sortedIdx, :);
+        originalIdx = find(spikeSubset);
+        originalIdx = originalIdx(sortedIdx);
+    else
+        originalIdx = find(spikeSubset);
     end
     figTitle = strcat(obj.info.name, " ", presets.event);
-    h = plot_pop_response(zMean, presets, figTitle);
+    h = plot_pop_response(zMean, presets, originalIdx, figTitle);
 end
 
-function h = plot_pop_response(meanMat, params, figTitle)
+function h = plot_pop_response(meanMat, presets, neuronIdx, figTitle)
 
-    if isempty(params.panel)
+    if isempty(presets.panel)
         fontWeight = 24;
         title(figTitle)
         figure;
@@ -53,16 +59,16 @@ function h = plot_pop_response(meanMat, params, figTitle)
     clim([-3 3])
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
-    timeLabels = cellfun(@(x) num2str(x), num2cell((params.edges(1):.5:params.edges(2)) + params.offset), 'uni', 0);
-    leftEdge = params.edges(1)*1000/20;
-    rightEdge = params.edges(2)*1000/20;
+    timeLabels = cellfun(@(x) num2str(x), num2cell((presets.edges(1):.5:presets.edges(2)) + presets.offset), 'uni', 0);
+    leftEdge = presets.edges(1)*1000/20;
+    rightEdge = presets.edges(2)*1000/20;
     stepSize = .5*1000/20;
     timeTix = (leftEdge:stepSize:rightEdge) - leftEdge;
     timeTix(1) = 1;    
     [h.XDisplayLabels{:}] = deal("");
     h.XDisplayLabels(timeTix) = timeLabels;
     set(gca,'FontSize', fontWeight, 'FontName', 'Arial');
-
+    
     % xticks(timeTix)
     % xticklabels(timeLabels)
     % yticks([1 numel(h.YData)])
@@ -72,12 +78,12 @@ function h = plot_pop_response(meanMat, params, figTitle)
 %     [xLabels{timeTix}] = timeLabels{:};
 %     numNeurons = size(meanMat, 1);
 %     neuronNumLabels = {num2str(1), num2str(numNeurons)};
-%     yLabels = cell(numNeurons, 1);
-%     [yLabels{:}] = deal("");
+    yLabels = arrayfun(@(x) num2str(x), neuronIdx, 'uni', 0)';
 %     [yLabels{[1, numNeurons], 1}] = neuronNumLabels{:};
-%     set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'XDisplayLabels', xLabels, 'YDisplayLabels', yLabels);
-    if ~isempty(params.panel)
-        copyobj(figH.Children, params.panel)
+    
+    set(gca,'FontSize', fontWeight, 'FontName', 'Arial', 'YDisplayLabels', yLabels);
+    if ~isempty(presets.panel)
+        copyobj(figH.Children, presets.panel)
         close(figH)
     end
 end
