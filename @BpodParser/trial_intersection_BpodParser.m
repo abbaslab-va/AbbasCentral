@@ -27,6 +27,7 @@ end
 trialTypes = presets.trialType;
 outcomes = presets.outcome;
 trials = presets.trials;
+excludeTrials = presets.excludeTrials;
 delayLength = presets.delayLength;
 
 
@@ -101,7 +102,7 @@ end
 
 %% Delay Length
 if isempty(delayLength) || any(strcmp(delayLength, 'All'))
-    isDesiredDelay = ones(1, numTrials);
+    isDesiredDelay = true(1, numTrials);
 else
     try
         delayTimes = extractfield(bpodStruct.GUI, 'DelayHoldTime');
@@ -117,10 +118,18 @@ end
 
 %% Trial numbers
 if isempty(trials)
-    trialIncluded = ones(1, numTrials);
+    trialIncluded = true(1, numTrials);
 else
     trialIncluded = ismember(1:bpodStruct.nTrials, trials);
 end
-
-goodTrials = isDesiredTT & isDesiredStimType & ...
-isDesiredOutcome & isDesiredDelay & trialIncluded;
+if isempty(excludeTrials)
+    trialExcluded = false(1, numTrials);
+else
+    trialExcluded = ismember(1:bpodStruct.nTrials, excludeTrials);
+end
+goodTrials = isDesiredTT & ...
+    isDesiredStimType & ...
+    isDesiredOutcome & ...
+    isDesiredDelay & ...
+    trialIncluded & ...
+    ~trialExcluded;

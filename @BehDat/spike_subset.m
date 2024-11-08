@@ -22,7 +22,7 @@ if ~isempty(presets.region)
 else
     neuronsInRegion = true(size(neuronIdx));
 end
-% spike labels
+% manual spike labels
 if ~isempty(presets.label)
     if ischar(presets.label)
         labelCell = {presets.label};
@@ -36,6 +36,21 @@ if ~isempty(presets.label)
     neuronsWithLabel = any(neuronsWithLabel, 1);
 else
     neuronsWithLabel = true(size(neuronIdx));
+end
+% kilosort spike labels
+if ~isempty(presets.KSLabel)
+    if ischar(presets.KSLabel)
+        labelCell = {presets.KSLabel};
+    elseif iscell(presets.KSLabel)
+        labelCell = presets.KSLabel;
+    end
+    neuronsWithKSLabel = cellfun(@(x) cellfun(@(y) ...
+        strcmp(y, x), extractfield(obj.spikes, 'KSLabel')), ...
+        labelCell, 'uni', 0);
+    neuronsWithKSLabel = cat(1, neuronsWithKSLabel{:});
+    neuronsWithKSLabel = any(neuronsWithKSLabel, 1);
+else
+    neuronsWithKSLabel = true(size(neuronIdx));
 end
 % minimum firing rate
 firingRates = extractfield(obj.spikes, 'fr');
@@ -55,5 +70,6 @@ whichNeurons = ...
     neuronsInSubset & ...
     neuronsInRegion & ...
     neuronsWithLabel & ...
+    neuronsWithKSLabel & ...
     neuronsAboveThreshold & ...
     neuronsBelowThreshold;

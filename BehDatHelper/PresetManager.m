@@ -11,12 +11,14 @@ classdef PresetManager < handle
         subset          % Indices of neurons for population fcns
         region          % A string matching a region in spike data
         label           % String or cell of strings indicating spike label
+        KSLabel         % String or cell of strings with kilosort label
         minFR           % Value specifying minimum firing rate to consider
         maxFR           % Value specifying maximum firing rate to consider
         event           % Which event to align data to
         bpod            % Bool toggling which find_event fcn to use
         trialized       % Bool to output each trial in separate cells or all as one vector
         trials          % Indices of which bpod trials to include
+        excludeTrials   % Indices of which bpod trials to exclude
         trialType       % Sets of bpod trialTypes
         stimType        % Sets of bpod stimTypes
         outcome         % Sets of bpod outcomes
@@ -60,12 +62,14 @@ classdef PresetManager < handle
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'region', [], validField)
             addParameter(p, 'label', [], validField)
+            addParameter(p, 'KSLabel', [], validField)
             addParameter(p, 'minFR', [], @isnumeric)
             addParameter(p, 'maxFR', [], @isnumeric)
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
             addParameter(p, 'trialized', false, @islogical)
-            addParameter(p, 'trials', {}, validIndex)
+            addParameter(p, 'trials', [], validIndex)
+            addParameter(p, 'excludeTrials', [], validIndex)
             addParameter(p, 'trialType', {}, validField)
             addParameter(p, 'stimType', {}, validField)
             addParameter(p, 'outcome', {}, validField)
