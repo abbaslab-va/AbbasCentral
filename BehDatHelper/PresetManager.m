@@ -51,7 +51,8 @@ classdef PresetManager < handle
             % Parse variable inputs
             p = inputParser;
             p.KeepUnmatched = true;
-            addParameter(p, 'animals', [], validField)
+            addParameter(p, 'animal', [], validField)
+            addParameter(p, 'condition', [], validField)
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'region', [], validField)
             addParameter(p, 'label', [], validField)
