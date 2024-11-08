@@ -27,7 +27,7 @@ end
 if ischar(a.stateName) || isstring(a.stateName)
     stateTimes = obj.state_times(a.stateName,'trialized',true);
 elseif iscell(a.stateName)
-    stateTimeCell = cellfun(@(x) obj.state_times(x), a.stateName, 'uni', 0);
+    stateTimeCell = cellfun(@(x) obj.state_times(x, 'trialized', true), a.stateName, 'uni', 0);
     stateTimeCell = cat(1, stateTimeCell{:});
     eventIdx = num2cell(1:numel(a.eventTimes));
     stateTimes = cellfun(@(x) cat(1, stateTimeCell{:,x}),  eventIdx, 'uni', 0);

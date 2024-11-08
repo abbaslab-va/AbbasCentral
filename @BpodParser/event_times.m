@@ -50,6 +50,7 @@ fieldNames = cellfun(@(x) fields(x.Events), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) regexp(fields(x.Events), presets.event), rawEvents, 'uni', 0);
 trialHasEvent = cellfun(@(x) cellfun(@(y) ~isempty(y), x), trialHasEvent, 'uni', 0);
 fieldsToIndex = cellfun(@(x, y) x(y), fieldNames, trialHasEvent, 'uni', 0);
+hasMultipleFields = any(cellfun(@(x) numel(x) > 1, fieldsToIndex));
 eventTimes = cellfun(@(x, y) cellfun(@(z) x.Events.(z), y, 'uni', 0), rawEvents, fieldsToIndex, 'uni', 0);
 eventTimes = cellfun(@(x) cat(2, x{:}), eventTimes, 'uni', 0);
 
@@ -93,12 +94,19 @@ end
 if ignoreRepeats
     % Check for diff == 2 because that indicates a consecutive event, since
     % a port in will always be followed by a port out and vice versa
-    eventsToKeep = cellfun(@(x) x ~= 2, eventsElapsed, 'uni', 0);
-    trialsToRepair = cellfun(@(x) numel(x) == 0, eventTimes);
-    [eventsToKeep{trialsToRepair}] = deal([]);
-    eventTimes = cellfun(@(x, y) x(y), eventTimes, eventsToKeep, 'uni', 0);
+    % This logic fails when considering regular expressions 
+    if ~hasMultipleFields
+        eventsToKeep = cellfun(@(x) x ~= 2, eventsElapsed, 'uni', 0);
+        trialsToRepair = cellfun(@(x) numel(x) == 0, eventTimes);
+        [eventsToKeep{trialsToRepair}] = deal([]);
+        eventTimes = cellfun(@(x, y) x(y), eventTimes, eventsToKeep, 'uni', 0);
+    else
+    end
 end
 
+if ignoreRepeats
+
+end
 
 intersectMat = cell([size(eventTimes), 6]);
 

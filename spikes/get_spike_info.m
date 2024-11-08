@@ -7,6 +7,7 @@ function spikeStruct = get_spike_info(sessPath, regions, includeMua)
 %     regions - regions sourced from ini.regions. See docs for details
 
 %Getting spike info from Kilosort3 files
+
 unsortedSpikeTimes = double(readNPY(strcat(sessPath, '\spike_times.npy')));
 unsortedSpikeClusters = double(readNPY(strcat(sessPath, '\spike_clusters.npy')))+1;
 try clusterInfo = tdfread(strcat(sessPath, '\cluster_info.tsv'));
@@ -104,9 +105,6 @@ end
 % duplicates, but it makes it a slice variable instead of a broadcast
 % variable for the parfor loop (for speed)
 
-
-% This is a resource-heavy step, try/catch to skip waveforms if memory
-% insufficient.
 if includeMua
     numNeurons = numGoodCells + numMuaCells;
     goodLabels = cell(numGoodCells, 1);
@@ -132,8 +130,9 @@ minSpikes = 1000;
 numSpikes = cellfun(@(x) length(x), spikeTimeArray);
 enoughSpikes = numSpikes > minSpikes;
 numSpikes = numSpikes(enoughSpikes);
-padding = [-500 500];
-waveformRange = 1 + padding(2) - 50: 1 + padding(2) + 50;
+padSize = 500;
+padding = [-padSize padSize];
+waveformRange = 1 + padSize - 50: 1 + padSize + 50;
 spikeTimeArray = spikeTimeArray(enoughSpikes);
 spikeInds = arrayfun(@(x) randsample(x, minSpikes), numSpikes, 'uni', 0);
 spikeTimes = cellfun(@(x, y) x(y), spikeTimeArray, spikeInds, 'uni', 0);
@@ -151,48 +150,35 @@ fr = averageWaveforms;
 halfValleyWidth = averageWaveforms;
 halfPeakWidth = averageWaveforms;
 peak2valley = averageWaveforms;
-% try
-    parfor neuron = 1:numNeurons
 
-        filteredData = cellfun(@(x) ...
-            highpass(single(x), 500, 30000), waveformData{neuron}, 'uni', 0);
-        filteredData = cat(1, filteredData{:});
-        fr{neuron} = numSpikes(neuron)/(numSamples/30000);
+parfor neuron = 1:numNeurons
+
+    filteredData = cellfun(@(x) ...
+        highpass(single(x), 500, 30000), waveformData{neuron}, 'uni', 0);
+    filteredData = cat(1, filteredData{:});
+    fr{neuron} = numSpikes(neuron)/(numSamples/30000);
+
+    % Waveform metrics
+    averageWaveforms{neuron} = mean(filteredData(:, waveformRange), 1);
+    [~, ~, w, p] = findpeaks(averageWaveforms{neuron});
+    [~, maxIdx] = max(p);
+    halfValleyWidth{neuron} = w(maxIdx);
+    peak2valley{neuron} = abs(min(averageWaveforms{neuron}))/abs(max(averageWaveforms{neuron}));
+    [~, ~, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
+    [~, maxIdxInv] = max(pInv);
+    halfPeakWidth{neuron} = wInv(maxIdxInv);
+    disp(['completed neuron' num2str(neuron)])
+end
+
+spikeStruct= struct('times', spikeTimeArray, ...
+    'region', goodCellRegions(enoughSpikes), ...
+    'channel', goodChannels(enoughSpikes), ...
+    'label', neuronLabels(enoughSpikes), ...
+    'KSLabel', KSLabels(enoughSpikes), ... 
+    'cluster', clusterID(enoughSpikes),...
+    'fr', fr, ...
+    'waveform', averageWaveforms, ...
+    'halfValleyWidth', halfValleyWidth, ...
+    'halfPeakWidth', halfPeakWidth, ...
+    'peak2valley', peak2valley);
     
-        % Waveform metrics
-        averageWaveforms{neuron} = mean(filteredData(:, waveformRange), 1);
-        [~, ~, w, p] = findpeaks(averageWaveforms{neuron});
-        [~, maxIdx] = max(p);
-        halfValleyWidth{neuron} = w(maxIdx);
-        peak2valley{neuron} = abs(min(averageWaveforms{neuron}))/abs(max(averageWaveforms{neuron}));
-        [~, ~, wInv, pInv] = findpeaks(averageWaveforms{neuron}*-1);
-        [~, maxIdxInv] = max(pInv);
-        halfPeakWidth{neuron} = wInv(maxIdxInv);
-        disp(['completed neuron' num2str(neuron)])
-    end
-   
-    spikeStruct= struct('times', spikeTimeArray, ...
-        'region', goodCellRegions(enoughSpikes), ...
-        'channel', goodChannels(enoughSpikes), ...
-        'label', neuronLabels(enoughSpikes), ...
-        'KSLabel', KSLabels(enoughSpikes), ... 
-        'cluster', clusterID(enoughSpikes),...
-        'fr', fr, ...
-        'waveform', averageWaveforms, ...
-        'halfValleyWidth', halfValleyWidth, ...
-        'halfPeakWidth', halfPeakWidth, ...
-        'peak2valley', peak2valley);
-    
-% catch 
-%     disp('No waveforms - likely need more RAM - continueing without')
-%     [~, child] = fileparts(sessPath);
-%     numSamples = NS6.MetaTags.DataPoints;
-%     parfor neuron = 1:numNeurons
-%         totalSpikes = length(spikeTimeArray{neuron});
-%         fr{neuron} = totalSpikes/(numSamples/30000);
-%     end
-%     spikeStruct= struct('times', spikeTimeArray, 'region', goodCellRegions, 'channel', goodChannels, 'label', neuronLabels,...
-%     'fr', fr);
-% end
-
-
