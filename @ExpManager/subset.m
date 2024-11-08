@@ -1,12 +1,8 @@
 function sessionIdx = subset(obj, varargin)
     
-    validInput = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-    p = inputParser;
-    addParameter(p, 'animal', [], validInput)
-    addParameter(p, 'condition', [], validInput)
-    parse(p, varargin{:});
-    animals = p.Results.animal;
-    conditions = p.Results.condition;
+    presets = PresetManager(varargin{:});
+    animals = presets.animal;
+    conditions = presets.condition;
 
     if isempty(animals)
         animalIdx = true(1, numel(obj.sessions));

@@ -73,6 +73,8 @@ classdef ExpManager < handle
         
         hctsa_fr(obj, varargin)
 
+        binnedSpikes = bin_all_neurons(obj, varargin)
+
         %% LFP methods
         
         %% Video methods

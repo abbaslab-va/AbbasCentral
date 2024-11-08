@@ -4,7 +4,8 @@ classdef PresetManager < handle
 % and neuron combinations like FR-thresholded or user-defined.
     
     properties (SetAccess = public)
-        animals         % Which animals to include in ExpManager analyses
+        animal          % Which animals to include in ExpManager analyses
+        condition       % Intersect sessions with a given experimental condition
         subset          % Indices of neurons for population fcns
         region          % A string matching a region in spike data
         label           % String or cell of strings indicating spike label
