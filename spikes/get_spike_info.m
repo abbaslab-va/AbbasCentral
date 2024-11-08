@@ -23,7 +23,7 @@ if any(cellfun(@(x) strcmp(x, "cluster_id"), nameFields))
 else
     idField = "id";
 end
-clusterID = clusterInfo.(idField) + 1;
+clusterID = num2cell(clusterInfo.(idField) + 1);
 for cluster = 1:length(clusterInfo.(idField))
     if isnan(clusterInfo.group(cluster,1))
         clusterInfo.group(cluster,1) = clusterInfo.KSLabel(cluster,1); 
