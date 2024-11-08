@@ -6,6 +6,8 @@ classdef PresetManager < handle
     properties (SetAccess = public)
         animal          % Which animals to include in ExpManager analyses
         condition       % Intersect sessions with a given experimental condition
+        includeSessions % Indices of which sessions to include
+        excludeSessions % Indices of which sessions to exclude
         subset          % Indices of neurons for population fcns
         region          % A string matching a region in spike data
         label           % String or cell of strings indicating spike label
@@ -44,7 +46,7 @@ classdef PresetManager < handle
             validVectorSize = @(x) all(size(x) == [1, 2]);
             validEvent = @(x) isempty(x) || ischar(x) || isstring(x);
             validField = @(x) isempty(x) || ischar(x) || isstring(x) || iscell(x);
-            validTrials = @(x) isempty(x) || isvector(x);
+            validIndex = @(x) isempty(x) || isvector(x);
             validNumber = @(x) isnumeric(x) && x > 0;
             validNeurons = @(x) isnumeric(x) && all(x > 0);
 
@@ -53,6 +55,8 @@ classdef PresetManager < handle
             p.KeepUnmatched = true;
             addParameter(p, 'animal', [], validField)
             addParameter(p, 'condition', [], validField)
+            addParameter(p, 'includeSessions', [], validIndex)
+            addParameter(p, 'excludeSessions', [], validIndex)
             addParameter(p, 'subset', [], validNeurons)
             addParameter(p, 'region', [], validField)
             addParameter(p, 'label', [], validField)
@@ -61,7 +65,7 @@ classdef PresetManager < handle
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
             addParameter(p, 'trialized', false, @islogical)
-            addParameter(p, 'trials', {}, validTrials)
+            addParameter(p, 'trials', {}, validIndex)
             addParameter(p, 'trialType', {}, validField)
             addParameter(p, 'stimType', {}, validField)
             addParameter(p, 'outcome', {}, validField)
