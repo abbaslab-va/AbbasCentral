@@ -8,7 +8,7 @@ addParameter(p, 'plot', true, @islogical)
 parse(p, varargin{:});
 doPlot = p.Results.plot;
 
-whichSessions = obj.subset('animal', presets.animals);
+whichSessions = obj.subset('animal', presets.animal);
 
 [trializedBehaviorAll, numericalBehaviorAll] = arrayfun(@(x) x.plot_LabGym_behaviors('preset', presets, 'plot', false), obj.sessions(whichSessions), 'uni', 0);
 

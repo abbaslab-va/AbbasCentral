@@ -9,7 +9,8 @@ function goodTrials = trial_intersection_BpodParser(obj, varargin)
 %     trializedEvents - discretized event trial numbers
 %     outcomes - outcomes found in config.ini
 %     trialTypes - trial types found in config.ini
-%     trials - a vector of trial numbers to include
+%     trials - a vector of trial numbers to intersect
+%     excludeTrials - a vector of trial numbers to exclude
 presets = PresetManager(varargin{:});
 
 bpodStruct = obj.session;
@@ -24,12 +25,15 @@ else
     stimTypes = [];
 end
     
+intersections = ones(1, numTrials);
 trialTypes = presets.trialType;
 outcomes = presets.outcome;
 trials = presets.trials;
 excludeTrials = presets.excludeTrials;
 delayLength = presets.delayLength;
-
+trialLength = presets.trialLength;
+withinState = presets.withinState;
+excludeState = presets.excludeState;
 
 %% Trial Types
 if ischar(trialTypes)
@@ -53,6 +57,7 @@ else
     end
     isDesiredTT = any(intersectMatTT, 1);
 end
+intersections = [intersections; isDesiredTT];
 
 %% Stim Types
 if ischar(stimTypes)
@@ -76,6 +81,7 @@ else
     end
     isDesiredStimType = any(intersectMatST, 1);
 end
+intersections = [intersections; isDesiredStimType];
 
 %% Outcomes
 if ischar(outcomes)
@@ -99,6 +105,7 @@ else
     end
     isDesiredOutcome = any(intersectMatO, 1);
 end
+intersections = [intersections; isDesiredOutcome];
 
 %% Delay Length
 if isempty(delayLength) || any(strcmp(delayLength, 'All'))
@@ -115,6 +122,22 @@ else
     isDesiredDelay = discretize(delayTimes, delayLength);
     isDesiredDelay = ~isnan(isDesiredDelay);
 end
+intersections = [intersections; isDesiredDelay];
+
+%% Trial Length
+if isempty(trialLength)
+    isDesiredLength = true(1, numTrials);
+else
+    trialStart = extractfield(bpodStruct, 'TrialStartTimestamp');
+    trialEnd = extractfield(bpodStruct, 'TrialEndTimestamp');
+    trialDuration = trialEnd - trialStart;
+    disp(trialDuration)
+    disp(trialLength)
+    isDesiredLength = (trialDuration >= trialLength(1) & ...
+        trialDuration <= trialLength(2));
+    disp(isDesiredLength)
+end
+intersections = [intersections; isDesiredLength];
 
 %% Trial numbers
 if isempty(trials)
@@ -127,9 +150,32 @@ if isempty(excludeTrials)
 else
     trialExcluded = ismember(1:bpodStruct.nTrials, excludeTrials);
 end
-goodTrials = isDesiredTT & ...
-    isDesiredStimType & ...
-    isDesiredOutcome & ...
-    isDesiredDelay & ...
-    trialIncluded & ...
-    ~trialExcluded;
+intersections = [intersections; trialIncluded; ~trialExcluded];
+
+%% State contents
+if isempty(withinState)
+    stateIncluded = true(1, numTrials);
+else
+    includeStateTimes = obj.state_times(withinState, 'trialized', true);
+    stateIncluded = cellfun(@(x) ~isempty(x), includeStateTimes);
+end
+if isempty(excludeState)
+    stateExcluded = false(1, numTrials);
+else
+    excludeStateTimes = obj.state_times(excludeState, 'trialized', true);
+    stateExcluded = cellfun(@(x) ~isempty(x), excludeStateTimes);
+end
+intersections = [intersections; stateIncluded; ~stateExcluded];
+
+%% Intersection
+goodTrials = all(intersections, 1);
+% goodTrials = isDesiredTT & ...
+%     isDesiredStimType & ...
+%     isDesiredOutcome & ...
+%     isDesiredDelay & ...
+%     isDesiredLength & ...
+%     trialIncluded & ...
+%     ~trialExcluded & ...
+%     stateIncluded & ...
+%     ~stateExcluded;
+

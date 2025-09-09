@@ -19,7 +19,7 @@ parse(p, varargin{:});
     x.bpod.performance('preset', presets), ...
     obj.sessions, 'uni', 0);
 
-goodSessions = obj.subset('animal', presets.animals);
+goodSessions = obj.subset('animal', presets.animal);
 
 numTT = numTT(goodSessions);
 numCorrect = numCorrect(goodSessions);

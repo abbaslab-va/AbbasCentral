@@ -23,6 +23,7 @@ classdef PresetManager < handle
         stimType        % Sets of bpod stimTypes
         outcome         % Sets of bpod outcomes
         delayLength     % Trials with delays within this range
+        trialLength     % Trials within a certain length
         edges           % Distance from alignment(seconds)
         offset          % Amount to slide the output (seconds)
         binWidth        % Output granularity (ms)
@@ -74,6 +75,7 @@ classdef PresetManager < handle
             addParameter(p, 'stimType', {}, validField)
             addParameter(p, 'outcome', {}, validField)
             addParameter(p, 'delayLength', [], validVectorSize)
+            addParameter(p, 'trialLength', [], validVectorSize)
             addParameter(p, 'offset', 0, @isnumeric)
             addParameter(p, 'edges', [-2 2], validVectorSize)
             addParameter(p, 'binWidth', 1, validNumber)

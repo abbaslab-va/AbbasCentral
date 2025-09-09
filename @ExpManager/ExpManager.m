@@ -74,6 +74,8 @@ classdef ExpManager < handle
         hctsa_fr(obj, varargin)
 
         binnedSpikes = bin_all_neurons(obj, varargin)
+        
+        pseudopop = make_pseudopopulation(obj, varargin)
 
         %% LFP methods
         

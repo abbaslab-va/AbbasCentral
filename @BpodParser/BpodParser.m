@@ -68,6 +68,8 @@ classdef BpodParser < handle
         goodTrials = trial_intersection_BpodParser(obj, varargin)
 
         adjust_vip_trialTypes_tri(obj)
+        
+        designTable = make_continuous_bpod_readout(obj)
 
     end
     

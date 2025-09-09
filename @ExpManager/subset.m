@@ -21,7 +21,7 @@ includeAll = true(1, numSessions);
 if isempty(animals)
     animalIdx = includeAll;
 elseif ischar(animals)
-    animalIdx = arrayfun(@(x) contains(x.info.path, ['\' animals '\']), obj.sessions);
+    animalIdx = arrayfun(@(x) strcmp(x.info.name, animals), obj.sessions);
 elseif iscell(animals)
     animalIdx = cellfun(@(x) arrayfun(@(y) contains(y.info.path, ['\' x '\']), obj.sessions), animals, 'uni', 0);
     animalIdx = cat(1, animalIdx{:});
@@ -39,7 +39,7 @@ elseif iscell(conditions)
 end
 
 if isempty(includeSessions)
-    includeIdx = includeAll;
+    includeIdx = ~includeAll;
 else
     includeIdx = ismember(1:numSessions, includeSessions);
 end
