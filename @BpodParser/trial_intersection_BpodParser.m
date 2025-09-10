@@ -32,8 +32,8 @@ trials = presets.trials;
 excludeTrials = presets.excludeTrials;
 delayLength = presets.delayLength;
 trialLength = presets.trialLength;
-withinState = presets.withinState;
-excludeState = presets.excludeState;
+stateInTrial = presets.stateInTrial;
+stateNotInTrial = presets.stateNotInTrial;
 
 %% Trial Types
 if ischar(trialTypes)
@@ -153,16 +153,16 @@ end
 intersections = [intersections; trialIncluded; ~trialExcluded];
 
 %% State contents
-if isempty(withinState)
+if isempty(stateInTrial)
     stateIncluded = true(1, numTrials);
 else
-    includeStateTimes = obj.state_times(withinState, 'trialized', true);
+    includeStateTimes = obj.state_times(stateInTrial, 'trialized', true);
     stateIncluded = cellfun(@(x) ~isempty(x), includeStateTimes);
 end
-if isempty(excludeState)
+if isempty(stateNotInTrial)
     stateExcluded = false(1, numTrials);
 else
-    excludeStateTimes = obj.state_times(excludeState, 'trialized', true);
+    excludeStateTimes = obj.state_times(stateNotInTrial, 'trialized', true);
     stateExcluded = cellfun(@(x) ~isempty(x), excludeStateTimes);
 end
 intersections = [intersections; stateIncluded; ~stateExcluded];
