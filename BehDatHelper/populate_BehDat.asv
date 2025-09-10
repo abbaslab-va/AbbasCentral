@@ -35,13 +35,16 @@ end
 
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
-if ~isempty(ini.conditions)
-    allConditions = fields(ini.conditions);
-    matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
-    sessionCondition = allConditions(matchingCondition);
-else
-    sessionCondition = [];
-end
+
+%% Revert t h
+% if ~isempty(ini.conditions)
+%     allConditions = fields(ini.conditions);
+%     matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
+%     sessionCondition = allConditions(matchingCondition);
+% else
+%     sessionCondition = [];
+% end
+sessionCondition = [];
 
 info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
     'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
@@ -50,15 +53,14 @@ info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ..
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 if ~isempty(dir('*.npy'))
-    spikeStruct = get_spike_info(sessPath, ini.regions);
+    spikeStruct = get_spike_info(sessPath, ini.regions, 1,0); % for now including mua with flag, excluding waveforms with flag
 else
     spikeStruct = struct();
 end
 configs.trialTypes = ini.trialTypes;
 configs.outcomes = ini.outcomes;
 configs.startState = ini.info.StartState;
-configs.stimTypes = ini.info.stinTypes;
-configs.delayL
+configs.stimTypes = ini.stimTypes;
 bpodObj = BpodParser('session',SessionData,'config', configs);
 sessObj = BehDat(info, spikeStruct, timestamps, bpodObj, coords);
 
