@@ -35,6 +35,7 @@ end
 
 sf = double(NEV.MetaTags.SampleRes);
 numSamples = double(NEV.MetaTags.DataDuration);
+
 if ~isempty(ini.conditions)
     allConditions = fields(ini.conditions);
     matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
@@ -42,6 +43,8 @@ if ~isempty(ini.conditions)
 else
     sessionCondition = [];
 end
+sessionCondition = [];
+
 
 info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
     'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
@@ -50,7 +53,7 @@ info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ..
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 if ~isempty(dir('*.npy'))
-    spikeStruct = get_spike_info(sessPath, ini.regions, 1); % for now including mua with flag
+    spikeStruct = get_spike_info(sessPath, ini.regions, 0,1); % for now including mua with flag, excluding waveforms with flag
 else
     spikeStruct = struct();
 end
