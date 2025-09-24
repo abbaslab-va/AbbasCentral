@@ -1,4 +1,4 @@
-function [lfpChan, chanPhaseMat]= lfp_align(obj, varargin)
+function [lfpFinal, chanPhaseMat]= lfp_align(obj, varargin)
 
 % Calculates the power of a signal using a continuous wavelet transform
 % and returns the power and phase of the signal at the specified frequencies.
@@ -20,16 +20,22 @@ function [lfpChan, chanPhaseMat]= lfp_align(obj, varargin)
 % default input values
 defaultAveraged = false;
 defaultPhase = false;
+defaultClean = false;
+defaultRegion= 'ACC';
 
 % input validation scheme
 presets = PresetManager(varargin{:});
 p = inputParser();
 p.KeepUnmatched = true;
 addParameter(p, 'averaged', defaultAveraged, @islogical);
+addParameter(p, 'findCleanest', defaultClean, @islogical);
+addParameter(p, 'region', defaultRegion, @ischar);
 addParameter(p, 'phase', defaultPhase, @islogical);
 parse(p, varargin{:});
 phase = p.Results.phase;
 averaged = p.Results.averaged;
+findCleanest = p.Results.findCleanest;
+region = p.Results.region;
 
 % set up filterbank and downsample signal
 baud = obj.info.baud;
@@ -38,18 +44,23 @@ downsampleRatio = baud/sf;
 %sigLength = (presets.edges(2) - presets.edges(1)) * baud/downsampleRatio;
 %filterbank= cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency',sf, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 
-eventTimes = obj.find_event('preset', presets, 'trialized', false);
-try
-    edgeVec = (presets.edges * baud) + eventTimes';
-    edgeCells = num2cell(edgeVec, 2);
-catch
-    return
+ eventTimes = obj.find_event('preset', presets);
+
+
+for e=1:numel(eventTimes)
+    if isempty(eventTimes{e})
+        edgeCells(e)={[]};
+    else 
+        edgeVec = eventTimes{e}(1)+(presets.edges * baud);
+        edgeCells(e) = num2cell(edgeVec, 2);
+    end 
 end
+
 % navigate to subject folder and load LFP
 [parentDir, sub] = fileparts(obj.info.path);
 NS6 = openNSx(fullfile(parentDir, sub, strcat(sub, '.ns6')));
 lfp = double(NS6.Data);
-norm = rms(lfp, 2);             % uncomment to RMS normalize lfp
+%norm = rms(lfp, 2);             % uncomment to RMS normalize lfp
 clear NS6
 numChan = 32;
 
@@ -76,8 +87,9 @@ if phase
  
 else
     lfpChan= cell(1, numChan);
+    tIdx=cellfun(@(x) ~isempty(x),edgeCells,'uni',true);
     for c = 1:numChan
-        lfpChan{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells, 'uni', 0);
+        lfpChan{c}=cellfun(@(x) downsample(lfp(c, x(1):x(2)-1), downsampleRatio), edgeCells(tIdx), 'uni', false);
         %lfpChan{c}= cellfun(@(x) filtfilt(B, A, x), lfpChan{c}, 'uni', 0);
         %cellfun(@(x) spectrogram(x,bartlett(200),100,100,2000,'yaxis'),lfpChan{c}, 'uni', 0);
         %disp(num2str(c));
@@ -90,12 +102,43 @@ end
 if averaged
    % pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);
     %phase = cellfun(@(x) mean(x, 3), phase, 'uni', 0);
-    lfpChan = cellfun(@(x) mean(cell2mat(x)), lfpChan, 'uni', 0);
+    lfpChan= cellfun(@(x) mean(cell2mat(x)), lfpChan, 'uni', 0);
 end
 
+if findCleanest
+    unitCh=extractfield(obj.spikes,'channel');
+    
+    pfcUnits=find(extractfield(obj.spikes,'region')=="PFC");
+    chMapAcc=unique(unitCh(pfcUnits));
+    lfpAll.ACC=lfpChan(chMapAcc);
+    
+    claUnits=find(extractfield(obj.spikes,'region')=="CLA");
+    chMapCla=unique(unitCh(claUnits));
+    lfpAll.CLA=lfpChan(chMapCla);
+end 
 
+regions=fieldnames(lfpAll);
+for r=1:numel(regions)
+    clearvars  lfpChanPwr
+    nCh = numel(lfpAll.(regions{r}));               % number of channels
+     for c = 1:nCh
+        lfpChanPwr(c)= mean(cellfun(@(x) mean(mean(abs(hilbert(filtfilt(B, A, x))).^2)),lfpAll.(regions{r}){c},'uni',true));
+     end
+
+     [~,maxIdx]=max(lfpChanPwr);
+     lfpAll.(regions{r})=lfpAll.(regions{r}){maxIdx};
+     
+     lfpFinal.(regions{r})=cell(1,numel(eventTimes));
+     tIdxf=find(tIdx);
+     for i = 1:length(tIdxf)
+        lfpFinal.(regions{r}){tIdxf(i)} = lfpAll.(regions{r}){i};
+     end
+end 
+
+    % lfpChan=filtfilt(B, A, lfpChan')';
 
 disp(obj.info.path)
+end 
 
 
 

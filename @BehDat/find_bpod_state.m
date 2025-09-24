@@ -12,6 +12,22 @@ function stateEdges = find_bpod_state(obj, stateName, varargin)
 
 presets = PresetManager(varargin{:});
 
+
+
+p = inputParser;
+p.KeepUnmatched = true;
+addParameter(p, 'returnFirst', false, @islogical)     % returns next unmatched event type (input in  gives next out)
+
+
+parse(p, varargin{:});
+returnFirst= p.Results.returnFirst;
+
+
+
 stateEdgesBpod = obj.bpod.state_times(stateName, 'preset', presets);
+
+if returnFirst
+    stateEdgesBpod=cellfun(@(x) x(1),stateEdgesBpod,'uni',false)';
+end 
 
 stateEdges = obj.bpod_to_blackrock(stateEdgesBpod, presets);
