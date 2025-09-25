@@ -27,14 +27,14 @@ end
 NEV_dir = dir(fullfile(sessPath,'*.nev'));
 NEV_names = extractfield(NEV_dir, 'name');
 if numel(NEV_names)~=1
-    CE = MException('BehDat:config', 'Need to have exactly 1 NEV file in the current directory');
-    throw(CE)
+    % CE = MException('BehDat:config', 'Need to have exactly 1 NEV file in the current directory');
+    % throw(CE)
+    warning('BehDat:config', 'Need to have exactly 1 NEV file in the current directory');
+    NEV = [];
 else
     NEV=openNEV(fullfile(sessPath, NEV_names{1}));
 end
 
-sf = double(NEV.MetaTags.SampleRes);
-numSamples = double(NEV.MetaTags.DataDuration);
 
 if ~isempty(ini.conditions)
     allConditions = fields(ini.conditions);
@@ -46,6 +46,8 @@ end
 sessionCondition = [];
 
 
+sf = double(NEV.MetaTags.SampleRes);
+numSamples = double(NEV.MetaTags.DataDuration);
 info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
     'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
     'condition', sessionCondition, 'startState', ini.info.StartState, 'channels', ini.regions);

@@ -23,6 +23,7 @@ classdef PresetManager < handle
 % trialType       % Sets of bpod trialTypes
 % stimType        % Sets of bpod stimTypes
 % outcome         % Sets of bpod outcomes
+% ports           % Which ports to include in poke rate methods
 % delayLength     % Trials with delays within this range
 % trialLength     % Trials within a certain length
 % edges           % Distance from alignment(seconds)
@@ -39,7 +40,9 @@ classdef PresetManager < handle
 % ignoreRepeats   % If true, afterEvent and priorToEvent ignore duplicate events
 % firstEvent      % Return only the first event per bpod trial
 % lastEvent       % Return only the last event per bpod trial
+% channels        % Specify channels for lfp/spike analyses
 % freqLimits      % Edges for calculating frequency-domain props
+% freqBands       % List of enumerations of FrequencyRange objects
 % panel           % Allows for plotting to app
     
     properties (SetAccess = public)
@@ -61,6 +64,7 @@ classdef PresetManager < handle
         trialType       % Sets of bpod trialTypes
         stimType        % Sets of bpod stimTypes
         outcome         % Sets of bpod outcomes
+        ports           % Which ports to include in poke rate methods
         delayLength     % Trials with delays within this range
         trialLength     % Trials within a certain length
         edges           % Distance from alignment(seconds)
@@ -77,7 +81,9 @@ classdef PresetManager < handle
         ignoreRepeats   % If true, afterEvent and priorToEvent ignore duplicate events
         firstEvent      % Return only the first event per bpod trial
         lastEvent       % Return only the last event per bpod trial
+        channels        % Specify channels for lfp/spike analyses
         freqLimits      % Edges for calculating frequency-domain props
+        freqBands       % List of enumerations of FrequencyRange objects
         panel           % Allows for plotting to app
     end
 
@@ -115,6 +121,7 @@ classdef PresetManager < handle
             addParameter(p, 'trialType', {}, validField)
             addParameter(p, 'stimType', {}, validField)
             addParameter(p, 'outcome', {}, validField)
+            addParameter(p, 'ports', [], validNeurons)
             addParameter(p, 'delayLength', [], validVectorSize)
             addParameter(p, 'trialLength', [], validVectorSize)
             addParameter(p, 'offset', 0, @isnumeric)
@@ -131,7 +138,9 @@ classdef PresetManager < handle
             addParameter(p, 'ignoreRepeats', true, @islogical)
             addParameter(p, 'firstEvent', false, @islogical)
             addParameter(p, 'lastEvent', false, @islogical)
+            addParameter(p, 'channels', [], validIndex)
             addParameter(p, 'freqLimits', [1 120], validVectorSize)
+            addParameter(p, 'freqBands', [], validField)
             addParameter(p, 'panel', [])
             addParameter(p, 'preset', [], validPreset)
             parse(p, varargin{:});
