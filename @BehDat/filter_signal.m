@@ -33,6 +33,9 @@ timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), 
 ns6_dir = dir(fullfile(parentDir, sub,'*.ns6'));
 NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, ns6_dir.name), x), timeStrings, 'uni', 0);
 lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
+if ~isempty(presets.channels)
+    lfp = cellfun(@(x) x(:, presets.channels), lfp, 'uni', 0);
+end
 clear NS6
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 N = 2;

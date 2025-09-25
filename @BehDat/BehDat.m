@@ -76,6 +76,10 @@ classdef BehDat < handle
 
         [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
 
+        rate = poke_rate(obj, varargin)
+
+        behaviorFeatures = build_behavior_features(obj, presets)
+
     %% Spike methods
 
         whichNeurons = spike_subset(obj, presets)
@@ -124,9 +128,13 @@ classdef BehDat < handle
 
         hctsa_fr_plot(obj, varargin)
 
+        spikeFeatures = build_spike_features(obj, presets)
+
     %% LFP methods
 
         [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
+
+        [pwr, phase] = hilbert_power(obj, varargin)
 
         [ppc_all, spikePhase, ppc_sig]  = ppc(obj, varargin)
 
@@ -137,6 +145,8 @@ classdef BehDat < handle
         [lfp_all, chanPhase] = lfp_align(obj, varargin)
 
         [gcx] = gc(obj, varargin)
+
+        powerFeatures = build_power_features(obj, presets)
 
         %plot_cwt(pwr, channel, freqs, panel)   panel is an optional arg
 
