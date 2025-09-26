@@ -29,8 +29,7 @@ end
 numFreqs = numel(freqBands);
 
 if numFreqs == 0
-    freqBands = 'default';
-    numFreqs = 1;
+    throw(MException("RandallSays::YouStupid", "Don't do that, narrow band only fool"))
 end
 
 filteredLFP = cell(1, numFreqs);

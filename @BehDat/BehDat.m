@@ -148,6 +148,8 @@ classdef BehDat < handle
 
         powerFeatures = build_power_features(obj, presets)
 
+        downsampledData = downsample_lfp(obj, presets, sampleRate)
+
         %plot_cwt(pwr, channel, freqs, panel)   panel is an optional arg
 
     %% Video methods

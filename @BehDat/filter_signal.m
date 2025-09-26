@@ -23,20 +23,8 @@ parse(p, varargin{:});
 filter = p.Results.filter;
 baud = obj.info.baud;
 
-% timestamp and trialize event times
-eventTimes = obj.find_event('preset', presets, 'trialized', false);
-eventEdges = (presets.edges * baud) + eventTimes';
-edgeCells = num2cell(eventEdges, 2);
-timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCells, 'uni', 0);
-% navigate to subject folder and load LFP
-[parentDir, sub] = fileparts(obj.info.path);
-ns6_dir = dir(fullfile(parentDir, sub,'*.ns6'));
-NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, ns6_dir.name), x), timeStrings, 'uni', 0);
-lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
-if ~isempty(presets.channels)
-    lfp = cellfun(@(x) x(:, presets.channels), lfp, 'uni', 0);
-end
-clear NS6
+lfp = obj.downsample_lfp(presets, 2000);
+
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 N = 2;
 [B, A] = butter(N, presets.freqLimits/(baud/2));

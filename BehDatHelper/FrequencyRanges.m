@@ -1,5 +1,7 @@
 classdef FrequencyRanges
 
+% A dataclass to hold edges for predefined frequency bands of neural activity
+
     properties
         edges
     end
@@ -16,7 +18,7 @@ classdef FrequencyRanges
         alpha([8 12]),
         beta([12 30]),
         gamma([30 100]),
-        all([1 120])
+        default([1 120])
     end
 
 end
