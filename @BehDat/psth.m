@@ -36,7 +36,7 @@ function spikesSmooth = psth(obj, neuron, varargin)
         if ~iscell(presets.stimType)
             presets.stimType = num2cell(presets.stimType, [1 2]);
         end
-        if ~iscell(presets.trials)
+        if ~iscell(presets.trials) && ~isempty(presets.trials)
             presets.trials = num2cell(presets.trials, [1 2]);
         end
         numTT = numel(presets.trialType);
@@ -76,14 +76,16 @@ function spikesSmooth = psth(obj, neuron, varargin)
                     end
                     for tr = 1:numTrials
                         ctr = ctr + 1;
-                        if isempty(presets.trials)
+                        if isempty(presets.trials) 
                             currentTrials = [];
                         else
                             currentTrials = presets.trials{tr};
                         end
-                        spikeMat{ctr} = logical(obj.bin_neuron(neuron, 'event', presets.event, 'edges', presets.edges, 'binWidth', presets.binWidth, 'trials', currentTrials, ...
-                        'trialType', currentTT, 'outcome', currentOutcome, 'stimType', currentStim, 'offset', presets.offset, 'bpod', presets.bpod, 'priorToEvent', presets.priorToEvent, ...
-                        'priorToState', presets.priorToState, 'withinState', presets.withinState, 'excludeState', presets.excludeState));
+                        spikeMat{ctr} = logical(obj.bin_neuron(neuron, ...
+                            'preset', presets, ...
+                            'trialType', currentTT, ...
+                            'outcome', currentOutcome, ...
+                            'stimType', currentStim));
                         labelY{ctr*2 - 1} = "";
                         labelY{ctr*2} = strcat(currentTTString, ", ", currentOutcomeString, ", ", currentStimString);
                     end
