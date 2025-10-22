@@ -21,9 +21,9 @@ p.KeepUnmatched = true;
 addParameter(p, 'filter', defaultFilter, @ischar)
 parse(p, varargin{:});
 filter = p.Results.filter;
-baud = obj.info.baud;
+baud = 2000;
 
-lfp = obj.downsample_lfp(presets, 2000);
+lfp = obj.downsample_lfp(presets, baud);
 
 % norm = rms(lfp, 2)                % uncomment to RMS normalize lfp
 N = 2;
