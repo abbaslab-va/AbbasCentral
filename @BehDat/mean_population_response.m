@@ -23,7 +23,7 @@ function h = mean_population_response(obj, varargin)
 
     zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', 20);
     spikeSubset = obj.spike_subset(presets);
-    zMean = zMean(spikeSubset, :);
+    % zMean = zMean(spikeSubset, :)
     % if ~isempty(presets.subset)
     %     zMean = zMean(presets.subset, :);
     % end

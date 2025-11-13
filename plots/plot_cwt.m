@@ -22,6 +22,7 @@ if exist('panel', 'var')
     yticklabels(freqs(yTick))
     view(2)
     colorbar
+    caxis([0, 10000])
     copyobj(h.Children, panel)
     close(h)
     return

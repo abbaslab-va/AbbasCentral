@@ -153,3 +153,15 @@ eventNames = cellfun(@(x, y) x(y), eventNames, currentEventTimes, 'uni', 0);
 goodTrials = obj.trial_intersection_BpodParser('preset', presets);
 eventTimes = eventTimes(goodTrials);
 eventNames = eventNames(goodTrials);
+hasEvent = cellfun(@(x) ~isempty(x), eventTimes);
+if presets.firstEvent && presets.lastEvent
+    oneTrial = cellfun(@(x) isscalar(x), eventTimes);
+    eventTimes(~oneTrial) = [];
+    eventNames(~oneTrial) = [];
+elseif presets.firstEvent
+    eventTimes(hasEvent) = cellfun(@(x) x(1), eventTimes(hasEvent), 'uni', 0);
+    eventNames(hasEvent) = cellfun(@(x) x(1), eventNames(hasEvent), 'uni', 0);
+elseif presets.lastEvent
+    eventTimes(hasEvent) = cellfun(@(x) x(end), eventTimes(hasEvent), 'uni', 0);
+    eventNames(hasEvent) = cellfun(@(x) x(end), eventNames(hasEvent), 'uni', 0);
+end

@@ -41,7 +41,7 @@ samplingFreq = p.Results.samplingFreq;
 outputStyle = p.Results.outputStyle;
 % set up filterbank and downsample signal
 baud = obj.info.baud;
-% downsampleRatio = baud/samplingFreq;
+downsampleRatio = baud/samplingFreq;
 sigLength = (presets.edges(2) - presets.edges(1)) * samplingFreq;
 filterbank = cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
 
@@ -49,8 +49,8 @@ filterbank = cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', sampl
 % lfpDownsampled = obj.downsample_lfp(presets, samplingFreq);
 
 try
-    % numChan = obj.info.numChannels;
-    numChan = numel(presets.channels);
+    numChan = obj.info.numChannels;
+    % numChan = numel(presets.channels);
 catch 
     warning('No channel num found (likely due to noPhy - setting to 32 (default value)).')
     numChan = 32;

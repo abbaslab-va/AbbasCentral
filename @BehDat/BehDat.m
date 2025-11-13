@@ -150,6 +150,10 @@ classdef BehDat < handle
 
         downsampledData = downsample_lfp(obj, presets, sampleRate)
 
+        [peakSpikePhaseByFreq, fSteps] = spike_phase_alignment(obj, varargin)
+
+        %spa_heatmap(peakSpikePhaseByFreq
+        
         %plot_cwt(pwr, channel, freqs, panel)   panel is an optional arg
 
     %% Video methods
