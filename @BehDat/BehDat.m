@@ -152,8 +152,10 @@ classdef BehDat < handle
 
         [peakSpikePhaseByFreq, fSteps] = spike_phase_alignment(obj, varargin)
 
+        [ppc, sigCells] = spa_ppc(obj, varargin)
+
         %spa_heatmap(peakSpikePhaseByFreq
-        
+
         %plot_cwt(pwr, channel, freqs, panel)   panel is an optional arg
 
     %% Video methods
