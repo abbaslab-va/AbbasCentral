@@ -152,7 +152,9 @@ classdef BehDat < handle
 
         [peakSpikePhaseByFreq, fSteps] = spike_phase_alignment(obj, varargin)
 
-        [ppc, sigCells] = spa_ppc(obj, varargin)
+        [ppc, sigCells, fSteps] = spa_ppc(obj, varargin)
+
+        sig_ppc_delta(obj, presetPre, presetPost)
 
         %spa_heatmap(peakSpikePhaseByFreq
 

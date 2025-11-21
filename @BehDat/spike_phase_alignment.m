@@ -72,9 +72,9 @@ for freqStartIdx = 1:numSteps
     cycleSamples = cellfun(@(x) ...
             cellfun(@(y) diff(y), x), ...
         cycleBoundaries30k, 'uni', 0);
-    trialStartWithPeaks = trialStart(hasPeaks);
-    cycleCat = cat(1, cycleSamples{:});
-    bEdges = linspace(30000/freqEnd, 30000/freqStart, 20);
+    % trialStartWithPeaks = trialStart(hasPeaks);
+    % cycleCat = cat(1, cycleSamples{:});
+    % bEdges = linspace(30000/freqEnd, 30000/freqStart, 20);
     % figure
     % histogram(cycleCat, 'BinEdges', bEdges, 'Normalization', 'probability')
     % title(sprintf('range %d to %d', freqStart, freqEnd))

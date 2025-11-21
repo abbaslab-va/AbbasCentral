@@ -1,4 +1,4 @@
-function [ppc, sigCells] = spa_ppc(obj, varargin)
+function [ppc, sigCells, fSteps] = spa_ppc(obj, varargin)
 
 presets = PresetManager(varargin{:});
 [peakSpikePhaseByFreq, fSteps] = obj.spike_phase_alignment('preset', presets);
