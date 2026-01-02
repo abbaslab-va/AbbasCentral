@@ -1,4 +1,4 @@
-function sig_ppc_delta(obj, presetPre, presetPost)
+function ppcStruct = sig_ppc_delta(obj, presetPre, presetPost)
 % Will make one plot per neuron in a BehDat session that had any
 % significant ppc according to spa_ppc. -pi rep
     colorScheme = brewermap(2, 'RdGy');
@@ -9,6 +9,11 @@ function sig_ppc_delta(obj, presetPre, presetPost)
     presetFiringRates = firingRates(presetCells);
     [ppcPre, sigCellsPre, fStepsPre] = obj.spa_ppc('preset', presetPre);
     [ppcPost, sigCellsPost, ~] = obj.spa_ppc('preset', presetPost);
+    ppcStruct.vals.pre = ppcPre;
+    ppcStruct.vals.post = ppcPost;
+    ppcStruct.cells.pre = sigCellsPre;
+    ppcStruct.cells.post = sigCellsPost;
+    ppcStruct.freqs = fStepsPre;
     idxPre = cellfun(@(x) find(x), sigCellsPre, 'uni', 0);
     idxPost = cellfun(@(x) find(x), sigCellsPost, 'uni', 0);
     commonCells = cellfun(@(y, z) intersect(y, z), idxPre, idxPost, 'uni', 0);

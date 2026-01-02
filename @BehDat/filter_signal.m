@@ -16,10 +16,14 @@ function filteredLFP = filter_signal(obj, varargin)
 % default input values
 defaultFilter = 'butter';
 presets = PresetManager(varargin{:});
+if isempty(presets.channels) && ~isempty(presets.region)
+    presets.channels = obj.info.channels.(presets.region);
+end
 p = inputParser;
 p.KeepUnmatched = true;
 addParameter(p, 'filter', defaultFilter, @ischar)
 parse(p, varargin{:});
+
 filter = p.Results.filter;
 baud = 2000;
 

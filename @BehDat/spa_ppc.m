@@ -15,4 +15,9 @@ end
 sigCells = cellfun(@(x) cellfun(@(y) ...
     ~isempty(y) && y < 0.05, x), peakPhase, 'uni', 0);
 peakPhaseFiltered = cellfun(@(y, z) y(z), peakSpikePhaseByFreq, sigCells, 'uni', 0);
+% numEvents = numel(peakPhaseFiltered);
+% parfor i = 1:numel(peakPhaseFiltered)
+%     peakEvent = peakPhaseFiltered{i};
+%     ppc{i} = mean(nonzeros(triu(cos(z.'-z), 1)))
+% end
 ppc = cellfun(@(y) cellfun(@(z) mean(nonzeros(triu(cos(z.'-z), 1))), y), peakPhaseFiltered, 'uni', 0);
