@@ -158,7 +158,9 @@ classdef BehDat < handle
 
         ppcStruct = sig_ppc_delta(obj, presetPre, presetPost)
         
-        ppc_inverse_temperature(obj, varargin)
+        tempMagnitudeByNeuron = ppc_inverse_temperature(obj, varargin)
+
+        goodChannels = test_channel_phase_coherence(obj, varargin)
 
         %spa_heatmap(peakSpikePhaseByFreq
 

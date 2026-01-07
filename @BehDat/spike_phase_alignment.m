@@ -17,9 +17,10 @@ spikePhaseByFreq = cell(1, numSteps);
 for freqStartIdx = 1:numSteps
     freqStart = fSteps(freqStartIdx);
     freqEnd = fSteps(freqStartIdx + 1);
-    filteredSignal = obj.filter_signal('preset', presets, 'freqLimits', [freqStart freqEnd]);
-    
-    phase = cellfun(@(x) angle(hilbert(x)), filteredSignal, 'uni', 0);
+    goodChannels = obj.test_channel_phase_coherence('preset', presets);
+    filteredSignal = obj.filter_signal('preset', presets, 'freqLimits', [freqStart freqEnd], 'channels', goodChannels);
+
+    phase = cellfun(@(x) angle(hilbert(mean(x, 2))), filteredSignal, 'uni', 0);
 
     spikePhase = cellfun(@(x) cellfun(@(y, z) ...
         y(z'), phase, x, 'uni', 0), spikeTimes, 'uni', 0);
