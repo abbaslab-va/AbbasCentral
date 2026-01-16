@@ -43,7 +43,10 @@ outputStyle = p.Results.outputStyle;
 baud = obj.info.baud;
 downsampleRatio = baud/samplingFreq;
 sigLength = (presets.edges(2) - presets.edges(1)) * samplingFreq;
-filterbank = cwtfilterbank('SignalLength', sigLength, 'SamplingFrequency', samplingFreq, 'TimeBandwidth',60, 'FrequencyLimits',presets.freqLimits, 'VoicesPerOctave', 10);
+filterbank = cwtfilterbank('SignalLength', sigLength, ...
+    'SamplingFrequency', samplingFreq, ...
+    'TimeBandwidth', 60, 'FrequencyLimits', presets.freqLimits, ...
+    'VoicesPerOctave', 10);
 
 
 % lfpDownsampled = obj.downsample_lfp(presets, samplingFreq);

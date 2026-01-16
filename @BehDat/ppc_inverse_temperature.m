@@ -9,11 +9,8 @@ numNeurons = sum(whichNeurons);
 phaseVec = cell(1, numNeurons);
 numNeurons = numel(phases{1});
 for neuron = 1:numNeurons
-    for neuron = 1:numNeurons
-        neuronVec = cellfun(@(x) x{neuron}, phases, 'uni', 0);
-         phaseVec{neuron} = cat(2, neuronVec{:})';
-        % for one spike: m = 1/B * sum(exp(1i * phase)) for every phase
-    end
+    neuronVec = cellfun(@(x) x{neuron}, phases, 'uni', 0);
+    phaseVec{neuron} = cat(2, neuronVec{:})';
 end
 % complex number = 1/numPhases * 
 phaseTemps = cellfun(@(x) arrayfun(@(y) exp(1i * y), x), phaseVec, 'uni', 0);

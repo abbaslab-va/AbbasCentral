@@ -98,6 +98,8 @@ classdef BehDat < handle
 
         h = mean_population_response(obj, varargin)
         
+        continuous_population_activity(obj, varargin)
+        
         [zMean, zCells, trialNum] = z_score(obj, varargin)
 
         corrScore = xcorr(obj, varargin)
@@ -159,6 +161,8 @@ classdef BehDat < handle
         ppcStruct = sig_ppc_delta(obj, presetPre, presetPost)
         
         tempMagnitudeByNeuron = ppc_inverse_temperature(obj, varargin)
+
+        ppc_harmonic_structure(obj, varargin)
 
         goodChannels = test_channel_phase_coherence(obj, varargin)
 
