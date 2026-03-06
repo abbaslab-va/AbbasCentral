@@ -61,13 +61,15 @@ classdef ExpManager < handle
 
         %% Spike methods
 
-        [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, event, varargin)
+        [rpIndices, smoothedPSTHs] = calculate_rp_neurons(obj, varargin)
 
         [rpIndices, smoothedPSTHs] = calculate_rp_neurons_startOfSess(obj, event, varargin)
         
-        [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, event, varargin)
+        [rpIndices, smoothedPSTHs] = calculate_outcome_neurons(obj, varargin)
 
         binnedSessions = bin_spikes(obj, varargin)
+
+        [spikeMat, sortedIdx] = continuous_pseudopopulation_activity(obj, varargin)
 
         hctsa(obj, varargin)
         

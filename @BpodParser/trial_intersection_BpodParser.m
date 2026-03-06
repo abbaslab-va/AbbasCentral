@@ -143,6 +143,9 @@ intersections = [intersections; isDesiredLength];
 if isempty(trials)
     trialIncluded = true(1, numTrials);
 else
+    if iscell(trials)
+        trials = cell2mat(trials);
+    end
     trialIncluded = ismember(1:bpodStruct.nTrials, trials);
 end
 if isempty(excludeTrials)

@@ -27,4 +27,5 @@ try
     end
 catch
     binnedNeurons = []; 
+    disp('bin_all_neurons failed')
 end

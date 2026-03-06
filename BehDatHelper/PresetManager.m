@@ -2,48 +2,6 @@ classdef PresetManager < handle
 
 % Manages combinations of trialtypes, outcomes, trial numbers, bpod events,
 % and neuron combinations like FR-thresholded or user-defined.
-%
-% Possible controls include:
-%
-% animal          % Which animals to include in ExpManager analyses
-% condition       % Intersect sessions with a given experimental condition
-% includeSessions % Indices of which sessions to include
-% excludeSessions % Indices of which sessions to exclude
-% subset          % Indices of neurons for population fcns
-% region          % A string matching a region in spike data
-% label           % String or cell of strings indicating spike label
-% KSLabel         % String or cell of strings with kilosort label
-% minFR           % Value specifying minimum firing rate to consider
-% maxFR           % Value specifying maximum firing rate to consider
-% event           % Which event to align data to
-% bpod            % Bool toggling which find_event fcn to use
-% trialized       % Bool to output each trial in separate cells or all as one vector
-% trials          % Indices of which bpod trials to include
-% excludeTrials   % Indices of which bpod trials to exclude
-% trialType       % Sets of bpod trialTypes
-% stimType        % Sets of bpod stimTypes
-% outcome         % Sets of bpod outcomes
-% ports           % Which ports to include in poke rate methods
-% delayLength     % Trials with delays within this range
-% trialLength     % Trials within a certain length
-% edges           % Distance from alignment(seconds)
-% offset          % Amount to slide the output (seconds)
-% binWidth        % Output granularity (ms)
-% stateInTrial    % Returns true if the trial contains the state
-% stateNotInTrial % Returns true if the trial does not contain the state
-% withinState     % Only return events within certain bpod states
-% excludeState    % Opposite behavior from withinState
-% priorToState    % Return the last (bpod) event(s) prior to a bpod state
-% priorToEvent    % Return the last (bpod) event(s) prior to a bpod event
-% afterState      % Return the first event(s) after a bpod state
-% afterEvent      % Return the first event(s) after a bpod event
-% ignoreRepeats   % If true, afterEvent and priorToEvent ignore duplicate events
-% firstEvent      % Return only the first event per bpod trial
-% lastEvent       % Return only the last event per bpod trial
-% channels        % Specify channels for lfp/spike analyses
-% freqLimits      % Edges for calculating frequency-domain props
-% freqBands       % List of enumerations of FrequencyRange objects
-% panel           % Allows for plotting to app
     
     properties (SetAccess = public)
         animal          % Which animals to include in ExpManager analyses
@@ -59,6 +17,7 @@ classdef PresetManager < handle
         event           % Which event to align data to
         bpod            % Bool toggling which find_event fcn to use
         trialized       % Bool to output each trial in separate cells or all as one vector
+        normalized      % Bool to control if data is z-scored
         trials          % Indices of which bpod trials to include
         excludeTrials   % Indices of which bpod trials to exclude
         trialType       % Sets of bpod trialTypes
@@ -84,6 +43,7 @@ classdef PresetManager < handle
         channels        % Specify channels for lfp/spike analyses
         freqLimits      % Edges for calculating frequency-domain props
         freqBands       % List of enumerations of FrequencyRange objects
+        cLim            % Color limits for plotting surface and heatmaps
         panel           % Allows for plotting to app
     end
 
@@ -116,6 +76,7 @@ classdef PresetManager < handle
             addParameter(p, 'event', 'Trial Start', validEvent)
             addParameter(p, 'bpod', false, @islogical)
             addParameter(p, 'trialized', false, @islogical)
+            addParameter(p, 'normalized', false, @islogical)
             addParameter(p, 'trials', [], validIndex)
             addParameter(p, 'excludeTrials', [], validIndex)
             addParameter(p, 'trialType', {}, validField)
@@ -141,6 +102,7 @@ classdef PresetManager < handle
             addParameter(p, 'channels', [], validIndex)
             addParameter(p, 'freqLimits', [1 120], validVectorSize)
             addParameter(p, 'freqBands', [], validField)
+            addParameter(p, 'cLim', [-3 3], validVectorSize)
             addParameter(p, 'panel', [])
             addParameter(p, 'preset', [], validPreset)
             parse(p, varargin{:});

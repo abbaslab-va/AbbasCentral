@@ -35,7 +35,7 @@ baseline = p.Results.baseline;
 bWindow = p.Results.bWindow;
 bpodBaseline = p.Results.bpodBaseline;
 eWindow = p.Results.eWindow;
-binWidth = presets.binWidth;
+binWidth = presets.binWidth; 
 baseTrials = p.Results.baseTrials;
 averaged = p.Results.averaged;
 
@@ -72,6 +72,6 @@ if averaged
 
 end
 zMean = mean(zAll, 3, 'omitnan');
-zMean = smoothdata(zMean, 2, 'gaussian', floor(100/binWidth));
+% zMean = smoothdata(zMean, 2, 'gaussian', 10);
 whichSpikes = obj.spike_subset(presets);
 zMean = zMean(whichSpikes, :);

@@ -18,8 +18,10 @@ function h = mean_population_response(obj, varargin)
     p = inputParser;
     p.KeepUnmatched = true;
     addParameter(p, 'sortBy', [], validWindow)
+    addParameter(p, 'orderBy', [], @isvector)
     parse(p, varargin{:});
     sortBy = p.Results.sortBy;
+    orderBy = p.Results.orderBy;
 
     zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', 20);
     spikeSubset = obj.spike_subset(presets);
@@ -39,6 +41,11 @@ function h = mean_population_response(obj, varargin)
     else
         originalIdx = find(spikeSubset);
     end
+
+    if ~isempty(orderBy)
+        zMean = zMean(orderBy, :);
+    end
+    
     figTitle = strcat(obj.info.name, " ", presets.event);
     h = plot_pop_response(zMean, presets, originalIdx, figTitle);
 end
@@ -56,7 +63,7 @@ function h = plot_pop_response(meanMat, presets, neuronIdx, figTitle)
     h = heatmap(meanMat, 'GridVisible', 'off');
     colormap('parula')
     colorbar
-    clim([-3 3])
+    clim(presets.cLim)
     xlabel('Time From Event (sec)')
     ylabel('Neuron')
     timeLabels = cellfun(@(x) num2str(x), num2cell((presets.edges(1):.5:presets.edges(2)) + presets.offset), 'uni', 0);

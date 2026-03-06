@@ -97,9 +97,9 @@ classdef BehDat < handle
         smoothedSpikes = psth(obj, neuron, varargin)
 
         h = mean_population_response(obj, varargin)
-        
-        continuous_population_activity(obj, varargin)
-        
+
+        [spikeMat, sortedIdx] = continuous_population_activity(obj, varargin)
+
         [zMean, zCells, trialNum] = z_score(obj, varargin)
 
         corrScore = xcorr(obj, varargin)
