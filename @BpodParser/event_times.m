@@ -104,9 +104,6 @@ if ignoreRepeats
     end
 end
 
-if ignoreRepeats
-
-end
 
 intersectMat = cell([size(eventTimes), 6]);
 

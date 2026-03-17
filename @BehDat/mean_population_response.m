@@ -22,8 +22,8 @@ function h = mean_population_response(obj, varargin)
     parse(p, varargin{:});
     sortBy = p.Results.sortBy;
     orderBy = p.Results.orderBy;
-
-    zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', 20);
+    binWidth = 20;
+    zMean = obj.z_score(varargin{:}, 'eWindow', presets.edges, 'binWidth', binWidth);
     spikeSubset = obj.spike_subset(presets);
     % zMean = zMean(spikeSubset, :)
     % if ~isempty(presets.subset)
@@ -31,8 +31,8 @@ function h = mean_population_response(obj, varargin)
     % end
     if ~isempty(sortBy)
         msBins = presets.edges * 1000 / presets.binWidth;
-        leftEdge = floor((sortBy(1) - msBins(1)) / 20) + 1;
-        rightEdge = ceil((sortBy(2) - msBins(1)) / 20) - 1;
+        leftEdge = floor((sortBy(1) - msBins(1)) / binWidth) + 1;
+        rightEdge = ceil((sortBy(2) - msBins(1)) / binWidth) - 1;
         valsToSort = mean(zMean(:, leftEdge:rightEdge), 2);
         [~, sortedIdx] = sort(valsToSort, 'descend');
         zMean = zMean(sortedIdx, :);

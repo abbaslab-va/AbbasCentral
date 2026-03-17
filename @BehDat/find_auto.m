@@ -19,7 +19,7 @@ for ref = 1:numNeurons - 1
         baseCorr = xcorr(refSpikes, targetSpikes, 0);
         numRefSpikes = sum(refSpikes);
         numTargetSpikes = sum(targetSpikes);
-        if baseCorr > min(numRefSpikes, numTargetSpikes)/2
+        if baseCorr > min(numRefSpikes, numTargetSpikes) / 2
             figure
             plot(baseCorr)
             title(sprintf("Ref %d, target %d", ref, target))
@@ -30,6 +30,29 @@ end
 
 [SameRow, SameColumn] = find(isAuto);
 SameNeuronChannels = horzcat(SameRow, SameColumn);
+spikeFR = [obj.spikes.fr];
+numGroups = size(SameNeuronChannels, 1);
+
+for i = 1:numGroups
+    sameNeurons = SameNeuronChannels(i, :);
+    [~, highestFR] = max(spikeFR(sameNeurons));
+    sameNeurons(highestFR) = [];
+    for n = 1:numel(sameNeurons)
+        neuron = sameNeurons(n);
+        obj.spikes(neuron).exclude = true;
+    end
+end
+numSpikes = numel(obj.spikes);
+if ~isfield(obj.spikes, 'exclude')
+    for i = 1:numSpikes
+        obj.spikes(i).exclude = false;
+    end
+end
+for i = 1:numel(obj.spikes)
+    if isempty(obj.spikes(i).exclude)
+        obj.spikes(i).exclude = false;
+    end
+end
 % SameRowCount = SpikeCounts(SameRow);
 % SameColumnCount = SpikeCounts(SameColumn);
 % SameNeuronSpikeCounts = horzcat(SameRowCount, SameColumnCount);
