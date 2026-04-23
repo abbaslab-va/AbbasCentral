@@ -96,6 +96,8 @@ classdef BehDat < handle
 
         smoothedSpikes = psth(obj, neuron, varargin)
 
+        responseIdx = calculate_event_neurons(obj, varargin)
+
         h = mean_population_response(obj, varargin)
 
         [spikeMat, sortedIdx] = continuous_population_activity(obj, varargin)
