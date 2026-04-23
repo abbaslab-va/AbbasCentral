@@ -1,0 +1,1 @@
+Animal behavior is studied using a variety of [[Techniques]] and [[Equipment]].
