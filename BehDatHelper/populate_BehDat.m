@@ -15,6 +15,7 @@ for m = 1:length(matdir)
     fInfo = whos('-file', fName);
     if isscalar(fInfo) && strcmp(fInfo.name, "SessionData")
         load(fName, 'SessionData')
+        break
     end
 end
 coords = [];
@@ -26,6 +27,8 @@ end
 
 NEV_dir = dir(fullfile(sessPath,'*.nev'));
 NEV_names = extractfield(NEV_dir, 'name');
+ns6Dir = dir(fullfile(sessPath, '*.ns6'));
+ns6Name = extractfield(ns6Dir, 'name');
 if numel(NEV_names)~=1
     % CE = MException('BehDat:config', 'Need to have exactly 1 NEV file in the current directory');
     % throw(CE)
@@ -39,15 +42,19 @@ end
 if ~isempty(ini.conditions)
     allConditions = fields(ini.conditions);
     matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
-    sessionCondition = allConditions(matchingCondition);
+    sessionCondition = allConditions{matchingCondition};
 else
     sessionCondition = [];
 end
-sessionCondition = [];
 
 
 sf = double(NEV.MetaTags.SampleRes);
-numSamples = double(NEV.MetaTags.DataDuration);
+if isfield(NEV.MetaTags, 'DataDuration')
+    numSamples = double(NEV.MetaTags.DataDuration);
+else
+    ns6 = openNSx('noread', 'report', fullfile(sessPath, ns6Name{1}));
+    numSamples = double(ns6.MetaTags.DataPoints);
+end
 info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
     'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
     'condition', sessionCondition, 'startState', ini.info.StartState, 'channels', ini.regions);
@@ -55,7 +62,7 @@ info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ..
 timestamps = adjust_timestamps(NEV, SessionData.nTrials);
 timestamps.keys = ini.timestamps;
 if ~isempty(dir('*.npy'))
-    spikeStruct = get_spike_info(sessPath, ini.regions, 0,1); % for now including mua with flag, excluding waveforms with flag
+    spikeStruct = get_spike_info(sessPath, ini.regions, 0,0); % for now including mua with flag, excluding waveforms with flag
 else
     spikeStruct = struct();
 end

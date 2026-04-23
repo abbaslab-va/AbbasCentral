@@ -148,7 +148,7 @@ fr = cell(numNeurons,1);
 for neuron = 1:numNeurons
     fr{neuron} = numSpikes(neuron)/(numSamples/30000);
 end
- if includeWaveforms
+if includeWaveforms
 spikeInds = arrayfun(@(x) randsample(x, minSpikes), numSpikes, 'uni', 0);
 spikeTimes = cellfun(@(x, y) x(y), spikeTimeArray, spikeInds, 'uni', 0);
 waveformEdges = cellfun(@(x) num2cell(x' + padding, 2), spikeTimes, 'uni', 0);
@@ -213,5 +213,5 @@ else
     'KSLabel', KSLabels(enoughSpikes), ... 
     'cluster', clusterID(enoughSpikes),...
    'fr', fr);
-   end
+end
     

@@ -1,4 +1,4 @@
-function plot_cwt(pwr, channel, freqs, panel)
+function plot_cwt(pwr, channel, freqs, cLim, panel)
 
 % Plots a heatmap of the power spectra obtained from a cwt centered around
 % trialized alignments.
@@ -22,7 +22,7 @@ if exist('panel', 'var')
     yticklabels(freqs(yTick))
     view(2)
     colorbar
-    caxis([0, 10000])
+    clim(cLim)
     copyobj(h.Children, panel)
     close(h)
     return
