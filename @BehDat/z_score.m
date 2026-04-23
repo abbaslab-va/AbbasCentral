@@ -19,33 +19,23 @@ presets = PresetManager(varargin{:});
 p = inputParser;
 p.KeepUnmatched = true;
 % Parse inputs
-validVectorSize = @(x) all(size(x) == [1, 2]);
 validTrials = @(x) isempty(x) || isvector(x);
 
-addParameter(p, 'baseline', '', @ischar);
-addParameter(p, 'bWindow', [-1 0], validVectorSize);
-addParameter(p, 'bpodBaseline', false, @islogical);
-addParameter(p, 'eWindow', [-1 1], validVectorSize);
 addParameter(p, 'baseTrials', [], validTrials)
 addParameter(p, 'averaged', true, @islogical)
 
 
 parse(p, varargin{:});
-baseline = p.Results.baseline;
-bWindow = p.Results.bWindow;
-bpodBaseline = p.Results.bpodBaseline;
-eWindow = p.Results.eWindow;
-binWidth = presets.binWidth; 
 baseTrials = p.Results.baseTrials;
 averaged = p.Results.averaged;
-
-baseTimes = obj.find_event('event', baseline, 'trialType', presets.trialType, 'trials', baseTrials, ...
-    'outcome', presets.outcome, 'offset', presets.offset, 'bpod', bpodBaseline);
+presets.bpodBaseline
+baseTimes = obj.find_event('event', presets.baseline, 'trialType', presets.trialType, 'trials', baseTrials, ...
+    'outcome', presets.outcome, 'offset', presets.offset, 'bpod', presets.bpodBaseline);
 eventTimes = obj.find_event(varargin{:}, 'trialized', false);
 
 % % Bin matrices of spikes for each baseline timestamp
-baseEdges = num2cell((bWindow .* obj.info.baud) + baseTimes', 2);
-baseCells = cellfun(@(x) obj.bin_spikes(x, binWidth), baseEdges, 'uni', 0);
+baseEdges = num2cell((presets.bWindow .* obj.info.baud) + baseTimes', 2);
+baseCells = cellfun(@(x) obj.bin_spikes(x, presets.binWidth), baseEdges, 'uni', 0);
 
 
 % Calculate baseline statistics across all baseline timestamps
@@ -54,18 +44,18 @@ baseMean = mean(baseNeurons, 2);
 baseSTD = std(baseNeurons, 0, 2);
 
 % Z-score binned spikes around each event timestamp against baseline FR
-eventEdges = num2cell((eWindow .* obj.info.baud) + eventTimes', 2);
-eventCells = cellfun(@(x) obj.bin_spikes(x, binWidth), eventEdges, 'uni', 0);
+eventEdges = num2cell((presets.eWindow .* obj.info.baud) + eventTimes', 2);
+eventCells = cellfun(@(x) obj.bin_spikes(x, presets.binWidth), eventEdges, 'uni', 0);
 eventMean = cellfun(@(x) mean(x, 2, 'omitnan'), eventCells, 'uni', 0);
 eventSTD = cellfun(@(x) std(x, 0, 2,  'omitnan'), eventCells, 'uni', 0);
-if isempty(baseline)
+if isempty(presets.baseline)
     zCells = cellfun(@(x, y, z) (x - y)./z, eventCells, eventMean, eventSTD, 'uni', 0);
 else
     zCells = cellfun(@(x) (x - baseMean)./baseSTD, eventCells, 'uni', 0);
 end
-
+trialStart = obj.find_event('event', 'Trial Start');
 % Find trial number for each event timestamp
-trialNum = discretize(eventTimes, [baseTimes obj.info.samples]);
+trialNum = discretize(eventTimes, [trialStart obj.info.samples]);
 % Concatenate cells into 3d matrix, mean across trials, smooth and output
 zAll = cat(3, zCells{:});
 if averaged

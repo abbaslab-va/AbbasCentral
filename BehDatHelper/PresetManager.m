@@ -18,6 +18,10 @@ classdef PresetManager < handle
         bpod            % Bool toggling which find_event fcn to use
         trialized       % Bool to output each trial in separate cells or all as one vector
         normalized      % Bool to control if data is z-scored
+        baseline        % Event string for z-score baseline
+        bWindow         % Edges for baseline event
+        bpodBaseline    % Boolean flag if baseline event is bpod
+        eWindow         % Edges for event window (default is edges)
         trials          % Indices of which bpod trials to include
         excludeTrials   % Indices of which bpod trials to exclude
         trialType       % Sets of bpod trialTypes
@@ -77,6 +81,10 @@ classdef PresetManager < handle
             addParameter(p, 'bpod', false, @islogical)
             addParameter(p, 'trialized', false, @islogical)
             addParameter(p, 'normalized', false, @islogical)
+            addParameter(p, 'baseline', 'Trial Start', @ischar)
+            addParameter(p, 'bWindow', [0 5], validVectorSize)
+            addParameter(p, 'bpodBaseline', false, @islogical)
+            addParameter(p, 'eWindow', [-2 2], validVectorSize)
             addParameter(p, 'trials', [], validIndex)
             addParameter(p, 'excludeTrials', [], validIndex)
             addParameter(p, 'trialType', {}, validField)
