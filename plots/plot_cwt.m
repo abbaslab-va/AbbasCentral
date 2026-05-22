@@ -35,5 +35,9 @@ else
     surf(pwr(:, :, channel), 'EdgeColor', 'none')
 end
 view(2)
+colorbar
+if exist('cLim', 'var')
+    clim(cLim)
+end
 yticks(yTick)
 yticklabels(freqs(yTick))

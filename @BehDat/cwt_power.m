@@ -21,6 +21,7 @@ function [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
 defaultAveraged = false;
 defaultPhase = false;
 defaultSF = 2000;
+defaultVoices = 10;
 validSF = @(x) isnumeric(x) && x > 0 && x < obj.info.baud;
 validOutputOpts = {'quiet', 'verbose', 'q', 'v'};
 validOutput = @(x) any(cellfun(@(y) strcmp(x, y), validOutputOpts));
@@ -33,12 +34,16 @@ addParameter(p, 'averaged', defaultAveraged, @islogical);
 addParameter(p, 'calculatePhase', defaultPhase, @islogical);
 addParameter(p, 'samplingFreq', defaultSF, validSF);
 addParameter(p, 'outputStyle', 'quiet', validOutput)
+addParameter(p, 'voices', defaultVoices, @isnumeric)
+addParameter(p, 'rms', false, @islogical)
 parse(p, varargin{:});    
 averaged = p.Results.averaged;
 trialized = presets.trialized;
 calculatePhase = p.Results.calculatePhase;
 samplingFreq = p.Results.samplingFreq;
 outputStyle = p.Results.outputStyle;
+numVoices = p.Results.voices;
+useRMS = p.Results.rms;
 % set up filterbank and downsample signal
 baud = obj.info.baud;
 downsampleRatio = baud/samplingFreq;
@@ -46,18 +51,25 @@ sigLength = (presets.edges(2) - presets.edges(1)) * samplingFreq;
 filterbank = cwtfilterbank('SignalLength', sigLength, ...
     'SamplingFrequency', samplingFreq, ...
     'TimeBandwidth', 60, 'FrequencyLimits', presets.freqLimits, ...
-    'VoicesPerOctave', 10);
+    'VoicesPerOctave', numVoices);
 
+try
+    chanCount = obj.info.numChannels;
+catch 
+    warning('No channel num found (likely due to noPhy - setting to 32 (default value)).')
+    chanCount = 32;
+end
+
+if isempty(presets.channels) && ~isempty(presets.region)
+    presets.channels = obj.info.channels.(presets.region);
+else
+    presets.channels = 1:chanCount;
+end
+
+numChan = numel(presets.channels);
 
 % lfpDownsampled = obj.downsample_lfp(presets, samplingFreq);
 
-try
-    numChan = obj.info.numChannels;
-    % numChan = numel(presets.channels);
-catch 
-    warning('No channel num found (likely due to noPhy - setting to 32 (default value)).')
-    numChan = 32;
-end
 lfpAll = cell(1, numChan);
 % timestamp and trialize event times
 eventTimes = obj.find_event('preset', presets, 'trialized', false);
@@ -77,8 +89,16 @@ end
 timeStrings = cellfun(@(x) strcat('t:', num2str(x(1)), ':', num2str(x(2) - 1)), edgeCells, 'uni', 0);
 ns6_dir = dir(fullfile(parentDir, sub,'*.ns6'));
 NS6 = cellfun(@(x) openNSx(fullfile(parentDir, sub, ns6_dir.name), x), timeStrings, 'uni', 0);
-lfp = cellfun(@(x) double(x.Data)', NS6, 'uni', 0);
+lfp = cellfun(@(x) double(x.Data(presets.channels, :))', NS6, 'uni', 0);
 clear NS6
+if useRMS
+    rmsVals = cellfun(@(x) rms(x, 1), lfp, 'uni', 0);
+    rmsCat = cat(1, rmsVals{:});
+    rmsVar = var(rmsCat, 1);
+    [~, lowestRMS] = min(rmsVar);
+    lfp = cellfun(@(x) x(:, lowestRMS), lfp, 'uni', 0);
+    numChan = 1;
+end
 pwr = cell(1, numChan);
 phase = cell(1, numChan);
 freqs = cell(1, numChan);
@@ -86,7 +106,7 @@ freqs = cell(1, numChan);
 lfpDownsampled = cellfun(@(x) downsample(x, downsampleRatio), lfp, 'uni', 0);
 clear lfp
 % calculate power and phase
-parfor c = 1:numChan
+for c = 1:numChan
     [AS, f] = cellfun(@(x) cwt(x(:, c), 'FilterBank', filterbank), lfpDownsampled, 'uni', 0);
     if calculatePhase
         chanPhase = cellfun(@(x) flip(angle(x), 1), AS, 'uni', 0);
@@ -102,6 +122,7 @@ parfor c = 1:numChan
     end
 end 
 freqs = freqs{1};
+
 
 if averaged
     pwr = cellfun(@(x) mean(x, 3), pwr, 'uni', 0);

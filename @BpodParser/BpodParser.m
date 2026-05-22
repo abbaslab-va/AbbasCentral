@@ -57,6 +57,8 @@ classdef BpodParser < handle
 
         state_sankey(obj, varargin)
 
+        stateTimes = state_collection(obj, states, varargin)
+
         %%% Video Methods
 
         frameTimes = e3v_bpod_sync(obj, varargin)

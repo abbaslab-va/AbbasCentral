@@ -49,12 +49,12 @@ classdef PresetManager < handle
         freqBands       % List of enumerations of FrequencyRange objects
         cLim            % Color limits for plotting surface and heatmaps
         panel           % Allows for plotting to app
+        preset          % Allows for loading presets into new object
     end
 
     methods
 
         function [obj, updated] = PresetManager(varargin)   % obj constructor
-
             % Validation functions
             validPreset = @(x) isempty(x) || isa(x, 'PresetManager');
             validVectorSize = @(x) all(size(x) == [1, 2]);
