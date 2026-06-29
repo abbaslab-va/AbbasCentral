@@ -23,10 +23,20 @@ timestamps = obj.find_event('preset', presets, 'trialized', false);
 try
     adjustedEdges = (presets.edges * baud) + timestamps';
     edgeCells = num2cell(adjustedEdges, 2);
-    binnedTrials = cellfun(@(x) histcounts(obj.spikes(neuron).times, 'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),...
+    binnedTrials = cellfun(@(x) ...
+        histcounts(obj.spikes(neuron).times, ...
+            'BinEdges', x(1):baud/1000*presets.binWidth:x(2)),...
         edgeCells, 'uni', 0);
     binnedTrials = cat(1, binnedTrials{:});
     binnedTrials = int16(binnedTrials); % Save on memory by 4x. Shouldn't change much bc raster converts to logical anyways
 catch
     binnedTrials = []; 
+end
+
+if presets.trialized
+    trialStart = obj.find_event('event', 'Trial_Start');
+    numTrials = numel(trialStart);
+    tsTrials = discretize(timestamps, [trialStart obj.info.samples]);
+    eventIdx = arrayfun(@(x) tsTrials == x, 1:numTrials, 'uni', 0);
+    binnedTrials = cellfun(@(x) binnedTrials(x, :), eventIdx, 'uni', 0);
 end

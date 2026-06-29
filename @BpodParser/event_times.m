@@ -2,7 +2,7 @@ function [eventTimes, eventNames] = event_times(obj, varargin)
 % 
 % OUTPUT:
 %     eventTimes - a 1xT cell array of event times from a BpodSession, where T is the number of trials
-% INPUT: optional name/value pairs
+% INPUT: optional PresetManager name/value pairs
 %     'event' - a named Bpod event ('Port1In', regular expressions ('Port[123]Out'))
 %     'withinState' - Only return events within certain bpod states
 %     'excludeState' - Opposite behavior from withinState

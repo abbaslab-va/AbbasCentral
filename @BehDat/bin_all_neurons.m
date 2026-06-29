@@ -1,5 +1,6 @@
 function binnedNeurons = bin_all_neurons(obj, varargin)
 
+% The BehDat version of this method
 % OUTPUT:
 %     binnedNeurons - a 1xN cell where N is the number of neurons in the
 %     session, each cell containing an ExT binary matrix of spike times for
@@ -20,12 +21,12 @@ presets = PresetManager(varargin{:});
 whichNeurons = find(obj.spike_subset(presets));
 numNeurons = numel(whichNeurons);
 binnedNeurons = cell(1, numNeurons);
-try
+% try
     for n = 1:numNeurons
         neuronNo = whichNeurons(n);
         binnedNeurons{n} = obj.bin_neuron(neuronNo, 'preset', presets);
     end
-catch
-    binnedNeurons = []; 
-    disp('bin_all_neurons failed')
-end
+% catch
+%     binnedNeurons = []; 
+%     disp('bin_all_neurons failed')
+% end
