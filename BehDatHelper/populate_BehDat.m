@@ -8,23 +8,10 @@ function sessObj = populate_BehDat(sessPath, n, ini)
 %     n - session name
 %     ini - config.ini file for the experiment read in using the INI package
 
-cd(sessPath)
-matdir = dir('*.mat');
-for m = 1:length(matdir)
-    fName = matdir(m).name;
-    fInfo = whos('-file', fName);
-    if isscalar(fInfo) && strcmp(fInfo.name, "SessionData")
-        load(fName, 'SessionData')
-        break
-    end
-end
+SessionData = load_bpod_session(sessPath);
+ 
+
 coords = [];
-if ~exist('SessionData', 'var')
-    warning('No Bpod session named SessionData.mat found in %s', sessPath)
-end
-[~,FolderName] = fileparts(sessPath);   
-
-
 NEV_dir = dir(fullfile(sessPath,'*.nev'));
 NEV_names = extractfield(NEV_dir, 'name');
 ns6Dir = dir(fullfile(sessPath, '*.ns6'));
@@ -40,6 +27,7 @@ end
 
 
 if ~isempty(ini.conditions)
+    [~,FolderName] = fileparts(sessPath);  
     allConditions = fields(ini.conditions);
     matchingCondition = structfun(@(x) contains(FolderName, x), ini.conditions);
     sessionCondition = allConditions{matchingCondition};
@@ -55,7 +43,7 @@ else
     ns6 = openNSx('noread', 'report', fullfile(sessPath, ns6Name{1}));
     numSamples = double(ns6.MetaTags.DataPoints);
 end
-info = struct('path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
+info = struct('acquisition', 'blackrock', 'path', sessPath, 'name', n, 'baud', sf, 'samples', numSamples, ...
     'trialTypes', ini.trialTypes, 'outcomes', ini.outcomes, 'stimTypes', ini.stimTypes, ...
     'condition', sessionCondition, 'startState', ini.info.StartState, 'channels', ini.regions);
 

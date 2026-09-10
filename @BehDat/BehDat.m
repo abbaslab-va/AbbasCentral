@@ -10,10 +10,12 @@ classdef BehDat < handle
     properties
         info
         spikes
+        probe
         timestamps
         bpod
         coordinates
         LabGym
+        video
     end
 
     methods
@@ -63,7 +65,7 @@ classdef BehDat < handle
         state_sankey(obj, varargin)
 
         event_sankey(obj, varargin)
-        
+
         stateEdges = find_bpod_state(obj, stateName, varargin)
 
         adjust_vip_trialTypes(obj)
@@ -77,6 +79,8 @@ classdef BehDat < handle
         [eventTimes, eventNames, stateNames] = events_relative_to_state(obj, stateName, varargin)
 
         rate = poke_rate(obj, varargin)
+
+        rate = continuous_poke_rate(obj, varargin)
 
         behaviorFeatures = build_behavior_features(obj, presets)
 
@@ -135,7 +139,8 @@ classdef BehDat < handle
         spikeFeatures = build_spike_features(obj, presets)
 
     %% LFP methods
-
+        [filteredLFP, regions] = lfp_rms_filtered(obj, varargin)
+        
         [pwr, freqs, phase, lfpAll] = cwt_power(obj, varargin)
 
         [pwr, phase] = hilbert_power(obj, varargin)
@@ -173,6 +178,8 @@ classdef BehDat < handle
         %plot_cwt(pwr, channel, freqs, panel)   panel is an optional arg
 
     %% Video methods
+        
+        load_LabGym_positions(obj, varargin)
 
         stateFrames = find_state_frames(obj, stateName, varargin)
         

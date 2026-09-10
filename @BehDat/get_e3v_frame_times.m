@@ -13,20 +13,39 @@ function get_e3v_frame_times(obj, bncData)
 % Voltage peaks around 20000, but the rise time often exceeds the length of
 % a duty cycle at 30000 hz. The cutoff of 2000 is somewhat arbitrary but
 % won't provide any false negatives.
-bncHi = find(diff(bncData) > 2000);
-hiDiff = diff(bncHi);
-bncLo = find(diff(bncData) < -2000);
-loDiff = diff(bncLo);
+if strcmp(obj.info.acquisition, 'blackrock')
 
-% Remove indices that are consecutive
-badHi = find(hiDiff == 1) + 1;
-bncHi(badHi) = [];
-badLo = find(loDiff == 1) + 1;
-bncLo(badLo) = [];
-% Find the distance between hi and lo, keep only those that exceed 400
-% samples (at 30000 hz, this is slightly less than half of a frame at 30
-% hz)
-bncDiff = bncLo - bncHi;
-savedFrames = bncHi(bncDiff > 400);
+    if ~exist("bncData", 'var')
+        % assumes microwire 32 channel drives with video on 33
+        filepath = obj.info.path;
+        [~, folder] = fileparts(filepath);
+        ns6Path = fullfile(filepath, [folder, '.ns6']);
+        ns6 = openNSx(ns6Path);
+        bncData = ns6.Data(33, :);
+    end
+    bncHi = find(diff(bncData) > 1500);
+    hiDiff = diff(bncHi);
+    bncLo = find(diff(bncData) < -1500);
+    loDiff = diff(bncLo);
+    
+    % Remove indices that are consecutive
+    badHi = find(hiDiff == 1) + 1;
+    bncHi(badHi) = [];
+    badLo = find(loDiff == 1) + 1;
+    bncLo(badLo) = [];
+    % Find the distance between hi and lo, keep only those that exceed 400
+    % samples (at 30000 hz, this is slightly less than half of a frame at 30
+    % hz)
+    if numel(bncHi) > numel(bncLo)
+        bncHi(end) = [];
+    elseif numel(bncLo) > numel(bncHi)
+        bncLo(end) = [];
+    end
+    bncDiff = bncLo - bncHi;
+    savedFrames = bncHi(bncDiff > 400);
+elseif strcmp(obj.info.acquisition, 'OpenEphys')
+
+    savedFrames = find(diff(bncData) > 1000 & bncData(1:end-1) < 300);
+end
 obj.video.frameTimes = savedFrames;
 

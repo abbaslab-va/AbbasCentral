@@ -47,6 +47,7 @@ classdef PresetManager < handle
         channels        % Specify channels for lfp/spike analyses
         freqLimits      % Edges for calculating frequency-domain props
         freqBands       % List of enumerations of FrequencyRange objects
+        baud            % Desired sampling frequency
         cLim            % Color limits for plotting surface and heatmaps
         panel           % Allows for plotting to app
         preset          % Allows for loading presets into new object
@@ -110,6 +111,7 @@ classdef PresetManager < handle
             addParameter(p, 'channels', [], validIndex)
             addParameter(p, 'freqLimits', [1 120], validVectorSize)
             addParameter(p, 'freqBands', [], validField)
+            addParameter(p, 'baud', 2000, validNumber)
             addParameter(p, 'cLim', [-3 3], validVectorSize)
             addParameter(p, 'panel', [])
             addParameter(p, 'preset', [], validPreset)
