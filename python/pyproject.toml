@@ -30,10 +30,7 @@ dependencies = [
 "pyside6",
 "strenum",
 "matplotlib",
-"pybpod",
-"kilosort[gui]",
-"numcodecs>=0.13.1",
-"spikeinterface"
+"pybpod"
 ]
 
 
