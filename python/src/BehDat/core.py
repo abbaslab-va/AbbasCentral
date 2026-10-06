@@ -8,7 +8,7 @@ import numpy as np
 
 @dataclass
 class BehDat:
-    info: BehDatInfo = BehDatInfo()
+    info: BehDatInfo
     spikes: BehDatSpikes
     timestamps: dict
     bpod: dict
@@ -59,7 +59,7 @@ class PresetManager:
     bpod: bool = False
     offset: float = 0.0
     edges: np.ndarray[tuple[float], np.float32] = field(default_factory=lambda: np.array([-2, 2]))
-    unit: int = 0
+    unit: int | list = 0
 
 
     def __init__(self, varargs: dict):
