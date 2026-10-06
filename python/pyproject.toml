@@ -32,6 +32,7 @@ dependencies = [
 "matplotlib",
 "pybpod",
 "kilosort[gui]",
+"numcodecs>=0.13.1",
 "spikeinterface"
 ]
 
