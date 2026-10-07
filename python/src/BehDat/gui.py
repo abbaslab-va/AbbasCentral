@@ -1,4 +1,4 @@
-from PySide6 import QtCore, QtWidgets, QtGui, QFile
+from PySide6 import QtCore, QtWidgets
 from open_ephys.analysis import Session
 
 class BehDatGUI:
