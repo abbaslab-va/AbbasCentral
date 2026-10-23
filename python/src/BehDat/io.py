@@ -221,4 +221,21 @@ def get_continuous(sess: Session) -> OpenEphysContinuous:
 
 
 def save_BehDat(obj: BehDat):
-    obj.info.path
+    fileName = obj.info.name + '.pkl'
+    saveDir = obj.info.path / fileName
+    with open(saveDir, "wb") as file:
+        pickle.dump(obj, file)
+
+
+def load_BehDat(filePath: str = None) -> BehDat:
+    if filePath is None:
+        root = tk.Tk()
+        root.withdraw()
+        filePath = Path(filedialog.askopenfilename())
+
+    savedBehDat: BehDat = None
+
+    with open(filePath, "rb") as file:
+        savedBehDat = pickle.load(file)
+
+    return savedBehDat
