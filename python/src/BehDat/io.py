@@ -3,9 +3,16 @@ import tkinter as tk
 from tkinter import filedialog, Tk, messagebox
 from pathlib import Path
 import numpy as np
+import pandas as pd
+import pickle
 from kilosort.io import save_probe
 from spikeinterface.extractors import read_openephys
 from spikeinterface.core import write_binary_recording
+from open_ephys.analysis import Session
+from open_ephys.analysis.formats.OpenEphysRecording import OpenEphysContinuous
+from configparser import ConfigParser
+from scipy.io import loadmat
+from .core import BehDat, BehDatInfo, BpodParser, Acquisition, BehDatSpikes
 
 
 def convert_cnt_probe():
@@ -60,3 +67,158 @@ def remap_mini_amp_binary():
         write_binary_recording(datSubset, expPath)
 
 
+def create_OpenEphys_BehDat(sessionPath: str) -> BehDat:
+    if sessionPath is None:
+        root = tk.Tk()
+        root.withdraw()
+        sessionPath = filedialog.askdirectory()
+    sessionPath = Path(sessionPath)
+    ephysSession = Session(sessionPath)
+    configs = parse_ini(sessionPath)
+    bdInfo : BehDatInfo = create_BehDatInfo(configs, sessionPath, ephysSession)
+    spikes : dict[BehDatSpikes] = create_BehDatSpikes(sessionPath, bdInfo)
+    timestamps : dict = create_BehDat_timestamps(ephysSession, configs)
+    bpodSession : BpodParser = create_BpodParser(sessionPath, bdInfo)
+    return BehDat(info=bdInfo, spikes=spikes, timestamps=timestamps, bpod=bpodSession, coordinates=[])
+
+
+def parse_ini(iniPath: Path) -> ConfigParser:
+    iniFiles = list(iniPath.glob("*.ini"))
+    iniFile = iniFiles[0]
+    I = ConfigParser()
+    I.read(iniFile)
+    return I
+
+
+def create_BehDatInfo(I: ConfigParser, sessPath: Path, sess: Session) -> BehDatInfo:
+    recordStruct: OpenEphysContinuous = get_continuous(sess)
+    baud = recordStruct.metadata.sample_rate
+    numSamples = recordStruct.samples.shape[0]
+
+    regions = dict(I['regions'])
+    for region in regions.keys():
+        vals = regions[region]
+        cleanStr = vals.strip("[] ")
+        if not cleanStr:
+            regions[region] = np.array([], dtype=int)
+            continue
+
+        parts = cleanStr.split(",")
+        result = []
+
+        for part in parts:
+            part = part.strip()
+            if ":" in part:
+                start, end = map(int, part.split(":"))
+                result.extend(range(start, end+1))
+            else:
+                result.append(int(part))
+        regions[region] = result
+
+    testInfo = BehDatInfo(acquisition=Acquisition.OPEN_EPHYS,
+                          path=sessPath,
+                          name="test",
+                          baud=baud,
+                          samples=numSamples,
+                          trialTypes=dict(I['trialTypes']),
+                          outcomes=dict(I['outcomes']),
+                          stimTypes=dict(I['stimTypes']),
+                          condition='test',
+                          startState=I['info']['startstate'],
+                          channels=regions)
+    return testInfo
+
+
+def create_BehDatSpikes(sessPath: Path, info: BehDatInfo) -> dict[BehDatSpikes]:
+    unsortedSpikeTimes = np.load(sessPath / 'spike_times.npy')
+    unsortedSpikeClusters = np.load(sessPath / 'spike_clusters.npy')
+    clusterInfo = pd.read_csv(sessPath / 'cluster_info.tsv', sep='\t')
+    goodClusters = clusterInfo.loc[clusterInfo['KSLabel'] == 'good']
+    goodClusterID = goodClusters['cluster_id']
+    goodChannels = goodClusters['ch']
+    unitNo = 0
+    spikeInfo = {}
+    regions = info.channels
+
+    for clust in goodClusterID:
+        clustRegion = ''
+        for region in regions.keys():
+            if np.any(np.array(regions[region]) == goodChannels[clust]):
+                clustRegion = region
+                break
+        spikeInds = np.argwhere(unsortedSpikeClusters == clust)
+        spikeTimes = unsortedSpikeTimes[spikeInds]
+        spikeInfo[unitNo] = BehDatSpikes(times=spikeTimes, region=clustRegion, cluster=clust)
+        unitNo += 1
+
+    return spikeInfo
+
+
+def create_BehDat_timestamps(sess: Session, configs: ConfigParser) -> dict:
+
+    continuousRec: OpenEphysContinuous = get_continuous(sess)
+    channelNames = continuousRec.metadata.channel_names
+    adcIdx = np.strings.find(channelNames, 'ADC') != -1
+    adcChannels = continuousRec.samples[:, adcIdx]
+
+    digitalTS = get_bpod_analog_timestamps(adcChannels)
+
+    timestampDict = {}
+    ts = configs['timestamps']
+    for key in list(ts.keys()):
+        tsIdx = int(ts[key])
+        timestampDict[key] = digitalTS[tsIdx][0]
+
+    return timestampDict
+    
+
+def get_bpod_analog_timestamps(adcChannels) -> list:
+    if adcChannels.size == 0:
+        print('no bpod')
+        digitalTS = []
+
+    else:
+        tsTolerance = 30 # how far apart signals can be to be considered from the same call
+        timestamps = []
+        for i in range(0, 3):
+            dataStream = np.array(adcChannels[:, i])
+            threshold = 1000
+            aboveThreshold = dataStream >= threshold
+            edgeDiff = np.diff(aboveThreshold.astype(int))
+            timestamps.append(np.where(edgeDiff == 1)[0] + 1)
+            #timestamps.append(np.intersect1d(np.where(frameDiff > 1000), np.where(dataStream[:-1] < 1200)))
+        digitalTS = [[] for i in range(0, 7)]
+        for i in [7, 6, 5, 3]:  # reverse ordered binary values that share channels
+            binByte = np.unpackbits(np.array([i], dtype=np.uint8))
+            binIdx = np.flip(binByte[-3:])
+            streamIdxs = [idx for idx, keep in enumerate(binIdx) if keep]
+            currentTS = [timestamps[idx] for idx in streamIdxs]
+            firstTS = currentTS[0]
+            removeMasks = [np.zeros(len(ts), dtype=bool) for ts in timestamps]
+            for ts in firstTS:
+                withinTol = [np.abs(times - ts) < tsTolerance for times in currentTS]
+                if all(w.any() for w in withinTol):
+                    for streamPos, w in zip(streamIdxs, withinTol):
+                        removeMasks[streamPos] |= w
+            digitalTS[i - 1].append(firstTS[removeMasks[streamIdxs[0]]])
+            timestamps = [a[~m] for a, m in zip(timestamps, removeMasks)]
+        for idx, i in enumerate([4, 2, 1]):
+            digitalTS[i - 1].append(timestamps[idx])
+    return digitalTS
+
+
+def create_BpodParser(sessPath: Path, sessInfo: BehDatInfo) -> BpodParser:
+    matFiles = list(sessPath.glob("*.mat"))
+    if len(matFiles) == 0:
+        return None
+    bpodFile = loadmat(matFiles[0], simplify_cells=True)
+    sessionData = bpodFile['SessionData']
+    return BpodParser(sessInfo, sessionData)
+
+
+def get_continuous(sess: Session) -> OpenEphysContinuous:
+    return sess.recordnodes[0].recordings[0].continuous[0]
+
+
+def save_BehDat(obj: BehDat):
+    obj.info.path
