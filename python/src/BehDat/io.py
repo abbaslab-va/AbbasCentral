@@ -12,7 +12,7 @@ from open_ephys.analysis import Session
 from open_ephys.analysis.formats.OpenEphysRecording import OpenEphysContinuous
 from configparser import ConfigParser
 from scipy.io import loadmat
-from .core import BehDat, BehDatInfo, BpodParser, Acquisition, BehDatSpikes
+from .core import BehDat, BehDatInfo, BpodParser, Acquisition, BehDatSpikes, PresetManager
 
 
 def convert_cnt_probe():

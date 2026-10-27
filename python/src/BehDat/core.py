@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from .util import find_closest_match
 import numpy as np
+
 
 
 @dataclass
@@ -14,16 +16,18 @@ class BehDat:
 
 
     def find_event(self, **kwargs):
-        presets = PresetManager(kwargs)
+        presets = PresetManager(**kwargs)
         offset = round(presets.offset * self.info.baud)
         
         if presets.bpod:
             print('BpodParser lol')
 
+        possibleEvents = list(self.timestamps.keys())
+        eventName = find_closest_match(presets.event, possibleEvents)
         try:
-            ts = self.timestamps[presets.event] + offset
+            ts = self.timestamps[eventName] + offset
         except:
-            print(f"No timestamp pair found for event {presets.event}")
+            print(f"No timestamp pair found for event {eventName}")
 
         try:
             trialStart = self.timestamps['trial start']
@@ -83,15 +87,51 @@ class BpodParser:
     session: dict
 
 
+    def trial_count(self) -> int:
+        return int(self.session['nTrials'])
+
+
     def event_times(self, **kwargs):
         pass
 
 
-    def trial_intersection(self, **kwargs):
-        pass
+    def trial_intersection(self, **kwargs) -> np.array[bool]:
+        presets = PresetManager(**kwargs)
+        intersections = np.array([True for trial in range(0, self.trial_count())])
+        trialTypes = presets.trialType
+        outcomes = presets.outcome
+        trials = presets.trials
+        isDesiredTT = self.check_conditional_intersection('TrialTypes', trialTypes)
+        isDesiredOutcome = self.check_conditional_intersection('SessionPerformance', outcomes)
+        return np.logical_and.reduce((intersections, isDesiredTT, isDesiredOutcome))
+
+    def check_conditional_intersection(self, 
+                                       bpodField: str, 
+                                       userInput: str | list[str]) -> np.array[bool]:
+        bpodParserField = None
+        match bpodField:
+            case 'TrialTypes':
+                bpodParserField = self.info.trialTypes
+            case 'SessionPerformance':
+                bpodParserField = self.info.outcomes
+        bpodStruct = self.session    
+        numTrials = self.trial_count()
+        sessionField = bpodStruct[bpodField]
+        if userInput is None:
+            return np.array([True for trial in range(0, numTrials)])
+
+        if isinstance(userInput, str):
+            userInput = [userInput]
+
+        trials = []
+        for arg in userInput:
+            argString = find_closest_match(arg, list(bpodParserField.keys()))
+            argKey = int(bpodParserField[argString])
+            trials.append(np.isin(sessionField, argKey))
+        return np.logical_or.reduce(trials)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PresetManager:
     event: str = 'trial start'
     bpod: bool = False
@@ -99,7 +139,9 @@ class PresetManager:
     edges: np.ndarray[tuple[float], np.float32] = field(default_factory=lambda: np.array([-2, 2]))
     unit: int | list = 0
     trialized: bool = False
-
-    def __init__(self, varargs: dict):
-        for key, value in varargs.items():
-            setattr(self, key, value)
+    trialType: str | list[str] = None
+    outcome: str | list[str] = None
+    stimType: str | list[str] = None
+    trials: int | list[str] = None
+    presets: PresetManager = None
+    
